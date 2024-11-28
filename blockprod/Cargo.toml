@@ -1,0 +1,48 @@
+[package]
+name = "blockprod"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chainstate = { path = "../chainstate/" }
+chainstate-types = { path = "../chainstate/types" }
+common = { path = "../common/" }
+consensus = { path = "../consensus" }
+crypto = { path = "../crypto/" }
+logging = { path = "../logging" }
+mempool = { path = "../mempool/" }
+p2p = { path = "../p2p/" }
+randomness = { path = "../randomness" }
+rpc = { path = "../rpc/" }
+serialization = { path = "../serialization" }
+subsystem = { path = "../subsystem/" }
+utils = { path = "../utils" }
+
+async-trait.workspace = true
+hex.workspace = true
+futures.workspace = true
+jsonrpsee = { workspace = true, features = ["macros"] }
+itertools.workspace = true
+mockall.workspace = true
+parity-scale-codec.workspace = true
+rayon.workspace = true
+slave-pool.workspace = true
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
+tokio = { workspace = true, default-features = false, features = ["io-util", "macros", "net", "rt", "rt-multi-thread", "sync", "time"] }
+
+[dev-dependencies]
+chainstate-storage = { path = "../chainstate/storage/" }
+chainstate-test-framework = { path = "../chainstate/test-framework" }
+chainstate-types = { path = "../chainstate/types" }
+mocks = { path = "../mocks/" }
+pos-accounting = { path = "../pos-accounting" }
+storage-inmemory = { path = "../storage/inmemory" }
+test-utils = { path = "../test-utils" }
+
+rstest.workspace = true
+static_assertions.workspace = true

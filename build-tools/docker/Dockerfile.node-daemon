@@ -1,0 +1,9 @@
+# Build Stage
+FROM mintlayer-builder:latest AS builder
+
+# Runtime Stage
+FROM mintlayer-runner-base
+
+COPY --from=builder /usr/src/target/release/node-daemon /usr/bin/
+
+CMD ["node-daemon"]

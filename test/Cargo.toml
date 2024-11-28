@@ -1,0 +1,30 @@
+[package]
+name = "mintlayer-test"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+homepage = "https://github.com/mintlayer/mintlayer-core/issues"
+
+[package.metadata.dist]
+dist = false
+
+[dependencies]
+utils = { path = "../utils" }
+node-lib = { path = "../node-lib" }
+logging = { path = "../logging" }
+wallet-cli-lib = { path = "../wallet/wallet-cli-lib" }
+wallet-address-generator-lib = { path = "../wallet/wallet-address-generator-lib" }
+wallet-rpc-lib = { path = "../wallet/wallet-rpc-lib" }
+
+clap = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ['full'] }
+
+[dev-dependencies]
+libtest-mimic.workspace = true
+thiserror.workspace = true
+
+[[test]]
+name = "functional"
+path = "runner/functional.rs"
+harness = false

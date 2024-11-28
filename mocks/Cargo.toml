@@ -1,0 +1,25 @@
+[package]
+name = "mocks"
+license.workspace =true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chainstate = { path = "../chainstate/" }
+chainstate-types = { path = "../chainstate/types" }
+common = { path = "../common/" }
+mempool = { path = "../mempool/" }
+pos-accounting = { path = '../pos-accounting/' }
+subsystem = { path = "../subsystem/" }
+tokens-accounting = { path = '../tokens-accounting/' }
+utils = { path = "../utils/" }
+utils-networking = { path = "../utils/networking" }
+utxo = { path = "../utxo/" }
+p2p-types = { path = "../p2p/types" }
+
+async-trait.workspace = true
+mockall.workspace = true
+tokio = { workspace = true, default-features = false, features = ["io-util", "macros", "net", "rt", "rt-multi-thread", "sync", "time"] }

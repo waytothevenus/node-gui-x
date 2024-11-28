@@ -14,7 +14,10 @@
       {
         "title": "mintlayer",
         "width": 1024,
-        "height": 719
+        "height": 719,
+        "resizable": false,
+        "fullscreen": false,
+        "theme": "Light"
       }
     ],
     "security": {

@@ -1,0 +1,46 @@
+[package]
+name = "utils"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+crypto = { path = "../crypto" }
+logging = { path = "../logging" }
+log_error = { path = "log_error" }
+randomness = { path = "../randomness" }
+serialization = { path = "../serialization" }
+
+anyhow.workspace = true
+clap = { workspace = true, features = ["env", "string", "derive"] }
+directories.workspace = true
+fix-hidden-lifetime-bug.workspace = true
+heck.workspace = true
+num-traits.workspace = true
+parity-scale-codec.workspace = true
+probabilistic-collections.workspace = true
+qrcodegen.workspace = true
+slave-pool.workspace = true
+thiserror.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+test-utils = { path = "../test-utils" }
+
+criterion.workspace = true
+regex.workspace = true
+rstest.workspace = true
+static_assertions.workspace = true
+tracing.workspace = true
+tokio = { workspace = true, features = ["macros"] }
+
+[target.'cfg(loom)'.dependencies]
+loom.workspace = true
+
+[[bench]]
+name = "benches"
+harness = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(loom)'] }

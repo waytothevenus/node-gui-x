@@ -429,7 +429,7 @@ function Home() {
             <input
               placeholder="Enter a name"
               type="text"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
             />
@@ -556,7 +556,7 @@ function Home() {
           <div className="flex justify-center space-x-16 items-center">
             <div className="bg-white space-y-4 w-[40vw] py-16 px-8 shadow rounded rounded-2 justify-center items-center">
               <button
-                className="py-1 px-4 rounded w-48 bg-[#69EE96] text-[#000000] font-bold text-xl hover:text-[#69EE96] hover:bg-black text-xl"
+                className="py-1 px-4 rounded w-48 bg-[#69EE96] text-[#000000] font-bold hover:text-[#69EE96] hover:bg-black text-xl"
                 onClick={() => setWalletMode(WalletMode.Hot)}
               >
                 Hot
@@ -570,7 +570,7 @@ function Home() {
             </div>
             <div className="bg-white w-[40vw] space-y-2 py-16 px-8 shadow rounded rounded-2 justify-center items-center">
               <button
-                className="py-1 px-4 rounded w-48 bg-[#C4FCCA] text-[#0D372F] font-bold text-xl hover:text-[#69EE96] hover:bg-black text-xl"
+                className="py-1 px-4 rounded w-48 bg-[#C4FCCA] text-[#0D372F] font-bold hover:text-[#69EE96] hover:bg-black text-xl"
                 onClick={() => setWalletMode(WalletMode.Cold)}
               >
                 Cold
@@ -621,7 +621,7 @@ function Home() {
                   </>
                   {walletsInfo.length !== 0 && (
                     <>
-                      <div className="relative inline-block flex items-center justify-center space-x-2">
+                      <div className="relative flex items-center justify-center space-x-2">
                         <img src={WalletIcon} alt="wallet_ico" />
                         <select
                           value={
@@ -651,7 +651,7 @@ function Home() {
                           ))}
                         </select>
                       </div>
-                      <div className="relative inline-block pl-4 flex items-center justify-center space-x-2">
+                      <div className="relative pl-4 flex items-center justify-center space-x-2">
                         <button
                           className="bg-transparent border-noe shadow-none outine-none hover: outline-none hover:border-none focused: border-none"
                           onClick={() => setShowNewAccountModal(true)}
@@ -670,7 +670,7 @@ function Home() {
                             );
                           }}
                           value={currentAccountId}
-                          className="block w-[16vw] bg-white px-2 w-[14vw] border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
+                          className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
                         >
                           {Object.entries(
                             (currentWallet ? currentWallet : walletsInfo[0])
@@ -691,7 +691,7 @@ function Home() {
                             setCurrentTab("transactions");
                             setActiveTab("transactions");
                           }}
-                          className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                         >
                           <img src={TransactionIcon} className="pr-2" />
                           Transactions
@@ -702,7 +702,7 @@ function Home() {
                           setCurrentTab("transactions");
                           setActiveTab("addresses");
                         }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                       >
                         <img src={AddressIcon} className="pr-2" />
                         Addresses
@@ -713,7 +713,7 @@ function Home() {
                             setCurrentTab("transactions");
                             setActiveTab("send");
                           }}
-                          className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                         >
                           <img src={SendIcon} className="pr-2" />
                           Send
@@ -725,7 +725,7 @@ function Home() {
                             setCurrentTab("transactions");
                             setActiveTab("staking");
                           }}
-                          className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                         >
                           <img src={StakingIcon} className="pr-2" />
                           Staking
@@ -737,7 +737,7 @@ function Home() {
                             setCurrentTab("transactions");
                             setActiveTab("delegation");
                           }}
-                          className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                         >
                           <img src={DelegationIcon} className="pr-2" />
                           Delegation
@@ -748,7 +748,7 @@ function Home() {
                           setCurrentTab("transactions");
                           setActiveTab("console");
                         }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded  w-full text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                       >
                         <img src={ConsoleIcon} className="pr-2" />
                         Console

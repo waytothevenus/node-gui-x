@@ -1,0 +1,50 @@
+[package]
+name = "wallet-rpc-lib"
+license.workspace = true
+edition.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+common = { path = "../../common" }
+chainstate = { path = "../../chainstate" }
+crypto = { path = "../../crypto" }
+logging = { path = "../../logging" }
+mempool-types = { path = "../../mempool/types" }
+mempool = { path = "../../mempool" }
+node-comm = { path = "../wallet-node-client" }
+randomness = { path = "../../randomness" }
+rpc = { path = "../../rpc" }
+rpc-description = { path = "../../rpc/description" }
+serialization = { path = "../../serialization" }
+utils = { path = "../../utils" }
+utils-networking = { path = "../../utils/networking" }
+wallet = { path = ".." }
+wallet-controller = { path = "../wallet-controller" }
+wallet-types = { path = "../types" }
+p2p-types = { path = "../../p2p/types" }
+
+anyhow.workspace = true
+async-trait.workspace = true
+clap.workspace = true
+enum-iterator.workspace = true
+futures.workspace = true
+jsonrpsee.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+
+consensus = { path = "../../consensus" }
+mempool = { path = "../../mempool" }
+rpc = { path = "../../rpc", features = [ "test-support" ] }
+subsystem = { path = "../../subsystem" }
+test-utils = { path = "../../test-utils" }
+wallet-test-node = { path = "../wallet-test-node" }
+wallet-types = { path = "../types" }
+
+rstest.workspace = true

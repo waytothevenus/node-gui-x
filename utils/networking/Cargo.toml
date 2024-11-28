@@ -1,0 +1,21 @@
+[package]
+name = "utils-networking"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+rpc-description = { path = "../../rpc/description" }
+
+addr.workspace = true
+itertools.workspace = true
+serde_with.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+
+[dev-dependencies]
+serde_test.workspace = true
+test-utils = { path = "../../test-utils" }
+tokio = { workspace = true, features = ["macros", "net", "sync", "test-util"] }

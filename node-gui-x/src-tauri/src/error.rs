@@ -15,7 +15,7 @@
 
 use super::messages::{AccountId, WalletId};
 
-#[derive(thiserror::Error, Debug, Clone, serde::Serialize)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum BackendError {
     #[error("Wallet error: {0}")]
     WalletError(String),

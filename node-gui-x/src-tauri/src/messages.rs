@@ -13,29 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::BackendError;
-use crate::backend_impl::ImportOrCreate;
-use chainstate::ChainInfo;
-use common::{
-    chain::{DelegationId, GenBlock, PoolId, SignedTransaction},
-    primitives::{Amount, BlockHeight, Id},
-};
-use crypto::key::hdkd::{child_number::ChildNumber, u31::U31};
-use p2p::P2pEvent;
-use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     path::PathBuf,
     str::FromStr,
-    sync::atomic::{AtomicU64, Ordering},
+    sync::atomic::{ AtomicU64, Ordering },
 };
+
+use chainstate::ChainInfo;
+use common::{
+    chain::{ DelegationId, GenBlock, PoolId, SignedTransaction },
+    primitives::{ Amount, BlockHeight, Id },
+};
+use crypto::key::hdkd::{ child_number::ChildNumber, u31::U31 };
+use p2p::P2pEvent;
 use wallet::account::transaction_list::TransactionList;
 use wallet_cli_commands::ConsoleCommand;
 use wallet_controller::types::Balances;
 use wallet_rpc_lib::types::PoolInfo;
 use wallet_types::wallet_type::WalletType;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+use crate::ImportOrCreate;
+
+use super::BackendError;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize)]
 pub struct WalletId(u64);
 
 static NEXT_WALLET_ID: AtomicU64 = AtomicU64::new(0);
@@ -50,7 +52,7 @@ impl WalletId {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize)]
 pub struct AccountId(U31);
 
 impl AccountId {
@@ -63,7 +65,7 @@ impl AccountId {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct WalletInfo {
     pub wallet_id: WalletId,
     pub path: PathBuf,
@@ -73,7 +75,7 @@ pub struct WalletInfo {
     pub wallet_type: WalletType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct AccountInfo {
     pub name: Option<String>,
     pub addresses: BTreeMap<u32, String>,
@@ -84,7 +86,7 @@ pub struct AccountInfo {
     pub transaction_list: TransactionList,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct AddressInfo {
     pub wallet_id: WalletId,
     pub account_id: AccountId,
@@ -97,7 +99,7 @@ impl AddressInfo {
         wallet_id: WalletId,
         account_id: AccountId,
         index: &str,
-        address: String,
+        address: String
     ) -> Result<Self, BackendError> {
         let index = ChildNumber::from_str(index)
             .map_err(|e| BackendError::InvalidAddressIndex(e.to_string()))?
@@ -163,7 +165,7 @@ pub struct SendDelegateToAddressRequest {
     pub delegation_id: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct TransactionInfo {
     pub wallet_id: WalletId,
     pub tx: SignedTransaction,
@@ -201,7 +203,7 @@ impl EncryptionAction {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub enum EncryptionState {
     EnabledLocked,
     EnabledUnlocked,
@@ -266,7 +268,7 @@ pub enum BackendRequest {
     Shutdown,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub enum BackendEvent {
     ChainInfo(ChainInfo),
     P2p(P2pEvent),
@@ -282,11 +284,7 @@ pub enum BackendEvent {
     WalletBestBlock(WalletId, (Id<GenBlock>, BlockHeight)),
     Balance(WalletId, AccountId, Balances),
     StakingBalance(WalletId, AccountId, BTreeMap<PoolId, PoolInfo>),
-    DelegationsBalance(
-        WalletId,
-        AccountId,
-        BTreeMap<DelegationId, (PoolId, Amount)>,
-    ),
+    DelegationsBalance(WalletId, AccountId, BTreeMap<DelegationId, (PoolId, Amount)>),
     NewAddress(Result<AddressInfo, BackendError>),
     ToggleStaking(Result<(WalletId, AccountId, bool), BackendError>),
     SendAmount(Result<TransactionInfo, BackendError>),

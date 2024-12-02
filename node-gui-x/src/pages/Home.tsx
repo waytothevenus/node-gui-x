@@ -26,7 +26,6 @@ import SummaryTab from "../components/Summary";
 import NetworkingTab from "../components/Networking";
 import {
   AccountType,
-  ChainInfoEventPayloadType,
   ChainInfoType,
   NewAccountResultType,
   P2p,
@@ -53,9 +52,7 @@ function Home() {
     walletsInfo?.[0]
   );
   const [chainInfo, setChainInfo] = useState<ChainInfoType | undefined>();
-  const [p2pInfo, setP2pInfo] = useState<
-    PeerConnected["P2p"]["PeerConnected"][]
-  >([]);
+  const [p2pInfo, setP2pInfo] = useState<PeerConnected["PeerConnected"][]>([]);
   const [currentTab, setCurrentTab] = useState("summary");
   const [activeTab, setActiveTab] = useState("transactions");
   const [currentAccount, setCurrentAccount] = useState<AccountType>();
@@ -77,18 +74,27 @@ function Home() {
             network: netMode,
             mode: walletMode,
           });
-          console.log("Chain info: ", result);
-          setChainInfo(result);
-          notify("Node initialized", "info");
+          if (result) {
+            console.log("Chain info: ", result);
+            setChainInfo(result);
+            notify("Node initialized", "info");
+            try {
+              await invoke("listen_for_p2p_events");
+              console.log("P2P event receiver triggered");
+            } catch (err) {
+              console.error("Error starting P2P event receiver: ", err);
+            }
+          }
         }
       } catch (err) {
         console.error("Error initializing node: ", err);
-        notify("Error occured while initializing node", "error");
+        notify("Error occurred while initializing node", "error");
       }
     };
     init_node();
     chainStateEventListener();
     p2pEventListener();
+    errorListener();
   }, [netMode, walletMode]);
 
   useEffect(() => {
@@ -135,11 +141,10 @@ function Home() {
   }, [currentAccount, currentAccountId]);
 
   const p2pEventListener = async () => {
-    await listen("p2p_event", (event) => {
+    await listen("P2p", (event) => {
       const newP2pInfo = event.payload as P2p;
-
-      if ("PeerConnected" in newP2pInfo.P2p) {
-        const peerInfo = newP2pInfo.P2p.PeerConnected;
+      if ("PeerConnected" in newP2pInfo) {
+        const peerInfo = newP2pInfo.PeerConnected;
         setP2pInfo((prevP2pInfo) => {
           const exists = prevP2pInfo.some(
             (peer) => peer.address === peerInfo.address
@@ -160,11 +165,17 @@ function Home() {
     });
   };
 
+  const errorListener = async () => {
+    await listen("Error", (event) => {
+      const errorMessage = event.payload as string;
+      notify(errorMessage, "error");
+    });
+  };
+
   const chainStateEventListener = async () => {
-    await listen("chain_state_event", (event) => {
-      const newChainInfo: ChainInfoEventPayloadType =
-        event.payload as ChainInfoEventPayloadType;
-      setChainInfo(newChainInfo.ChainInfo);
+    await listen("ChainInfo", (event) => {
+      const newChainInfo: ChainInfoType = event.payload as ChainInfoType;
+      setChainInfo(newChainInfo);
     });
   };
   const createNewWallet = () => {
@@ -190,24 +201,23 @@ function Home() {
         setLoading(true);
 
         try {
-          const walletInfo: WalletInfo = await invoke(
-            "add_create_wallet_wrapper",
-            {
-              request: {
-                file_path: path,
-                mnemonic: mnemonic,
-                import: true,
-                wallet_type: walletMode,
-              },
-            }
-          );
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: true,
+              wallet_type: walletMode,
+            },
+          });
 
-          if (walletInfo) {
-            setWalletsInfo([...walletsInfo, walletInfo]);
-            notify("Wallet created successfully!", "success");
-          } else {
-            notify("Error occured while creating wallet!", "error");
-          }
+          await listen("ImportWallet", (event) => {
+            const walletInfo = event.payload as WalletInfo;
+            if (walletInfo) {
+              setWalletsInfo([...walletsInfo, walletInfo]);
+              setLoading(false);
+              notify("Wallet created successfully!", "success");
+            }
+          });
         } catch (invokeError) {
           notify("Error occured while creating wallet!", "error");
           console.error(
@@ -216,7 +226,7 @@ function Home() {
           );
         }
         setMnemonic("");
-        setLoading(false);
+        
         setShowMnemonicModal(false); // Ensure setShowMnemonicModal is defined
       } else {
         console.error("No file selected");

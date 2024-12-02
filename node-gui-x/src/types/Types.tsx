@@ -111,9 +111,6 @@ export type ChainInfoType = {
   is_initial_block_download: boolean;
 };
 
-export type ChainInfoEventPayloadType = {
-  ChainInfo: ChainInfoType;
-};
 
 export type PeerDisconnected = {
   P2p: {
@@ -122,7 +119,6 @@ export type PeerDisconnected = {
 };
 
 export type PeerConnected = {
-  P2p: {
     PeerConnected: {
       id: number;
       services: number;
@@ -135,7 +131,6 @@ export type PeerConnected = {
         patch: number;
       };
     };
-  };
 };
 
 export type P2p = PeerConnected | PeerDisconnected;

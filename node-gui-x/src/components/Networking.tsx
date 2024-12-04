@@ -1,31 +1,10 @@
 import { PeerConnected } from "../types/Types";
 
 const NetworkingTab = (props: {
-  peerInfo: PeerConnected["P2p"]["PeerConnected"][];
+  peerInfo: PeerConnected["PeerConnected"][];
 }) => {
-  // const networkInfo = [
-  //   {
-  //     socket: "139.177.176.199:3031",
-  //     inbound: "Outbound",
-  //     useragent: "Mintlayer Core",
-  //     version: "0.6.1",
-  //   },
-  //   {
-  //     socket: "172.16.31.10:8080",
-  //     inbound: "Inbound",
-  //     useragent: "BitTorrent",
-  //     version: "1.0.1",
-  //   },
-  //   {
-  //     socket: "192.168.127.12:3031",
-  //     inbound: "Outbound",
-  //     useragent: "Bitcoin Core",
-  //     version: "0.21.1",
-  //   },
-  //   // Add more peers as needed...
-  // ];
   return (
-    <div className="pt-0 mt-8 m-8 rounded rounded-lg bg-white p-8">
+    <div className="pt-0 mt-8 m-8 rounded-lg bg-white p-8">
       <p className="py-10">
         The following is a list of peers connected to your node
       </p>

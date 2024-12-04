@@ -12,7 +12,6 @@ import {
 import {
   AccountType,
   WalletInfo,
-  ToggleStakingResultType,
   Data,
   ChainInfoType,
 } from "../types/Types";

@@ -263,9 +263,9 @@ const WalletActions = (props: {
             </button>
             <h2 className="text-lg font-bold mb-4">Unlock</h2>
             <input
-              placeholder="Enter a name"
+              placeholder="Enter a password"
               type="password"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={unLockPassword}
               onChange={(e) => setUnLockPassword(e.target.value)}
             />
@@ -281,7 +281,7 @@ const WalletActions = (props: {
       )}
       <div className="row flex items-center justify-between pl-8 pr-8 pb-0">
         <div>
-          <span className="flex inline-block space-x-2">
+          <span className="flex space-x-2">
             <div className="font-thin">My balance: </div>
             <div className="font-bold">
               {props.currentAccount?.balance.coins.decimal} TML
@@ -291,7 +291,7 @@ const WalletActions = (props: {
         <div className="space-x-2">
           {walletState === "EnabledLocked" && (
             <button
-              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
               onClick={() => {
                 setShowUnlockModal(true);
               }}
@@ -301,7 +301,7 @@ const WalletActions = (props: {
           )}
           {walletState === "EnabledUnLocked" && (
             <button
-              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
               onClick={handleLockWallet}
             >
               Lock
@@ -313,7 +313,7 @@ const WalletActions = (props: {
                 !props.currentWallet
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-[#69EE96] hover:text-[#69EE96] hover:bg-black"
-              } rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black`}
+              } rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black`}
               onClick={handleUpdateWalletEncryption}
             >
               {walletState === "EnabledUnLocked"

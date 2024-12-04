@@ -111,7 +111,6 @@ export type ChainInfoType = {
   is_initial_block_download: boolean;
 };
 
-
 export type PeerDisconnected = {
   P2p: {
     PeerDisConnected: number;
@@ -119,18 +118,18 @@ export type PeerDisconnected = {
 };
 
 export type PeerConnected = {
-    PeerConnected: {
-      id: number;
-      services: number;
-      address: string;
-      inbound: boolean;
-      user_agent: number[];
-      software_version: {
-        major: number;
-        minor: number;
-        patch: number;
-      };
+  PeerConnected: {
+    id: number;
+    services: number;
+    address: string;
+    inbound: boolean;
+    user_agent: number[];
+    software_version: {
+      major: number;
+      minor: number;
+      patch: number;
     };
+  };
 };
 
 export type P2p = PeerConnected | PeerDisconnected;
@@ -243,6 +242,25 @@ export type Data = {
   tx: Tx; // Transaction object
 };
 
-export type ConsoleResultType = {
+type SetStatus = {
+  SetStatus: { status: string; print_message: string };
+};
+
+type Print = {
   Print: string;
 };
+
+type ClearScrean = string;
+type PrintHistory = string;
+type ClearHistory = string;
+type Exit = string;
+
+// Define the ConsoleCommand type as a union of all possible command types
+export type ConsoleCommand =
+  | Print
+  | ClearScrean
+  | PrintHistory
+  | ClearHistory
+  | Exit
+  | SetStatus
+  | string;

@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { AccountType, Data, WalletInfo } from "../types/Types";
 import {
@@ -33,7 +34,7 @@ const Delegation = (props: {
     setLoadingMessage("Depositing to delegation. Please wait.");
     setIsLoading(true);
     try {
-      const result = await invoke("delegate_staking_wrapper", {
+      await invoke("delegate_staking_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -43,9 +44,15 @@ const Delegation = (props: {
           delegation_amount: depositAmount,
         },
       });
-      if (result) {
-        console.log(result);
-      }
+      const unsubscribe = await listen("DelegateStaking", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          console.log(transactionInfo);
+        } else {
+        }
+        unsubscribe();
+      });
+      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -55,7 +62,7 @@ const Delegation = (props: {
     setLoadingMessage("Withdrawing from delegation. Please wait.");
     setIsLoading(true);
     try {
-      const result = await invoke("send_delegation_to_address_wrapper", {
+      await invoke("send_delegation_to_address_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -66,9 +73,15 @@ const Delegation = (props: {
           delegation_id: currentDelegationId,
         },
       });
-      if (result) {
-        console.log(result);
-      }
+      const unsubscribe = await listen("SendDelegationToAddress", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          console.log(transactionInfo);
+        } else {
+        }
+        unsubscribe();
+      });
+      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -87,7 +100,7 @@ const Delegation = (props: {
     setLoadingMessage("Creating Delegation. Please wait");
     setIsLoading(true);
     try {
-      const result: Data = await invoke("create_delegation_wrapper", {
+      await invoke("create_delegation_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -97,12 +110,17 @@ const Delegation = (props: {
           delegation_address: delegationAddress,
         },
       });
-      if (result) {
-        console.log(result);
-        setTransactionInfo(result);
-        setShowConfirmTransactionModal(true);
-        setIsLoading(false);
-      }
+      const unsubscribe = await listen("CreateDelegation", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          console.log(transactionInfo);
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+        } else {
+        }
+        unsubscribe();
+      });
+      unsubscribe();
     } catch (error) {
       notify(new String(error).toString(), "error");
       setIsLoading(false);
@@ -111,16 +129,23 @@ const Delegation = (props: {
 
   const handleConfirmTransaction = async () => {
     try {
-      const result = await invoke("submit_transaction_wrapper", {
+      await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id,
           account_id: props.currentAccountId,
           tx: transactionInfo?.tx,
         },
       });
-      console.log("sending amount transaction result is ========>", result);
-      notify("Transaction confirmed successfully!", "success");
-      setShowSuccessModal(true);
+      const unsubscribe = await listen("SubmitTx", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          console.log(transactionInfo);
+          notify("Transaction confirmed successfully!", "success");
+          setShowSuccessModal(true);
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -294,7 +319,7 @@ const Delegation = (props: {
             <input
               placeholder="Enter amount"
               type="number"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={depositAmount}
               onChange={(e) => setDepositAmount(parseInt(e.target.value))}
             />
@@ -327,7 +352,7 @@ const Delegation = (props: {
               <input
                 placeholder="Enter address"
                 type="text"
-                className="w-full rounded rounded-lg"
+                className="w-full rounded-lg"
                 value={withdrawAddress}
                 onChange={(e) => setWithdrawAddress(e.target.value)}
               />
@@ -340,7 +365,7 @@ const Delegation = (props: {
                 <input
                   placeholder="Enter amount"
                   type="number"
-                  className="w-full rounded rounded-lg"
+                  className="w-full rounded-lg"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(parseInt(e.target.value))}
                 />
@@ -416,7 +441,7 @@ const Delegation = (props: {
                       setShowDepositModal(true);
                       setCurrentDelegationId(pool_id);
                     }}
-                    className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+                    className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
                     DEPOSIT
                   </button>
@@ -425,7 +450,7 @@ const Delegation = (props: {
                       setShowWithdrawModal(true);
                       setCurrentDelegationId(pool_id);
                     }}
-                    className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+                    className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
                     WITHRAW
                   </button>
@@ -445,7 +470,7 @@ const Delegation = (props: {
         <input
           type="text"
           placeholder="Enter address"
-          className="rounded rounded-lg"
+          className="rounded-lg"
           value={poolAddress}
           onChange={(e) => setPoolAddress(e.target.value)}
         />
@@ -455,7 +480,7 @@ const Delegation = (props: {
         <input
           type="text"
           placeholder="Enter address"
-          className="rounded rounded-lg"
+          className="rounded-lg"
           value={delegationAddress}
           onChange={(e) => setDelegationAddress(e.target.value)}
         />
@@ -463,7 +488,7 @@ const Delegation = (props: {
       <div>
         <button
           onClick={handleCreateDelegation}
-          className="w-60 py-1 px-2 bg-[#69EE96] text-[#000000] rounded rounded-lg hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
+          className="w-60 py-1 px-2 bg-[#69EE96] text-[#000000] rounded-lg hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
         >
           Create Delegation
         </button>

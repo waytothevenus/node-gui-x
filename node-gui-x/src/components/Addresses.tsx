@@ -1,8 +1,8 @@
 import { AiOutlineCopy } from "react-icons/ai";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import AddressIcon from "../assets/account_icon.png";
 import { notify } from "../utils/util";
-import { AddressInfo } from "../types/Types";
 import { useState } from "react";
 
 const Addresses = (props: {
@@ -15,17 +15,32 @@ const Addresses = (props: {
   const handleAddAddress = async () => {
     try {
       setIsLoading(true);
-      const addressInfo: AddressInfo = await invoke("new_address_wrapper", {
+      await invoke("new_address_wrapper", {
         request: { wallet_id: props.walletId, account_id: props.accountId },
       });
-      if (addressInfo) {
-        console.log("new address info is======>", addressInfo);
-        props.handleUpdateCurrentAccount(
-          addressInfo.index.toString(),
-          addressInfo.address
-        );
-        notify("New address added", "success");
-      }
+      const unsubscribe = await listen("NewAddress", (event) => {
+        const newAddress: {
+          wallet_id: string;
+          account_id: string;
+          index: number;
+          address: string;
+        } = event.payload as {
+          wallet_id: string;
+          account_id: string;
+          index: number;
+          address: string;
+        };
+        console.log("New address info is======>", newAddress);
+        if (newAddress) {
+          props.handleUpdateCurrentAccount(
+            newAddress.index.toString(),
+            newAddress.address
+          );
+          notify("New address added", "success");
+        } else {
+        }
+        unsubscribe();
+      });
       setIsLoading(false);
     } catch (err: any) {
       const regex = /Wallet error: (.+)/;
@@ -47,7 +62,7 @@ const Addresses = (props: {
           </div>
         </div>
       )}
-      <table className="w-full border border-gray-200 rounded rounded-lg overflow-hidden shadow">
+      <table className="w-full border border-gray-200 rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>
             <th className="py-3 px-4 text-center text-gray-600 font-semibold "></th>

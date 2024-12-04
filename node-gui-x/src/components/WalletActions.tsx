@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import Addresses from "./Addresses";
 import Console from "./Console";
 import Delegation from "./Delegation";
@@ -47,7 +48,7 @@ const WalletActions = (props: {
 
   const handleEncryptWallet = async () => {
     try {
-      const result = await invoke("update_encryption_wrapper", {
+      await invoke("update_encryption_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -56,15 +57,23 @@ const WalletActions = (props: {
           password: password,
         },
       });
-      if (result) {
-        setWalletState("EnabledUnLocked");
-        props.handleUpdateCurrentWalletEncryptionState(
-          props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
-          "EnabledUnlocked"
-        );
-        setShowEncryptWalletModal(false);
-        notify("Wallet encrypted successfully.", "success");
-      }
+      const unsubscribe = await listen("UpdateEncryption", (event) => {
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        if (encryptionResult) {
+          setWalletState("EnabledUnLocked");
+          props.handleUpdateCurrentWalletEncryptionState(
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            "EnabledUnlocked"
+          );
+          setShowEncryptWalletModal(false);
+          notify("Wallet encrypted successfully.", "success");
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -76,7 +85,7 @@ const WalletActions = (props: {
   const handleUpdateWalletEncryption = async () => {
     if (walletState === "EnabledUnLocked") {
       try {
-        const result = await invoke("update_encryption_wrapper", {
+        await invoke("update_encryption_wrapper", {
           request: {
             wallet_id: parseInt(
               props.currentWallet?.wallet_id
@@ -86,14 +95,25 @@ const WalletActions = (props: {
             action: "remove_password",
           },
         });
-        if (result) {
-          setWalletState("Disabled");
-          props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
-            "Disabled"
-          );
-          notify("Wallet encryption disabled successfully.", "success");
-        }
+        const unsubscribe = await listen("UpdateEncryption", (event) => {
+          const encryptionResult = event.payload as {
+            wallet_id: string;
+            encryptionState: string;
+          };
+          if (encryptionResult) {
+            setWalletState("Disabled");
+            props.handleUpdateCurrentWalletEncryptionState(
+              props.currentWallet?.wallet_id
+                ? props.currentWallet.wallet_id
+                : "",
+              "Disabled"
+            );
+            setShowEncryptWalletModal(false);
+            notify("Wallet encryption disabled successfully.", "success");
+          } else {
+          }
+          unsubscribe();
+        });
       } catch (error) {
         notify(new String(error).toString(), "error");
       }
@@ -104,7 +124,7 @@ const WalletActions = (props: {
 
   const handleLockWallet = async () => {
     try {
-      const result = await invoke("update_encryption_wrapper", {
+      await invoke("update_encryption_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -112,14 +132,24 @@ const WalletActions = (props: {
           action: "lock",
         },
       });
-      if (result) {
-        setWalletState("EnabledLocked");
-        props.handleUpdateCurrentWalletEncryptionState(
-          props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
-          "EnabledLocked"
-        );
-        notify("Wallet locked successfully.", "success");
-      }
+
+      const unsubscribe = await listen("UpdateEncryption", (event) => {
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        if (encryptionResult) {
+          setWalletState("EnabledLocked");
+          props.handleUpdateCurrentWalletEncryptionState(
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            "EnabledLocked"
+          );
+          setShowUnlockModal(false);
+          notify("Wallet locked successfully.", "success");
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (err) {
       notify(new String(err).toString(), "error");
     }
@@ -127,7 +157,7 @@ const WalletActions = (props: {
 
   const handleUnlock = async () => {
     try {
-      const result = await invoke("update_encryption_wrapper", {
+      await invoke("update_encryption_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
@@ -136,14 +166,23 @@ const WalletActions = (props: {
           password: unLockPassword,
         },
       });
-      if (result) {
-        setWalletState("EnabledUnLocked");
-        props.handleUpdateCurrentWalletEncryptionState(
-          props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
-          "EnabledUnlocked"
-        );
-        notify("Wallet unlocked successfully.", "success");
-      }
+      const unsubscribe = await listen("UpdateEncryption", (event) => {
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        if (encryptionResult) {
+          setWalletState("EnabledUnlocked");
+          props.handleUpdateCurrentWalletEncryptionState(
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            "EnabledUnlocked"
+          );
+          setShowUnlockModal(false);
+          notify("Wallet unlocked successfully.", "success");
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (err) {
       notify(new String(err).toString(), "error");
     }
@@ -153,23 +192,33 @@ const WalletActions = (props: {
 
   const handleCloseWallet = async (wallet_id: number) => {
     try {
-      const result: string = await invoke("close_wallet_wrapper", {
+      await invoke("close_wallet_wrapper", {
         walletId: wallet_id,
       });
-      props.handleRemoveWallet(result);
-      notify("Wallet closed successfully.", "success");
+      const unsubscribe = await listen("CloseWallet", (event) => {
+        const closeWalletResult = event.payload as { wallet_id: string };
+        if (closeWalletResult) {
+          console.log(
+            "wallet closed successfully, ",
+            closeWalletResult.wallet_id
+          );
+          props.handleRemoveWallet(closeWalletResult.wallet_id);
+          notify("Wallet closed successfully.", "success");
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
   };
 
   return (
-    <div className="bg-white border border-gray-200 shadowoverflow-y-auto mt-8 p-8 m-8 rounded rounded-lg shadow">
+    <div className="bg-white border border-gray-200 shadowoverflow-y-auto mt-8 p-8 m-8 rounded-lg shadow">
       {showEncryptWalletModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
-            {/* Close Button */}
             <button
               className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
               onClick={() => setShowEncryptWalletModal(false)}
@@ -180,14 +229,14 @@ const WalletActions = (props: {
             <input
               placeholder="Enter password"
               type="password"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <input
               placeholder="Repeat password"
               type="password"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={confirmPassword}
               onChange={(e) => handleConfirmPasswordChange(e.target.value)}
             />

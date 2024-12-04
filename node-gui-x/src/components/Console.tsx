@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { exit } from "@tauri-apps/plugin-process";
 import { AiOutlineCopy } from "react-icons/ai";
 import { listen } from "@tauri-apps/api/event";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { notify } from "../utils/util";
-import { invoke } from "@tauri-apps/api/core";
-import { AccountType, ConsoleResultType, WalletInfo } from "../types/Types";
+
+import { AccountType, ConsoleCommand, WalletInfo } from "../types/Types";
 
 const Console = (props: {
   currentAccount: AccountType | undefined;
@@ -13,11 +15,21 @@ const Console = (props: {
 }) => {
   const [text, setText] = useState("");
   const [command, setCommand] = useState("");
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const handleDelete = () => {
     setText("");
   };
   const handleCopy = () => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleExit = async () => {
+    try {
+      await invoke("shutdown_wrapper");
+    } catch (error) {
+      console.error("Error shutting down node", error);
+    }
+    await exit();
   };
 
   const handleSendCommand = async () => {
@@ -33,13 +45,29 @@ const Console = (props: {
           command: command,
         },
       });
-      const unsubscribe = await listen("ConsoleResponnse", (event) => {
-        const consoleResult = event.payload as ConsoleResultType;
-        if (consoleResult) {
-          console.log(consoleResult);
+      const unsubscribe = await listen("ConsoleResponse", (event) => {
+        setCommandHistory((history) => [...history, command]);
+        const consoleResult = event.payload as ConsoleCommand;
+        if (typeof consoleResult === "string") {
+          setText((text) => text + "\n" + consoleResult);
+        } else if ("ClearScreen" in consoleResult) {
+          setText("");
+        } else if ("PrintHistory" in consoleResult) {
+          setText((text) => text + "\n" + commandHistory.join("\n"));
+        } else if ("ClearHistory" in consoleResult) {
+          setCommandHistory([]);
+        } else if ("Exit" in consoleResult) {
+          handleExit();
+        } else if ("SetStatus" in consoleResult) {
+          setText(
+            (text) => text + "\n" + consoleResult.SetStatus.print_message
+          );
+        } else if ("Print" in consoleResult) {
           setText((text) => text + "\n" + consoleResult.Print);
         } else {
+          setText((text) => text + "\n" + JSON.stringify(consoleResult));
         }
+        setCommand("");
         unsubscribe();
       });
     } catch (error) {

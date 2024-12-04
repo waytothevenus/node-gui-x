@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
 import { encodeToHash, notify } from "../utils/util";
@@ -16,7 +17,7 @@ const Send = (props: {
     event.preventDefault();
     event.stopPropagation();
     try {
-      const transactionResult: Data = await invoke("send_amount_wrapper", {
+      await invoke("send_amount_wrapper", {
         request: {
           wallet_id: props.walletId,
           account_id: props.accountId,
@@ -24,11 +25,16 @@ const Send = (props: {
           address: address,
         },
       });
-      if (transactionResult) {
-        console.log("trasaction info is =========>", transactionResult);
-        setTransactionInfo(transactionResult);
-        setShowConfirmModal(true);
-      }
+      const unsubscribe = await listen("SendAmount", (event) => {
+        const transactionResult = event.payload as Data;
+        if (transactionResult) {
+          console.log("trasaction info is =========>", transactionResult);
+          setTransactionInfo(transactionResult);
+          setShowConfirmModal(true);
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -36,16 +42,24 @@ const Send = (props: {
 
   const handleConfirmTransaction = async () => {
     try {
-      const result = await invoke("submit_transaction_wrapper", {
+      await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: props.walletId,
           account_id: props.accountId,
           tx: transactionInfo?.tx,
         },
       });
-      console.log("sending amount transaction result is ========>", result);
-      notify("Transaction confirmed successfully!", "success");
-      setShowConfirmModal(false);
+      const unsubscribe = await listen("SubmitTx", (event) => {
+        const result = event.payload as Data;
+        if (result) {
+          console.log("trasaction info is =========>", result);
+          setTransactionInfo(result);
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmModal(false);
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }

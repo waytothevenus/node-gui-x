@@ -658,7 +658,7 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                 match result {
                     Ok(console_command) => {
                         println!(
-                            "Staking toggled successfully: wallet_id:, account_id:, console_command: {:?}, {:?}, {:?}",
+                            "Command executed successfully: wallet_id:, account_id:, console_command: {:?}, {:?}, {:?}",
                             wallet_id,
                             account_id,
                             console_command
@@ -671,7 +671,7 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                         let error_message = e.to_string();
                         println!("Error toggling staking: {}", error_message);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+                            app_handle.emit("ConsoleResponse", error_message).unwrap();
                         }
                     }
                 }

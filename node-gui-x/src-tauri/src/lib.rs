@@ -24,8 +24,6 @@ use self::error::BackendError;
 use self::messages::BackendEvent;
 use crate::chainstate_event_handler::ChainstateEventHandler;
 use crate::p2p_event_handler::P2pEventHandler;
-use anyhow::{ Result };
-use backend_impl::{ Backend };
 use chainstate::ChainInfo;
 use common::address::{ Address, AddressError };
 use common::time_getter::TimeGetter;
@@ -57,7 +55,6 @@ use tokio::sync::mpsc::{ unbounded_channel, UnboundedReceiver, UnboundedSender }
 use wallet_types::wallet_type::WalletType;
 struct AppState {
     initialized_node: RwLock<Option<InitializedNode>>,
-    backend: RwLock<Option<Arc<Backend>>>,
     backend_sender: RwLock<Option<BackendSender>>,
     backend_receiver: RwLock<Option<UnboundedReceiver<BackendEvent>>>,
     low_priority_backend_receiver: RwLock<Option<UnboundedReceiver<BackendEvent>>>,
@@ -70,7 +67,6 @@ pub struct BackendControls {
     pub backend_sender: BackendSender,
     pub backend_receiver: UnboundedReceiver<BackendEvent>,
     pub low_priority_backend_receiver: UnboundedReceiver<BackendEvent>,
-    backend: Arc<Backend>,
 }
 
 #[derive(Debug)]
@@ -225,7 +221,6 @@ impl Default for AppState {
     fn default() -> Self {
         AppState {
             initialized_node: RwLock::new(None),
-            backend: RwLock::new(None),
             backend_receiver: RwLock::new(None),
             backend_sender: RwLock::new(None),
             low_priority_backend_receiver: RwLock::new(None),
@@ -278,9 +273,6 @@ async fn initialize_node(
     let mut guard = state.initialized_node.write().await;
     *guard = Some(backend_controls.initialized_node);
 
-    let mut guard_backend = state.backend.write().await;
-    *guard_backend = Some(backend_controls.backend);
-
     let mut backend_sender_guard = state.backend_sender.write().await;
     *backend_sender_guard = Some(backend_controls.backend_sender);
 
@@ -319,7 +311,7 @@ pub async fn node_initialize(
     let (low_priority_event_tx, low_priority_event_rx) = unbounded_channel();
     let (wallet_updated_tx, wallet_updated_rx) = unbounded_channel();
 
-    let (chain_config, chain_info, backend) = match mode {
+    let (chain_config, chain_info) = match mode {
         WalletMode::Hot => {
             let setup_result = node_lib::setup(opts, true).await?;
             let node = match setup_result {
@@ -335,8 +327,6 @@ pub async fn node_initialize(
             let controller = node.controller().clone();
 
             let manager_join_handle = tokio::spawn(async move { node.main().await });
-            let manager_join_handle_clone = tokio::spawn(async move {});
-
             // Subscribe to chainstate before getting the current chain_info!
             let chainstate_event_handler = ChainstateEventHandler::new(
                 controller.chainstate.clone(),
@@ -359,15 +349,6 @@ pub async fn node_initialize(
                 manager_join_handle
             );
 
-            let backend_clone = backend_impl::Backend::new_hot(
-                chain_config.clone(),
-                event_tx,
-                low_priority_event_tx,
-                wallet_updated_tx,
-                controller,
-                manager_join_handle_clone
-            );
-
             tokio::spawn(async move {
                 backend_impl::run(
                     backend,
@@ -378,8 +359,7 @@ pub async fn node_initialize(
                 ).await;
             });
 
-            let backend_arc = Arc::new(backend_clone);
-            (chain_config, chain_info, backend_arc)
+            (chain_config, chain_info)
         }
         WalletMode::Cold => {
             let chain_config = Arc::new(match network {
@@ -395,8 +375,6 @@ pub async fn node_initialize(
             };
 
             let manager_join_handle = tokio::spawn(async move {});
-            let manager_join_handle_clone = tokio::spawn(async move {});
-
             let backend = backend_impl::Backend::new_cold(
                 chain_config.clone(),
                 event_tx.clone(),
@@ -405,21 +383,12 @@ pub async fn node_initialize(
                 manager_join_handle
             );
 
-            let backend_clone = backend_impl::Backend::new_cold(
-                chain_config.clone(),
-                event_tx,
-                low_priority_event_tx,
-                wallet_updated_tx,
-                manager_join_handle_clone
-            );
-
             tokio::spawn(async move {
                 backend_impl::run_cold(backend, request_rx, wallet_updated_rx).await;
             });
 
-            let backend_arc = Arc::new(backend_clone);
 
-            (chain_config, chain_info, backend_arc)
+            (chain_config, chain_info)
         }
     };
 
@@ -433,7 +402,6 @@ pub async fn node_initialize(
         backend_sender: BackendSender::new(request_tx),
         backend_receiver: event_rx,
         low_priority_backend_receiver: low_priority_event_rx,
-        backend,
     };
 
     Ok(backend_controls)

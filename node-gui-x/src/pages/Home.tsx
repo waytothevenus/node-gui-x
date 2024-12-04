@@ -1,7 +1,7 @@
-import { useEffect, useState, MouseEvent } from "react";
+import { useEffect, useState, MouseEvent, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { exit } from "@tauri-apps/plugin-process";
-import { listen } from "@tauri-apps/api/event";
+import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { save, open } from "@tauri-apps/plugin-dialog";
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
@@ -27,7 +27,6 @@ import NetworkingTab from "../components/Networking";
 import {
   AccountType,
   ChainInfoType,
-  NewAccountResultType,
   P2p,
   PeerConnected,
   WalletInfo,
@@ -65,6 +64,9 @@ function Home() {
   const [showRecoverWalletModal, setShowRecoverWalletModal] = useState(false);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const errorListenerInitialized = useRef(false);
+  const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
 
   useEffect(() => {
     const init_node = async () => {
@@ -79,7 +81,7 @@ function Home() {
             setChainInfo(result);
             notify("Node initialized", "info");
             try {
-              await invoke("listen_for_p2p_events");
+              await invoke("listen_events");
               console.log("P2P event receiver triggered");
             } catch (err) {
               console.error("Error starting P2P event receiver: ", err);
@@ -91,10 +93,24 @@ function Home() {
         notify("Error occurred while initializing node", "error");
       }
     };
+
     init_node();
     chainStateEventListener();
     p2pEventListener();
-    errorListener();
+    const setupErrorListener = async () => {
+      if (!errorListenerInitialized.current) {
+        unsubscribeErrorListenerRef.current = await errorListener();
+        errorListenerInitialized.current = true; // Mark as initialized
+      }
+    };
+
+    setupErrorListener();
+    return () => {
+      if (unsubscribeErrorListenerRef.current) {
+        unsubscribeErrorListenerRef.current();
+        console.log("Error listener stopped");
+      }
+    };
   }, [netMode, walletMode]);
 
   useEffect(() => {
@@ -166,10 +182,19 @@ function Home() {
   };
 
   const errorListener = async () => {
-    await listen("Error", (event) => {
-      const errorMessage = event.payload as string;
-      notify(errorMessage, "error");
-    });
+    try {
+      const unsubscribe = await listen("Error", (event) => {
+        const regex = /Wallet error: (.+)/;
+        const errorMessage = new String(event.payload).match(regex);
+        if (errorMessage) {
+          notify(errorMessage[1], "error");
+        }
+      });
+
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up error listener:", error);
+    }
   };
 
   const chainStateEventListener = async () => {
@@ -191,6 +216,7 @@ function Home() {
 
   const handleCreateNewWallet = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    setLoadingMessage("Creating wallet. Please wait.");
     try {
       const path = await save({
         defaultPath: "key.dat",
@@ -210,13 +236,15 @@ function Home() {
             },
           });
 
-          await listen("ImportWallet", (event) => {
+          const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
             if (walletInfo) {
               setWalletsInfo([...walletsInfo, walletInfo]);
               setLoading(false);
               notify("Wallet created successfully!", "success");
             }
+            setLoading(false);
+            unsubscribe();
           });
         } catch (invokeError) {
           notify("Error occured while creating wallet!", "error");
@@ -226,7 +254,7 @@ function Home() {
           );
         }
         setMnemonic("");
-        
+
         setShowMnemonicModal(false); // Ensure setShowMnemonicModal is defined
       } else {
         console.error("No file selected");
@@ -240,6 +268,7 @@ function Home() {
   };
 
   const handleRecoverWallet = async () => {
+    setLoadingMessage("Recovering wallet. Please wait.");
     try {
       const path = await save({
         defaultPath: "key.dat",
@@ -250,24 +279,30 @@ function Home() {
         setLoading(true);
 
         try {
-          const walletInfo: WalletInfo = await invoke(
-            "add_create_wallet_wrapper",
-            {
-              request: {
-                file_path: path,
-                mnemonic: mnemonic,
-                import: false,
-                wallet_type: walletMode,
-              },
-            }
-          );
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: false,
+              wallet_type: walletMode,
+            },
+          });
 
-          if (walletInfo) {
-            setWalletsInfo([...walletsInfo, walletInfo]);
-            notify("Wallet recovered successfully!", "success");
-          } else {
-            notify("Error occured while recovering wallet!", "error");
-          }
+          const unsubscribe = await listen("ImportWallet", (event) => {
+            const walletInfo: WalletInfo = event.payload as WalletInfo;
+
+            if (walletInfo) {
+              setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
+              notify("Wallet recovered successfully", "success");
+            } else {
+            }
+
+            // Always set loading to false after processing
+            setLoading(false);
+
+            // Unsubscribe from the event after handling it
+            unsubscribe();
+          });
         } catch (invokeError) {
           notify("Error occured while recovering wallet!", "error");
           console.error(
@@ -276,7 +311,6 @@ function Home() {
           );
         }
         setMnemonic("");
-        setLoading(false);
         setShowRecoverWalletModal(false);
       } else {
         console.error("No file selected");
@@ -294,6 +328,7 @@ function Home() {
   };
 
   const openWallet = async () => {
+    setLoadingMessage("Opening wallet. Please wait.");
     try {
       const filePath = await open({
         filters: [
@@ -303,25 +338,39 @@ function Home() {
           },
         ],
       });
+
       if (filePath) {
         setLoading(true);
-        const walletInfo: WalletInfo = await invoke("add_open_wallet_wrapper", {
+
+        // Invoke the Rust backend function
+        await invoke("add_open_wallet_wrapper", {
           request: {
             file_path: filePath,
             wallet_type: walletMode,
           },
         });
-        if (walletInfo) {
-          console.log("walletInfo is ==========>", walletInfo);
-          setWalletsInfo([...walletsInfo, walletInfo]);
-          notify("Wallet opened successfully", "success");
-        } else {
-          notify("Wallet open failed.", "error");
-        }
-        setLoading(false);
+
+        // Listen for the "OpenWallet" event
+        const unsubscribe = await listen("OpenWallet", (event) => {
+          const walletInfo: WalletInfo = event.payload as WalletInfo;
+
+          if (walletInfo) {
+            console.log("walletInfo is ==========>", walletInfo);
+            setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
+            notify("Wallet opened successfully", "success");
+          } else {
+          }
+
+          // Always set loading to false after processing
+          setLoading(false);
+
+          // Unsubscribe from the event after handling it
+          unsubscribe();
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error opening wallet:", error);
+      setLoading(false); // Ensure loading state is reset on error
     }
   };
 
@@ -339,10 +388,9 @@ function Home() {
     address: string
   ) => {
     const updatedAccount: AccountType = {
-      // Spread the previous account
       addresses: {
-        ...currentAccount?.addresses, // Spread the existing addresses
-        [index]: address, // Update the specific address
+        ...currentAccount?.addresses,
+        [index]: address,
       },
       name: currentAccount?.name,
       staking_enabled: currentAccount?.staking_enabled,
@@ -395,21 +443,37 @@ function Home() {
   };
 
   const handleCreateNewAccount = async () => {
+    setLoading(true);
+    setLoadingMessage("Creating new account. Please wait.");
     try {
-      const result: NewAccountResultType = await invoke("new_account_wrapper", {
+      await invoke("new_account_wrapper", {
         request: {
           name: accountName,
           wallet_id: currentWalletId,
         },
       });
-      if (result) {
-        console.log("account creating result is ", result);
-        addAccount(result.account_id, result.account_info);
-        notify("Account created successfully!", "success");
-      }
+      const unsubscribe = await listen("NewAccount", (event) => {
+        const newAccount: {
+          wallet_id: string;
+          account_id: string;
+          account_info: AccountType;
+        } = event.payload as {
+          wallet_id: string;
+          account_id: string;
+          account_info: AccountType;
+        };
+        console.log("new account info is ========>", newAccount.account_info);
+        if (newAccount) {
+          addAccount(newAccount.account_id, newAccount.account_info);
+          notify("Account created successfully!", "success");
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
+    setLoading(false);
     setShowNewAccountModal(false);
   };
 
@@ -420,7 +484,7 @@ function Home() {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">Opening wallet. Please wait.</div>
+            <div className="loader px-10">{loadingMessage}</div>
           </div>
         </div>
       )}

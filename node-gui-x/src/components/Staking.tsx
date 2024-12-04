@@ -1,5 +1,6 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
 import {
@@ -49,26 +50,33 @@ const Staking = (props: {
           : "Starting Staking, Please wait."
       );
       setIsLoading(true);
-      const result: ToggleStakingResultType = await invoke(
-        "toggle_stakig_wrapper",
-        {
-          request: {
-            wallet_id: parseInt(
-              props.currentWalletId ? props.currentWalletId : "0"
-            ),
-            account_id: props.currentAccountId ? props.currentAccountId : 0,
-            enabled: !isStakingStarted,
-          },
+      await invoke("toggle_stakig_wrapper", {
+        request: {
+          wallet_id: parseInt(
+            props.currentWalletId ? props.currentWalletId : "0"
+          ),
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
+      const unsubscribe = await listen("CreateStake", (event) => {
+        const transactionResult = event.payload as {
+          wallet_id: string;
+          account_id: string;
+          enabled: boolean;
+        };
+        if (transactionResult) {
+          setIsStakingStarted(transactionResult.enabled);
+          notify(
+            transactionResult.enabled ? "Staking started" : "Staking stopped",
+            "success"
+          );
+        } else {
         }
-      );
-      if (result) {
-        setIsStakingStarted(result.enabled);
-        notify(
-          result.enabled ? "Staking started" : "Staking stopped",
-          "success"
-        );
-        setIsLoading(false);
-      }
+        unsubscribe();
+      });
+      setIsLoading(false);
     } catch (error) {
       const errorMessage = new String(error);
       notify(errorMessage.toString(), "error");
@@ -79,7 +87,7 @@ const Staking = (props: {
     try {
       setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       setIsLoading(true);
-      const result = await invoke("decommission_pool_wrapper", {
+      await invoke("decommission_pool_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWalletId ? props.currentWalletId : "0"
@@ -89,9 +97,16 @@ const Staking = (props: {
           output_address: receiveAddress,
         },
       });
-      if (result) {
-        notify("Pool decommissioned", "success");
-      }
+      const unsubscribe = await listen("DecommissionPool", (event) => {
+        const transactionResult = event.payload as Data;
+        if (transactionResult) {
+          console.log("Pool decommissioned successfully", transactionResult);
+          notify("Pool decommissioned", "success");
+        } else {
+        }
+        unsubscribe();
+      });
+      setIsLoading(false);
     } catch (error) {
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
@@ -100,14 +115,13 @@ const Staking = (props: {
       }
     }
     setShowDecommissionModal(false);
-    setIsLoading(false);
   };
 
   const handleCreateStakingPool = async () => {
     try {
       setLoadingMessage("Creating Staking Pool. Please wait");
       setIsLoading(true);
-      const result: Data = await invoke("stake_amount_wrapper", {
+      await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: parseInt(
             props.currentWalletId ? props.currentWalletId : "0"
@@ -119,11 +133,18 @@ const Staking = (props: {
           decommission_address: decommissionAddress,
         },
       });
-      if (result) {
-        console.log("trasaction info is =========>", result);
-        setTransactionInfo(result);
-        setShowConfirmTransactionModal(true);
-      }
+      const unsubscribe = await listen("CreateStake", (event) => {
+        const transactionResult = event.payload as Data;
+        if (transactionResult) {
+          console.log("trasaction info is =========>", transactionResult);
+          setTransactionInfo(transactionResult);
+          setShowConfirmTransactionModal(true);
+        } else {
+        }
+
+        unsubscribe();
+      });
+      setIsLoading(false);
     } catch (error) {
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
@@ -135,16 +156,26 @@ const Staking = (props: {
   };
   const handleConfirmTransaction = async () => {
     try {
-      const result = await invoke("submit_transaction_wrapper", {
+      await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: props.currentWalletId,
           account_id: props.currentAccountId,
           tx: transactionInfo?.tx,
         },
       });
-      console.log("sending amount transaction result is ========>", result);
-      notify("Transaction confirmed successfully!", "success");
-      setShowSuccessModal(true);
+      const unsubscribe = await listen("SubmitTx", (event) => {
+        const trasactionResult = event.payload as Data;
+        if (trasactionResult) {
+          console.log(
+            "sending amount transaction result is ========>",
+            trasactionResult
+          );
+          notify("Transaction confirmed successfully!", "success");
+          setShowSuccessModal(true);
+        } else {
+        }
+        unsubscribe();
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -192,7 +223,7 @@ const Staking = (props: {
             <input
               placeholder="Enter address"
               type="text"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={poolAddress}
               onChange={(e) => setPoolAddress(e.target.value)}
             />
@@ -203,7 +234,7 @@ const Staking = (props: {
             <input
               placeholder="Enter address"
               type="text"
-              className="w-full rounded rounded-lg"
+              className="w-full rounded-lg"
               value={receiveAddress}
               onChange={(e) => setReceiveAddress(e.target.value)}
             />

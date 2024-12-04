@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AiOutlineCopy } from "react-icons/ai";
-
+import { listen } from "@tauri-apps/api/event";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { notify } from "../utils/util";
 import { invoke } from "@tauri-apps/api/core";
@@ -22,24 +22,26 @@ const Console = (props: {
 
   const handleSendCommand = async () => {
     try {
-      const result: ConsoleResultType = await invoke(
-        "handle_console_command_wrapper",
-        {
-          request: {
-            wallet_id: parseInt(
-              props.currentWallet?.wallet_id
-                ? props.currentWallet?.wallet_id
-                : "0"
-            ),
-            account_id: props.currentAccountId,
-            command: command,
-          },
+      await invoke("handle_console_command_wrapper", {
+        request: {
+          wallet_id: parseInt(
+            props.currentWallet?.wallet_id
+              ? props.currentWallet?.wallet_id
+              : "0"
+          ),
+          account_id: props.currentAccountId,
+          command: command,
+        },
+      });
+      const unsubscribe = await listen("ConsoleResponnse", (event) => {
+        const consoleResult = event.payload as ConsoleResultType;
+        if (consoleResult) {
+          console.log(consoleResult);
+          setText((text) => text + "\n" + consoleResult.Print);
+        } else {
         }
-      );
-      if (result) {
-        console.log(result);
-        setText((text) => text + "\n" + result.Print);
-      }
+        unsubscribe();
+      });
     } catch (error) {
       console.log(error);
       notify(new String(error).toString(), "error");
@@ -80,7 +82,7 @@ const Console = (props: {
           readOnly
         />
       </div>
-      <div className="justify-between flex rounded rounded-lg space-x-4 border border-gray-100">
+      <div className="justify-between flex rounded-lg space-x-4 border border-gray-100">
         <input
           className=" w-full"
           placeholder="Type here ..."
@@ -90,7 +92,7 @@ const Console = (props: {
         />
         <button
           onClick={handleSendCommand}
-          className="w-[5rem] py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+          className="w-[5rem] py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
         >
           Send
         </button>

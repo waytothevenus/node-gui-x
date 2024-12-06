@@ -16,10 +16,8 @@
 use chainstate::ChainInfo;
 use node_gui_backend::AccountId;
 use node_gui_backend::{ InitNetwork, WalletMode, BackendSender, ImportOrCreate, InitializedNode };
-use common::address::{ Address, AddressError };
 use common::time_getter::TimeGetter;
-use common::chain::{ ChainConfig, DelegationId, Destination };
-use common::primitives::{ Amount };
+use common::chain::{ DelegationId };
 use wallet_types::wallet_type::WalletType;
 use node_gui_backend::messages::{
     BackendEvent,

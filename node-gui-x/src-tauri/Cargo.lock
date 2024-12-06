@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "accounting"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "parity-scale-codec",
@@ -623,7 +623,7 @@ dependencies = [
 [[package]]
 name = "blockprod"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -910,7 +910,7 @@ dependencies = [
 [[package]]
 name = "chainstate"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "async-trait",
@@ -953,7 +953,7 @@ dependencies = [
 [[package]]
 name = "chainstate-launcher"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "chainstate",
  "chainstate-storage",
@@ -969,7 +969,7 @@ dependencies = [
 [[package]]
 name = "chainstate-storage"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -991,7 +991,7 @@ dependencies = [
 [[package]]
 name = "chainstate-types"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "crypto",
@@ -1139,7 +1139,7 @@ dependencies = [
 [[package]]
 name = "common"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "bech32",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "consensus"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "chainstate-types",
  "common",
@@ -1206,7 +1206,7 @@ dependencies = [
 [[package]]
 name = "constraints-value-accumulator"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "crypto",
@@ -1437,7 +1437,7 @@ checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 [[package]]
 name = "crypto"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "argon2",
  "bip39",
@@ -3696,7 +3696,7 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 [[package]]
 name = "log_error"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "derive_more",
  "proc-macro2",
@@ -3707,7 +3707,7 @@ dependencies = [
 [[package]]
 name = "logging"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "log",
  "thiserror 1.0.69",
@@ -3804,7 +3804,7 @@ dependencies = [
 [[package]]
 name = "mempool"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "anyhow",
@@ -3843,7 +3843,7 @@ dependencies = [
 [[package]]
 name = "mempool-types"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "p2p-types",
  "rpc-description",
@@ -3898,7 +3898,7 @@ dependencies = [
 [[package]]
 name = "mintscript"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "crypto",
@@ -4015,7 +4015,7 @@ dependencies = [
 [[package]]
 name = "networking"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4058,7 +4058,7 @@ dependencies = [
 [[package]]
 name = "node-comm"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4084,7 +4084,7 @@ dependencies = [
 [[package]]
 name = "node-gui-backend"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "chainstate",
@@ -4160,7 +4160,7 @@ dependencies = [
 [[package]]
 name = "node-lib"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "blockprod",
@@ -4646,7 +4646,7 @@ dependencies = [
 [[package]]
 name = "orders-accounting"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -4691,7 +4691,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 [[package]]
 name = "p2p"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -4733,7 +4733,7 @@ dependencies = [
 [[package]]
 name = "p2p-types"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "parity-scale-codec",
@@ -5101,7 +5101,7 @@ dependencies = [
 [[package]]
 name = "pos-accounting"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "common",
@@ -5503,7 +5503,7 @@ dependencies = [
 [[package]]
 name = "randomness"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "rand 0.8.5",
 ]
@@ -5788,7 +5788,7 @@ checksum = "afab94fb28594581f62d981211a9a4d53cc8130bbcbbb89a0440d9b8e81a7746"
 [[package]]
 name = "rpc"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5815,7 +5815,7 @@ dependencies = [
 [[package]]
 name = "rpc-description"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "rpc-description-macro",
  "serde_json",
@@ -5824,7 +5824,7 @@ dependencies = [
 [[package]]
 name = "rpc-description-macro"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5834,7 +5834,7 @@ dependencies = [
 [[package]]
 name = "rpc-types"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "hex",
  "rpc-description",
@@ -6123,7 +6123,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 [[package]]
 name = "script"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "crypto",
  "hex",
@@ -6350,7 +6350,7 @@ dependencies = [
 [[package]]
 name = "serialization"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "hex",
  "rpc-description",
@@ -6364,7 +6364,7 @@ dependencies = [
 [[package]]
 name = "serialization-core"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -6372,7 +6372,7 @@ dependencies = [
 [[package]]
 name = "serialization-tagged"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "serialization-core",
  "serialization-tagged-derive",
@@ -6382,7 +6382,7 @@ dependencies = [
 [[package]]
 name = "serialization-tagged-derive"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "itertools 0.13.0",
  "proc-macro2",
@@ -6708,7 +6708,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "storage"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "serialization",
@@ -6719,7 +6719,7 @@ dependencies = [
 [[package]]
 name = "storage-core"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "common",
  "itertools 0.13.0",
@@ -6731,7 +6731,7 @@ dependencies = [
 [[package]]
 name = "storage-inmemory"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "storage-core",
 ]
@@ -6739,7 +6739,7 @@ dependencies = [
 [[package]]
 name = "storage-lmdb"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "lmdb-mintlayer",
  "logging",
@@ -6750,7 +6750,7 @@ dependencies = [
 [[package]]
 name = "storage-sqlite"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "hex",
  "logging",
@@ -6825,7 +6825,7 @@ dependencies = [
 [[package]]
 name = "subsystem"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "cfg-if",
@@ -7497,7 +7497,7 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 [[package]]
 name = "test-rpc-functions"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -7643,7 +7643,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tokens-accounting"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -7988,7 +7988,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 [[package]]
 name = "tx-verifier"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "accounting",
  "chainstate-storage",
@@ -8022,7 +8022,7 @@ checksum = "0e13db2e0ccd5e14a544e8a246ba2312cd25223f616442d7f2cb0e3db614236e"
 [[package]]
 name = "typename"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "typename-derive",
 ]
@@ -8030,7 +8030,7 @@ dependencies = [
 [[package]]
 name = "typename-derive"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "itertools 0.13.0",
  "quote",
@@ -8195,7 +8195,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utils"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "clap",
@@ -8220,7 +8220,7 @@ dependencies = [
 [[package]]
 name = "utils-networking"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "addr",
  "itertools 0.13.0",
@@ -8233,7 +8233,7 @@ dependencies = [
 [[package]]
 name = "utxo"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "chainstate-types",
  "common",
@@ -8331,7 +8331,7 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "bip39",
  "chainstate",
@@ -8363,7 +8363,7 @@ dependencies = [
 [[package]]
 name = "wallet-cli-commands"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -8404,7 +8404,7 @@ dependencies = [
 [[package]]
 name = "wallet-controller"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "bip39",
@@ -8436,7 +8436,7 @@ dependencies = [
 [[package]]
 name = "wallet-rpc-client"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -8464,7 +8464,7 @@ dependencies = [
 [[package]]
 name = "wallet-rpc-lib"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8499,7 +8499,7 @@ dependencies = [
 [[package]]
 name = "wallet-storage"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "bip39",
  "common",
@@ -8517,7 +8517,7 @@ dependencies = [
 [[package]]
 name = "wallet-types"
 version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#e5a813f4dd0fe0f4e1686ddf5540a91b4562452d"
+source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
 dependencies = [
  "bip39",
  "common",

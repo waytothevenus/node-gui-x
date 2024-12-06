@@ -17,7 +17,7 @@ variables:
   ML_CONTAINERIZED_TESTS: 1
 
   # Create a random path to avoid collisions
-  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID/mintlayer-core
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID/node-gui-x
 
 workflow:
   rules:

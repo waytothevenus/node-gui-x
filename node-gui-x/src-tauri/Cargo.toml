@@ -1,5 +1,5 @@
 [package]
-name = "mintlayer"
+name = "node-gui-x"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -18,6 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.0-rc.11", features = [] }
 
 [dependencies]
+anyhow = "1.0"
 tauri = { version = "2.0.0-rc.14", features = [] }
 tauri-plugin-fs = "2"
 tauri-plugin-cli = "2.0.0-rc.1"
@@ -29,36 +30,32 @@ tauri-plugin-os = "2.0.0-rc"
 tauri-plugin-single-instance = "2.0.0-rc"
 tauri-plugin-notification = "2.0.0-rc"
 tauri-plugin-shell = "2.0.0-rc"
+tokio = { version = "1.27", default-features = false }
+thiserror = "1.0"
+parity-scale-codec = "3.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 once_cell = "1.8"
-chainstate = {path = "../../chainstate"}
-common = { path = "../../common" }
-crypto = { path = "../../crypto" }
-logging = {path = "../../logging"}
-mempool = { path = "../../mempool" }
-node-lib = { path = "../../node-lib" }
-node-comm = { path = "../../wallet/wallet-node-client" }
-p2p = { path = "../../p2p" }
-serialization = { path = "../../serialization" }
-subsystem = { path = "../../subsystem" }
-utils = { path = "../../utils" }
-wallet = { path = "../../wallet" }
-wallet-controller = { path = "../../wallet/wallet-controller" }
-wallet-types = { path = "../../wallet/types" }
-wallet-rpc-lib = { path = "../../wallet/wallet-rpc-lib"}
-wallet-rpc-client = { path = "../../wallet/wallet-rpc-client"}
-wallet-cli-commands = { path = "../../wallet/wallet-cli-commands"}
-
-anyhow.workspace = true
-chrono.workspace = true
-futures.workspace = true
-
-rfd = { workspace = true, features = ["xdg-portal", "tokio"] }
-thiserror.workspace = true
-tokio.workspace = true
-variant_count.workspace = true
+chainstate = {git = "https://github.com/mintlayer/mintlayer-core", package = "chainstate", branch = "fix/minor_gui_backend_fixes"}
+common = { git = "https://github.com/mintlayer/mintlayer-core", package = "common", branch = "fix/minor_gui_backend_fixes" }
+crypto = { git = "https://github.com/mintlayer/mintlayer-core", package = "crypto", branch = "fix/minor_gui_backend_fixes" }
+logging = {git = "https://github.com/mintlayer/mintlayer-core", package = "logging", branch = "fix/minor_gui_backend_fixes"}
+mempool = { git = "https://github.com/mintlayer/mintlayer-core", package = "mempool", branch = "fix/minor_gui_backend_fixes" }
+node-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-lib", branch = "fix/minor_gui_backend_fixes" }
+node-gui-backend = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-gui-backend", branch = "fix/minor_gui_backend_fixes"}
+node-comm = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-comm", branch = "fix/minor_gui_backend_fixes" }
+p2p = { git = "https://github.com/mintlayer/mintlayer-core", package = "p2p", branch = "fix/minor_gui_backend_fixes" }
+serialization = { git = "https://github.com/mintlayer/mintlayer-core", package = "serialization", branch = "fix/minor_gui_backend_fixes" }
+subsystem = { git = "https://github.com/mintlayer/mintlayer-core", package = "subsystem", branch = "fix/minor_gui_backend_fixes"}
+utils = { git = "https://github.com/mintlayer/mintlayer-core", package = "utils", branch = "fix/minor_gui_backend_fixes" }
+wallet = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet", branch = "fix/minor_gui_backend_fixes" }
+wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-controller", branch = "fix/minor_gui_backend_fixes" }
+wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types", branch = "fix/minor_gui_backend_fixes" }
+wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib", branch = "fix/minor_gui_backend_fixes"}
+wallet-rpc-client = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-client", branch = "fix/minor_gui_backend_fixes"}
+wallet-cli-commands = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-cli-commands", branch = "fix/minor_gui_backend_fixes"}
 tauri-plugin-process = "2"
+
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
@@ -67,3 +64,28 @@ custom-protocol = ["tauri/custom-protocol"]
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"
+
+[profile.dev]
+panic = "abort" # prevent panic catching (mostly for the tokio runtime)
+
+[profile.release]
+panic = "abort" # prevent panic catching (mostly for the tokio runtime)
+overflow-checks = true
+
+# "Release" profile with debug info enabled.
+[profile.release-with-debug-info]
+inherits = "release"
+debug = true
+
+# "Release" profile with debug info and debug assertions enabled.
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+debug-assertions = true
+
+[profile.test]
+debug-assertions = true
+overflow-checks = true
+
+[profile.test.package.script]
+opt-level = 2

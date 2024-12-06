@@ -13,46 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod backend_impl;
-mod chainstate_event_handler;
-mod error;
-pub mod messages;
-mod p2p_event_handler;
-mod wallet_events;
-
-use self::error::BackendError;
-use self::messages::BackendEvent;
-use crate::chainstate_event_handler::ChainstateEventHandler;
-use crate::p2p_event_handler::P2pEventHandler;
 use chainstate::ChainInfo;
+use node_gui_backend::AccountId;
+use node_gui_backend::{ InitNetwork, WalletMode, BackendSender, ImportOrCreate, InitializedNode };
 use common::address::{ Address, AddressError };
 use common::time_getter::TimeGetter;
-use common::chain::SignedTransaction;
 use common::chain::{ ChainConfig, DelegationId, Destination };
-use common::primitives::{ Amount, BlockHeight };
-use crypto::key::hdkd::u31::U31;
-use messages::{
-    AccountId,
+use common::primitives::{ Amount };
+use wallet_types::wallet_type::WalletType;
+use node_gui_backend::messages::{
+    BackendEvent,
     BackendRequest,
+    SendRequest,
+    WalletId,
     CreateDelegationRequest,
     DecommissionPoolRequest,
     DelegateStakingRequest,
     EncryptionAction,
     SendDelegateToAddressRequest,
-    SendRequest,
     StakeRequest,
-    WalletId,
+    Transaction,
 };
-use node_lib::{ Command, RunOptions };
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
 use std::fmt::Debug;
 use std::path::PathBuf;
-use std::sync::Arc;
 use tauri::async_runtime::RwLock;
 use tauri::{ AppHandle, Emitter };
-use tokio::sync::mpsc::{ unbounded_channel, UnboundedReceiver, UnboundedSender };
-use wallet_types::wallet_type::WalletType;
+use tokio::sync::mpsc::{ UnboundedReceiver };
 struct AppState {
     initialized_node: RwLock<Option<InitializedNode>>,
     backend_sender: RwLock<Option<BackendSender>>,
@@ -61,59 +49,6 @@ struct AppState {
 }
 
 static GLOBAL_APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
-
-pub struct BackendControls {
-    pub initialized_node: InitializedNode,
-    pub backend_sender: BackendSender,
-    pub backend_receiver: UnboundedReceiver<BackendEvent>,
-    pub low_priority_backend_receiver: UnboundedReceiver<BackendEvent>,
-}
-
-#[derive(Debug)]
-pub struct BackendSender {
-    request_tx: UnboundedSender<BackendRequest>,
-}
-
-impl BackendSender {
-    fn new(request_tx: UnboundedSender<BackendRequest>) -> Self {
-        Self { request_tx }
-    }
-
-    pub fn send(&self, msg: BackendRequest) {
-        let _ = self.request_tx.send(msg);
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum ImportOrCreate {
-    Import,
-    Create,
-}
-
-impl ImportOrCreate {
-    pub fn skip_syncing(&self) -> bool {
-        match self {
-            Self::Create => true,
-            Self::Import => false,
-        }
-    }
-
-    pub fn from_bool(value: bool) -> Self {
-        if value { ImportOrCreate::Create } else { ImportOrCreate::Import }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum InitNetwork {
-    Mainnet,
-    Testnet,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum WalletMode {
-    Cold,
-    Hot,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OpenCreateWalletRequest {
@@ -131,16 +66,16 @@ pub struct OpenWalletRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SendAmountRequest {
-    wallet_id: u64,
-    account_id: U31,
+    wallet_id: WalletId,
+    account_id: AccountId,
     amount: String,
     address: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StakeAmountRequest {
-    wallet_id: u64,
-    account_id: U31,
+    wallet_id: WalletId,
+    account_id: AccountId,
     pledge_amount: String,
     mpt: String,
     cost_per_block: String,
@@ -149,42 +84,42 @@ pub struct StakeAmountRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DecommissionStakingPoolRequest {
-    pub wallet_id: u64,
-    pub account_id: U31,
+    pub wallet_id: WalletId,
+    pub account_id: AccountId,
     pub pool_id: String,
     pub output_address: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DelegationCreateRequest {
-    pub wallet_id: u64,
-    pub account_id: U31,
+    pub wallet_id: WalletId,
+    pub account_id: AccountId,
     pub pool_id: String,
     pub delegation_address: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StakingDelegateRequest {
-    pub wallet_id: u64,
-    pub account_id: U31,
+    pub wallet_id: WalletId,
+    pub account_id: AccountId,
     pub delegation_id: DelegationId,
     pub delegation_amount: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewAddressRequest {
-    wallet_id: u64,
-    account_id: U31,
+    wallet_id: WalletId,
+    account_id: AccountId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateEncryptionRequest {
-    wallet_id: u64,
+    wallet_id: WalletId,
     action: String,
     password: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SendDelegateRequest {
-    pub wallet_id: u64,
-    pub account_id: U31,
+    pub wallet_id: WalletId,
+    pub account_id: AccountId,
     pub address: String,
     pub amount: String,
     pub delegation_id: String,
@@ -192,29 +127,29 @@ pub struct SendDelegateRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewAccountRequest {
-    wallet_id: u64,
+    wallet_id: WalletId,
     name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ToggleStakingRequest {
-    wallet_id: u64,
-    account_id: U31,
+    wallet_id: WalletId,
+    account_id: AccountId,
     enabled: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConsoleRequest {
-    wallet_id: u64,
-    account_id: U31,
+    wallet_id: WalletId,
+    account_id: AccountId,
     command: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitTransactionRequest {
-    tx: SignedTransaction,
-    wallet_id: u64,
-    account_id: U31,
+    tx: Transaction,
+    wallet_id: WalletId,
+    account_id: AccountId,
 }
 
 impl Default for AppState {
@@ -226,22 +161,6 @@ impl Default for AppState {
             low_priority_backend_receiver: RwLock::new(None),
         }
     }
-}
-#[derive(Debug, Clone)]
-pub struct InitializedNode {
-    pub chain_config: Arc<ChainConfig>,
-    pub chain_info: ChainInfo,
-}
-
-fn parse_coin_amount(chain_config: &ChainConfig, value: &str) -> Option<Amount> {
-    Amount::from_fixedpoint_str(value, chain_config.coin_decimals())
-}
-
-fn parse_address(
-    chain_config: &ChainConfig,
-    address: &str
-) -> Result<Address<Destination>, AddressError> {
-    Address::from_string(chain_config, address)
 }
 
 #[tauri::command]
@@ -264,11 +183,9 @@ async fn initialize_node(
             return Err("Invalid wallet mode selection".into());
         }
     };
-    let backend_controls = node_initialize(
-        TimeGetter::default(),
-        net_type,
-        wallet_type
-    ).await.map_err(|e| e.to_string())?;
+    let backend_controls = node_gui_backend
+        ::node_initialize(TimeGetter::default(), net_type, wallet_type).await
+        .map_err(|e| e.to_string())?;
 
     let mut guard = state.initialized_node.write().await;
     *guard = Some(backend_controls.initialized_node);
@@ -287,124 +204,6 @@ async fn initialize_node(
     } else {
         Err("backend is not initialized".into())
     }
-}
-pub async fn node_initialize(
-    _time_getter: TimeGetter,
-    network: InitNetwork,
-    mode: WalletMode
-) -> anyhow::Result<BackendControls> {
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info,wgpu_core=error,hyper=error,jsonrpsee-server=error");
-    }
-
-    let mut opts = node_lib::Options::from_args(std::env::args_os());
-    opts.command = match network {
-        InitNetwork::Mainnet => Some(Command::Mainnet(RunOptions::default())),
-        InitNetwork::Testnet => Some(Command::Testnet(RunOptions::default())),
-    };
-
-    logging::init_logging();
-    logging::log::info!("Command line options: {opts:?}");
-
-    let (request_tx, request_rx) = unbounded_channel();
-    let (event_tx, event_rx) = unbounded_channel();
-    let (low_priority_event_tx, low_priority_event_rx) = unbounded_channel();
-    let (wallet_updated_tx, wallet_updated_rx) = unbounded_channel();
-
-    let (chain_config, chain_info) = match mode {
-        WalletMode::Hot => {
-            let setup_result = node_lib::setup(opts, true).await?;
-            let node = match setup_result {
-                node_lib::NodeSetupResult::Node(node) => node,
-                node_lib::NodeSetupResult::DataDirCleanedUp => {
-                    // TODO: find more friendly way to report the message and shut down GUI
-                    anyhow::bail!(
-                        "Data directory is now clean. Please restart the node without `--clean-data` flag"
-                    );
-                }
-            };
-
-            let controller = node.controller().clone();
-
-            let manager_join_handle = tokio::spawn(async move { node.main().await });
-            // Subscribe to chainstate before getting the current chain_info!
-            let chainstate_event_handler = ChainstateEventHandler::new(
-                controller.chainstate.clone(),
-                event_tx.clone()
-            ).await;
-
-            let p2p_event_handler = P2pEventHandler::new(&controller.p2p, event_tx.clone()).await;
-
-            let chain_config = controller.chainstate.call(|this|
-                Arc::clone(this.get_chain_config())
-            ).await?;
-            let chain_info = controller.chainstate.call(|this| this.info()).await??;
-
-            let backend = backend_impl::Backend::new_hot(
-                chain_config.clone(),
-                event_tx.clone(),
-                low_priority_event_tx.clone(),
-                wallet_updated_tx.clone(),
-                controller.clone(),
-                manager_join_handle
-            );
-
-            tokio::spawn(async move {
-                backend_impl::run(
-                    backend,
-                    request_rx,
-                    wallet_updated_rx,
-                    chainstate_event_handler,
-                    p2p_event_handler
-                ).await;
-            });
-
-            (chain_config, chain_info)
-        }
-        WalletMode::Cold => {
-            let chain_config = Arc::new(match network {
-                InitNetwork::Mainnet => common::chain::config::create_mainnet(),
-                InitNetwork::Testnet => common::chain::config::create_testnet(),
-            });
-            let chain_info = ChainInfo {
-                best_block_id: chain_config.genesis_block_id(),
-                best_block_height: BlockHeight::zero(),
-                median_time: chain_config.genesis_block().timestamp(),
-                best_block_timestamp: chain_config.genesis_block().timestamp(),
-                is_initial_block_download: false,
-            };
-
-            let manager_join_handle = tokio::spawn(async move {});
-            let backend = backend_impl::Backend::new_cold(
-                chain_config.clone(),
-                event_tx.clone(),
-                low_priority_event_tx.clone(),
-                wallet_updated_tx.clone(),
-                manager_join_handle
-            );
-
-            tokio::spawn(async move {
-                backend_impl::run_cold(backend, request_rx, wallet_updated_rx).await;
-            });
-
-
-            (chain_config, chain_info)
-        }
-    };
-
-    let initialized_node = InitializedNode {
-        chain_config: Arc::clone(&chain_config),
-        chain_info,
-    };
-
-    let backend_controls = BackendControls {
-        initialized_node,
-        backend_sender: BackendSender::new(request_tx),
-        backend_receiver: event_rx,
-        low_priority_backend_receiver: low_priority_event_rx,
-    };
-
-    Ok(backend_controls)
 }
 
 #[tauri::command]
@@ -678,12 +477,9 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
             }
 
             Some(BackendEvent::Broadcast(msg)) => {
-                match msg  {
+                match msg {
                     Ok(wallet_id) => {
-                        println!(
-                            "Transaction submitted successfully: {:?}",
-                            wallet_id,
-                        );
+                        println!("Transaction submitted successfully: {:?}", wallet_id);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("Broadcast", wallet_id).unwrap();
                         }
@@ -697,7 +493,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     }
                 }
             }
-            
 
             None => {
                 println!("No message received from backend");
@@ -724,13 +519,16 @@ async fn add_create_wallet_wrapper(
 
     let file_path = PathBuf::from(request.file_path);
 
-    let wallet_type = WalletType::from_str(&request.wallet_type).map_err(|e| {
-        let error_message = e.to_string();
-        println!("Error parsing wallet type: {}", error_message);
-        error_message
-    })?;
+    let wallet_type = match request.wallet_type.as_str() {
+        "Hot" => WalletType::Hot,
+        "Cold" => WalletType::Cold,
+        &_ => todo!(),
+    };
 
-    let import = ImportOrCreate::from_bool(request.import);
+    let import = match request.import {
+        true => ImportOrCreate::Import,
+        false => ImportOrCreate::Create,
+    };
 
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
@@ -750,11 +548,11 @@ async fn add_open_wallet_wrapper(
 ) -> Result<(), String> {
     let file_path = PathBuf::from(request.file_path);
 
-    let wallet_type = WalletType::from_str(&request.wallet_type).map_err(|e| {
-        let error_message = e.to_string();
-        println!("Error parsing wallet type: {}", error_message);
-        error_message
-    })?;
+    let wallet_type = match request.wallet_type.as_str() {
+        "Hot" => WalletType::Hot,
+        "Cold" => WalletType::Cold,
+        &_ => todo!(),
+    };
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
     backend_sender.send(BackendRequest::OpenWallet { file_path, wallet_type });
@@ -766,14 +564,12 @@ async fn send_amount_wrapper(
     state: tauri::State<'_, AppState>,
     request: SendAmountRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
 
     let request = SendRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         amount: request.amount,
         address: request.address,
     };
@@ -787,13 +583,10 @@ async fn new_address_wrapper(
     state: tauri::State<'_, AppState>,
     request: NewAddressRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id: AccountId = AccountId::new(request.account_id);
-
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
 
-    backend_sender.send(BackendRequest::NewAddress(wallet_id, account_id));
+    backend_sender.send(BackendRequest::NewAddress(request.wallet_id, request.account_id));
     Ok(())
 }
 
@@ -802,19 +595,30 @@ async fn update_encryption_wrapper(
     state: tauri::State<'_, AppState>,
     request: UpdateEncryptionRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let update_encryption_action = match
-        EncryptionAction::from_str(&request.action, request.password.as_deref())
-    {
-        Some(action) => action,
-        None => {
-            return Err("Invalid action or missing password".into());
+    let update_encryption_action = match request.action.to_lowercase().as_str() {
+        "set_password" => {
+            if let Some(pass) = request.password {
+                EncryptionAction::SetPassword(pass.to_string())
+            } else {
+                return Err("Password cannot be empty".to_string());
+            }
         }
+        "remove_password" => EncryptionAction::RemovePassword,
+        "unlock" => {
+            if let Some(pass) = request.password {
+                EncryptionAction::Unlock(pass.to_string())
+            } else {
+                return Err("Password cannot be empty".to_string());
+            }
+        }
+        "lock" => EncryptionAction::Lock,
+        &_ => todo!(), // Invalid action
     };
+
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
     backend_sender.send(BackendRequest::UpdateEncryption {
-        wallet_id: wallet_id,
+        wallet_id: request.wallet_id,
         action: update_encryption_action,
     });
     Ok(())
@@ -823,9 +627,9 @@ async fn update_encryption_wrapper(
 #[tauri::command]
 async fn close_wallet_wrapper(
     state: tauri::State<'_, AppState>,
-    wallet_id: u64
+    wallet_id: WalletId
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(wallet_id);
+    let wallet_id = WalletId::from(wallet_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
     backend_sender.send(BackendRequest::CloseWallet(wallet_id));
@@ -837,11 +641,9 @@ async fn stake_amount_wrapper(
     state: tauri::State<'_, AppState>,
     request: StakeAmountRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let stake_request = StakeRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         pledge_amount: request.pledge_amount,
         mpt: request.mpt,
         cost_per_block: request.cost_per_block,
@@ -859,11 +661,9 @@ async fn decommission_pool_wrapper(
     state: tauri::State<'_, AppState>,
     request: DecommissionStakingPoolRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let decommission_request = DecommissionPoolRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         pool_id: request.pool_id,
         output_address: request.output_address,
     };
@@ -878,11 +678,9 @@ async fn create_delegation_wrapper(
     state: tauri::State<'_, AppState>,
     request: DelegationCreateRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let delegation_request = CreateDelegationRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         pool_id: request.pool_id,
         delegation_address: request.delegation_address,
     };
@@ -898,11 +696,9 @@ async fn delegate_staking_wrapper(
     state: tauri::State<'_, AppState>,
     request: StakingDelegateRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let delegation_request = DelegateStakingRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         delegation_id: request.delegation_id,
         delegation_amount: request.delegation_amount,
     };
@@ -918,11 +714,9 @@ async fn send_delegation_to_address_wrapper(
     state: tauri::State<'_, AppState>,
     request: SendDelegateRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let send_delegation_request = SendDelegateToAddressRequest {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         address: request.address,
         amount: request.amount,
         delegation_id: request.delegation_id,
@@ -939,10 +733,12 @@ async fn new_account_wrapper(
     state: tauri::State<'_, AppState>,
     request: NewAccountRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    backend_sender.send(BackendRequest::NewAccount { wallet_id: wallet_id, name: request.name });
+    backend_sender.send(BackendRequest::NewAccount {
+        wallet_id: request.wallet_id,
+        name: request.name,
+    });
     Ok(())
 }
 
@@ -951,11 +747,11 @@ async fn toggle_stakig_wrapper(
     state: tauri::State<'_, AppState>,
     request: ToggleStakingRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    backend_sender.send(BackendRequest::ToggleStaking(wallet_id, account_id, request.enabled));
+    backend_sender.send(
+        BackendRequest::ToggleStaking(request.wallet_id, request.account_id, request.enabled)
+    );
     Ok(())
 }
 
@@ -964,13 +760,11 @@ async fn handle_console_command_wrapper(
     state: tauri::State<'_, AppState>,
     request: ConsoleRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
-    let account_id = AccountId::new(request.account_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
     backend_sender.send(BackendRequest::ConsoleCommand {
-        wallet_id: wallet_id,
-        account_id: account_id,
+        wallet_id: request.wallet_id,
+        account_id: request.account_id,
         command: request.command,
     });
     Ok(())
@@ -981,10 +775,9 @@ async fn submit_transaction_wrapper(
     state: tauri::State<'_, AppState>,
     request: SubmitTransactionRequest
 ) -> Result<(), String> {
-    let wallet_id = WalletId::from_u64(request.wallet_id);
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    backend_sender.send(BackendRequest::SubmitTx { wallet_id: wallet_id, tx: request.tx });
+    backend_sender.send(BackendRequest::SubmitTx { wallet_id: request.wallet_id, tx: request.tx });
     Ok(())
 }
 

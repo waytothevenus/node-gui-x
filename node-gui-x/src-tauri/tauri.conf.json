@@ -9,6 +9,7 @@
     "beforeBuildCommand": "yarn build",
     "frontendDist": "../dist"
   },
+
   "app": {
     "windows": [
       {
@@ -24,6 +25,7 @@
       "csp": null
     }
   },
+
   "bundle": {
     "active": true,
     "targets": "all",

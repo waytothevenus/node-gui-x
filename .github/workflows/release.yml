@@ -1,89 +1,64 @@
-name: Build, Sign and Release
-
+name: 'publish'
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - '**[0-9]+.[0-9]+.[0-9]+*'
-
-permissions:
-  contents: write
-
+    branches:
+      - dev
 jobs:
-  build-macos:
-    uses: ./.github/workflows/release_macos.yml
-    with:
-      binary_list: api-blockchain-scanner-daemon,api-web-server,dns-server,node-daemon,wallet-address-generator,wallet-cli,wallet-rpc-daemon
-    secrets: inherit
-
-  build-linux:
-    uses: ./.github/workflows/release_linux.yml
-    with:
-      binary_list: api-blockchain-scanner-daemon,api-web-server,dns-server,node-daemon,wallet-address-generator,wallet-cli,wallet-rpc-daemon
-    secrets: inherit
-
-  build-windows:
-    uses: ./.github/workflows/release_windows.yml
-    with:
-      binary_list: api-blockchain-scanner-daemon,api-web-server,dns-server,node-daemon,wallet-address-generator,wallet-cli,wallet-rpc-daemon
-    secrets: inherit
-
-  build-docker:
-    needs: [build-macos, build-linux, build-windows]
-    uses: ./.github/workflows/release_docker.yml
-    secrets: inherit
-
-  create-release:
-    needs: [build-macos, build-linux, build-windows, build-docker]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+    runs-on: ${{ matrix.platform }}
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        working-directory: node-gui-x # Set working directory to node-gui-x
 
-    - name: Extract version from tag
-      id: get_version
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
-        VERSION=${VERSION#v}
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'yarn' # Set this to npm, yarn or pnpm.
 
-    - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-    - name: Generate Hashes
-      id: generate_hashes
-      run: |
-        echo "HASHES<<EOF" >> $GITHUB_OUTPUT
-        for file in Mintlayer*/*; do
-          if [ -f "$file" ]; then
-            echo "$(sha256sum $file | awk '{print $1}')  $(basename $file)" >> $GITHUB_OUTPUT
-          fi
-        done
-        echo "EOF" >> $GITHUB_OUTPUT
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
-    - name: Generate Release Body
-      id: generate_body
-      run: |
-        echo "BODY<<EOF" >> $GITHUB_OUTPUT
-        echo "Release version ${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        echo "Please download the appropriate package for your system." >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        echo "Docker Images" >> $GITHUB_OUTPUT
-        echo "Find docker images in the docker hub:" >> $GITHUB_OUTPUT
-        echo "https://hub.docker.com/u/mintlayer" >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        echo "File Hashes (SHA256):" >> $GITHUB_OUTPUT
-        echo "\`\`\`" >> $GITHUB_OUTPUT
-        echo "${{ steps.generate_hashes.outputs.HASHES }}" >> $GITHUB_OUTPUT
-        echo "\`\`\`" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+      - name: install frontend dependencies
+        run: yarn install # change this to npm or pnpm depending on which one you use.
+        working-directory: node-gui-x # Set working directory to node-gui-x
 
-    - name: Create Release
-      uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        artifacts: "Mintlayer*/*"
-        artifactErrorsFailBuild: true
-        name: "Release ${{ steps.get_version.outputs.VERSION }}"
-        body: ${{ steps.generate_body.outputs.BODY }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: node-gui-x # Specify the project path
+          tagName: app-v__VERSION__ # the action automatically replaces __VERSION__ with the app version.
+          releaseName: 'App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

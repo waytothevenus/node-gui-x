@@ -36,9 +36,9 @@ const Delegation = (props: {
     try {
       await invoke("delegate_staking_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: 
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          ,
           account_id: props.currentAccountId,
           pool_id: poolAddress,
           delegation_amount: depositAmount,
@@ -64,9 +64,9 @@ const Delegation = (props: {
     try {
       await invoke("send_delegation_to_address_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: 
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          ,
           account_id: props.currentAccountId,
           address: withdrawAddress,
           amount: withdrawAmount,
@@ -102,9 +102,9 @@ const Delegation = (props: {
     try {
       await invoke("create_delegation_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: 
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          ,
           account_id: props.currentAccountId,
           pool_id: poolAddress,
           delegation_address: delegationAddress,

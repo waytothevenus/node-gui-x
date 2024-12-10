@@ -403,7 +403,7 @@ function Home() {
   };
 
   const handleUpdateCurrentWalletEncryptionState = (
-    wallet_id: string,
+    wallet_id: number,
     encrypted: string
   ) => {
     const updatedWallet: WalletInfo = {
@@ -419,7 +419,7 @@ function Home() {
     setCurrentWallet(updatedWallet);
   };
 
-  const handleRemoveWallet = (wallet_id: string) => {
+  const handleRemoveWallet = (wallet_id: number) => {
     setWalletsInfo((wallets) =>
       wallets.filter((wallet) => wallet.wallet_id !== wallet_id)
     );
@@ -706,7 +706,8 @@ function Home() {
                           onChange={(e) => {
                             setCurrentWallet(
                               walletsInfo.find(
-                                (wallet) => wallet.wallet_id == e?.target.value
+                                (wallet) =>
+                                  wallet.wallet_id == parseInt(e?.target.value)
                               )
                             );
                             setCurrentWalletId(parseInt(e.target.value));

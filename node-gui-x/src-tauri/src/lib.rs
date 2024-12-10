@@ -14,31 +14,32 @@
 // limitations under the License.
 
 use chainstate::ChainInfo;
-use node_gui_backend::AccountId;
-use node_gui_backend::{ InitNetwork, WalletMode, BackendSender, ImportOrCreate, InitializedNode };
+use common::chain::DelegationId;
 use common::time_getter::TimeGetter;
-use common::chain::{ DelegationId };
-use wallet_types::wallet_type::WalletType;
 use node_gui_backend::messages::{
     BackendEvent,
     BackendRequest,
-    SendRequest,
-    WalletId,
     CreateDelegationRequest,
     DecommissionPoolRequest,
     DelegateStakingRequest,
     EncryptionAction,
     SendDelegateToAddressRequest,
+    SendRequest,
     StakeRequest,
     Transaction,
+    WalletId,
 };
+use node_gui_backend::AccountId;
+use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedNode, WalletMode };
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
 use std::fmt::Debug;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::async_runtime::RwLock;
 use tauri::{ AppHandle, Emitter };
-use tokio::sync::mpsc::{ UnboundedReceiver };
+use tokio::sync::mpsc::UnboundedReceiver;
+use wallet_types::wallet_type::WalletType;
 struct AppState {
     initialized_node: RwLock<Option<InitializedNode>>,
     backend_sender: RwLock<Option<BackendSender>>,
@@ -210,298 +211,308 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
     // tokio::spawn(async move {
     loop {
         // Acquire a read lock only when receiving messages
+        let mut node_guard = state_clone.initialized_node.write().await;
+        let node = node_guard.as_mut().expect("Node not initialized");
         let mut backend_receiver_guard = state_clone.backend_receiver.write().await;
         let backend_receiver = backend_receiver_guard
             .as_mut()
             .expect("Backend receiver not initialized");
 
         // Await the reception of a message outside of the lock
-        let msg_opt = backend_receiver.recv().await;
+        // let msg_opt = backend_receiver.recv().await;
 
         // Lock is released here
-        println!("Backend event received {:?}", msg_opt.clone());
 
+        tokio::select! {
+                    msg_opt = backend_receiver.recv() =>{
+                        println!("Backend event received {:?}", msg_opt.clone());
         match msg_opt {
-            Some(BackendEvent::P2p(msg)) => {
-                println!("P2P event received {:?}", msg);
-                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                    app_handle.emit("P2p", msg).unwrap();
-                }
-            }
-            Some(BackendEvent::ChainInfo(msg)) => {
-                println!("ChainInfo event received {:?}", msg);
-                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                    app_handle.emit("ChainInfo", msg).unwrap();
-                }
-            }
-            Some(BackendEvent::ImportWallet(msg)) => {
-                match msg {
-                    Ok(wallet_info) => {
-                        println!("Wallet created successfully: {:?}", wallet_info);
+                    Some(BackendEvent::P2p(msg)) => {
+                        println!("P2P event received {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("ImportWallet", wallet_info).unwrap();
+                            app_handle.emit("P2p", msg).unwrap();
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error creating wallet: {}", error_message);
+                    Some(BackendEvent::ChainInfo(msg)) => {
+                        println!("ChainInfo event received {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+                            app_handle.emit("ChainInfo", msg).unwrap();
                         }
                     }
-                }
-            }
-            Some(BackendEvent::OpenWallet(msg)) => {
-                match msg {
-                    Ok(wallet_info) => {
-                        println!("Wallet Opened successfully: {:?}", wallet_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("OpenWallet", wallet_info).unwrap();
+                    Some(BackendEvent::ImportWallet(msg)) => {
+                        match msg {
+                            Ok(wallet_info) => {
+                                println!("Wallet created successfully: {:?}", wallet_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("ImportWallet", wallet_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error creating wallet: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error creating wallet: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+                    Some(BackendEvent::OpenWallet(msg)) => {
+                        match msg {
+                            Ok(wallet_info) => {
+                                println!("Wallet Opened successfully: {:?}", wallet_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("OpenWallet", wallet_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error creating wallet: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                }
-            }
-            Some(BackendEvent::SendAmount(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Amount sent successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("SendAmount", transaction_info).unwrap();
+                    Some(BackendEvent::SendAmount(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Amount sent successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    let serialized_info = match transaction_info.tx.to_json(Arc::as_ref(&node.chain_config)){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    app_handle.emit("SendAmount", serialized_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error sending amount: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error sending amount: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+                    Some(BackendEvent::NewAddress(msg)) => {
+                        match msg {
+                            Ok(address_info) => {
+                                println!("New address added successfully: {:?}", address_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("NewAddress", address_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error generating address wallet: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                }
-            }
-            Some(BackendEvent::NewAddress(msg)) => {
-                match msg {
-                    Ok(address_info) => {
-                        println!("New address added successfully: {:?}", address_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("NewAddress", address_info).unwrap();
+                    Some(BackendEvent::UpdateEncryption(msg)) => {
+                        match msg {
+                            Ok(encryption_info) => {
+                                println!("Encryption updated successfully: {:?}", encryption_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("UpdateEncryption", encryption_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error updating encryption: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error generating address wallet: {}", error_message);
+                    Some(BackendEvent::CloseWallet(msg)) => {
+                        println!("Wallet closed successfully: {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+                            app_handle.emit("CloseWallet", msg).unwrap();
                         }
                     }
-                }
-            }
-            Some(BackendEvent::UpdateEncryption(msg)) => {
-                match msg {
-                    Ok(encryption_info) => {
-                        println!("Encryption updated successfully: {:?}", encryption_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("UpdateEncryption", encryption_info).unwrap();
+                    Some(BackendEvent::StakeAmount(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Encryption updated successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("StakeAmount", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error staking amount: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error updating encryption: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-            Some(BackendEvent::CloseWallet(msg)) => {
-                println!("Wallet closed successfully: {:?}", msg);
-                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                    app_handle.emit("CloseWallet", msg).unwrap();
-                }
-            }
-            Some(BackendEvent::StakeAmount(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Encryption updated successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("StakeAmount", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error staking amount: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
 
-            Some(BackendEvent::DecommissionPool(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Pool decommissioned successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("DecommissionPool", transaction_info).unwrap();
+                    Some(BackendEvent::DecommissionPool(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Pool decommissioned successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("DecommissionPool", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error decommissioning pool: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error decommissioning pool: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
+
+                    Some(BackendEvent::CreateDelegation(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Delegation created successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("CreateDelegation", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error creating delegation: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
+                    }
+
+                    Some(BackendEvent::DelegateStaking(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Staking delegated successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("DelegateStaking", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error delegating staking: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    Some(BackendEvent::SendDelegationToAddress(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Sent delegation to address successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("SendDelegationToAddress", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error sending delegation to address: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    Some(BackendEvent::NewAccount(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("New account created successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("NewAccount", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error creating new account: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    Some(BackendEvent::ToggleStaking(msg)) => {
+                        match msg {
+                            Ok(transaction_info) => {
+                                println!("Staking toggled successfully: {:?}", transaction_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("ToggleStaking", transaction_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error toggling staking: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    Some(BackendEvent::ConsoleResponse(wallet_id, account_id, result)) => {
+                        match result {
+                            Ok(console_command) => {
+                                println!(
+                                    "Command executed successfully: wallet_id:, account_id:, console_command: {:?}, {:?}, {:?}",
+                                    wallet_id,
+                                    account_id,
+                                    console_command
+                                );
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("ConsoleResponse", console_command).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error toggling staking: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("ConsoleResponse", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    Some(BackendEvent::Broadcast(msg)) => {
+                        match msg {
+                            Ok(wallet_id) => {
+                                println!("Transaction submitted successfully: {:?}", wallet_id);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Broadcast", wallet_id).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error toggling staking: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+
+                    None => {
+                        println!("No message received from backend");
+                    }
+                    _ => {
+                        println!("Received an unhandled backend event");
                     }
                 }
-            }
-
-            Some(BackendEvent::CreateDelegation(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Delegation created successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("CreateDelegation", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error creating delegation: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
                     }
                 }
-            }
-
-            Some(BackendEvent::DelegateStaking(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Staking delegated successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("DelegateStaking", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error delegating staking: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            Some(BackendEvent::SendDelegationToAddress(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Sent delegation to address successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("SendDelegationToAddress", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error sending delegation to address: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            Some(BackendEvent::NewAccount(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("New account created successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("NewAccount", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error creating new account: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            Some(BackendEvent::ToggleStaking(msg)) => {
-                match msg {
-                    Ok(transaction_info) => {
-                        println!("Staking toggled successfully: {:?}", transaction_info);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("ToggleStaking", transaction_info).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error toggling staking: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            Some(BackendEvent::ConsoleResponse(wallet_id, account_id, result)) => {
-                match result {
-                    Ok(console_command) => {
-                        println!(
-                            "Command executed successfully: wallet_id:, account_id:, console_command: {:?}, {:?}, {:?}",
-                            wallet_id,
-                            account_id,
-                            console_command
-                        );
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("ConsoleResponse", console_command).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error toggling staking: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("ConsoleResponse", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            Some(BackendEvent::Broadcast(msg)) => {
-                match msg {
-                    Ok(wallet_id) => {
-                        println!("Transaction submitted successfully: {:?}", wallet_id);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Broadcast", wallet_id).unwrap();
-                        }
-                    }
-                    Err(e) => {
-                        let error_message = e.to_string();
-                        println!("Error toggling staking: {}", error_message);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("Error", error_message).unwrap();
-                        }
-                    }
-                }
-            }
-
-            None => {
-                println!("No message received from backend");
-            }
-            _ => {
-                println!("Received an unhandled backend event");
-            }
-        }
     }
-    // });
-    // Ok(())
 }
 
 #[tauri::command]
@@ -553,7 +564,10 @@ async fn add_open_wallet_wrapper(
     };
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    backend_sender.send(BackendRequest::OpenWallet { file_path, wallet_type });
+    backend_sender.send(BackendRequest::OpenWallet {
+        file_path,
+        wallet_type,
+    });
     Ok(())
 }
 
@@ -775,7 +789,10 @@ async fn submit_transaction_wrapper(
 ) -> Result<(), String> {
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    backend_sender.send(BackendRequest::SubmitTx { wallet_id: request.wallet_id, tx: request.tx });
+    backend_sender.send(BackendRequest::SubmitTx {
+        wallet_id: request.wallet_id,
+        tx: request.tx,
+    });
     Ok(())
 }
 

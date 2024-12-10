@@ -9,19 +9,14 @@ import {
   encodeToHash,
   notify,
 } from "../utils/util";
-import {
-  AccountType,
-  WalletInfo,
-  Data,
-  ChainInfoType,
-} from "../types/Types";
+import { AccountType, WalletInfo, Data, ChainInfoType } from "../types/Types";
 
 const Staking = (props: {
   chainInfo: ChainInfoType | undefined;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
   currentAccountId: number | undefined;
-  currentWalletId: string | undefined;
+  currentWalletId: number | undefined;
 }) => {
   // const [poolInfo, setPoolInfo] = useState(
   //   props.currentAccount?.staking_balance
@@ -51,9 +46,7 @@ const Staking = (props: {
       setIsLoading(true);
       await invoke("toggle_stakig_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
           account_id: props.currentAccountId ? props.currentAccountId : 0,
           enabled: !isStakingStarted,
         },
@@ -88,9 +81,7 @@ const Staking = (props: {
       setIsLoading(true);
       await invoke("decommission_pool_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
           account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
           pool_id: currentPoolId,
           output_address: receiveAddress,
@@ -122,9 +113,7 @@ const Staking = (props: {
       setIsLoading(true);
       await invoke("stake_amount_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
           account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
           pledge_amount: pledgeAmount.toString(),
           mpt: marginRatio.toString(),
@@ -424,7 +413,7 @@ const Staking = (props: {
           </div>
         </div>
       )}
-      <div className="border border-gray-200 rounded rounded-lg w-full py-6">
+      <div className="border border-gray-200  rounded-lg w-full py-6">
         <p className="font-bold text-lg text-center">RUN STAKING POOLS</p>
         <p className="text-center py-6">
           {isStakingStarted
@@ -435,7 +424,7 @@ const Staking = (props: {
           className={
             isStakingStarted
               ? "py-1 px-4 border text-[#E02424] border-[#E02424] bg-white rounded-lg transition-all duration-200 hover:outline-none hover:bg-[#E02424] hover:text-white hover:border-[#E02424]"
-              : "w-40 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+              : "w-40 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000]  hover:text-[#69EE96] hover:bg-black "
           }
           onClick={handleStaking}
         >
@@ -443,7 +432,7 @@ const Staking = (props: {
         </button>
       </div>
       <p className="text-lg text-start py-8">Staking Pool Summary</p>
-      <table className="rounded rounded-lg overflow-hidden shadow">
+      <table className=" rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>
             <th className="py-3 px-4 text-center text-gray-600 font-semibold"></th>
@@ -526,7 +515,7 @@ const Staking = (props: {
         <input
           type="number"
           placeholder="Enter amount"
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={pledgeAmount}
           onChange={(e) => setPledgeAmount(parseInt(e.target.value))}
         />
@@ -536,7 +525,7 @@ const Staking = (props: {
         <input
           type="number"
           placeholder="Enter amount"
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={costPerBlock}
           onChange={(e) => setCostPerBlock(parseInt(e.target.value))}
         />
@@ -551,7 +540,7 @@ const Staking = (props: {
           placeholder="Enter amount"
           step="0.001"
           min={0}
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={marginRatio}
           onChange={(e) => setMarginRatio(parseFloat(e.target.value))}
         />
@@ -560,7 +549,7 @@ const Staking = (props: {
         <p className="text-start">Decommission address</p>
         <input
           placeholder="Enter address"
-          className="rounded rounded-lg border-black p-2"
+          className=" rounded-lg border-black p-2"
           value={decommissionAddress}
           type="text"
           onChange={(e) => setDecommissionAddress(e.target.value)}
@@ -569,7 +558,7 @@ const Staking = (props: {
       <div>
         <button
           onClick={handleCreateStakingPool}
-          className="w-60 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
+          className="w-60 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000]  hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
         >
           Create Staking Pool
         </button>

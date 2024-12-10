@@ -72,7 +72,7 @@ export type TransactionType = {
 };
 
 export type WalletInfo = {
-  wallet_id: string;
+  wallet_id: number;
   path: string;
   encryption: string;
   accounts: Record<string, AccountType>;

@@ -26,11 +26,15 @@ const Send = (props: {
         },
       });
       const unsubscribe = await listen("SendAmount", (event) => {
-        const transactionResult = event.payload as Data;
+        const transactionResult = event.payload as string;
         if (transactionResult) {
-          console.log("trasaction info is =========>", transactionResult);
-          setTransactionInfo(transactionResult);
-          setShowConfirmModal(true);
+          console.log("transaction info is =========>", transactionResult);
+          // const tx = hexStringToObject(transactionResult.tx.tx) as {
+          //   transaction: Transaction;
+          // };
+          // console.log("Decoed transaction info is", tx);
+          // setTransactionInfo(transactionResult);
+          // setShowConfirmModal(true);
         } else {
         }
         unsubscribe();
@@ -198,7 +202,7 @@ const Send = (props: {
 
         <button
           type="submit"
-          className="py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+          className="py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
         >
           Send
         </button>

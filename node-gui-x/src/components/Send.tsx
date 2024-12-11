@@ -26,15 +26,12 @@ const Send = (props: {
         },
       });
       const unsubscribe = await listen("SendAmount", (event) => {
-        const transactionResult = event.payload as string;
+        const transactionResult = event.payload as Data;
         if (transactionResult) {
           console.log("transaction info is =========>", transactionResult);
-          // const tx = hexStringToObject(transactionResult.tx.tx) as {
-          //   transaction: Transaction;
-          // };
-          // console.log("Decoed transaction info is", tx);
-          // setTransactionInfo(transactionResult);
-          // setShowConfirmModal(true);
+
+          setTransactionInfo(transactionResult);
+          setShowConfirmModal(true);
         } else {
         }
         unsubscribe();
@@ -109,19 +106,13 @@ const Send = (props: {
               <p className="text-start text-bold">BEGIN OF INPUTS</p>
               <p className="text-start whitespace-nowrap">
                 -Transaction id ({""}
-                {encodeToHash(
-                  JSON.stringify(transactionInfo?.tx.transaction.V1)
-                )}
-                )
+                {encodeToHash(JSON.stringify(transactionInfo?.tx.V1))})
               </p>
               <p className="text-start whitespace-nowrap">
                 -Transaction ({"0x"}
-                {
-                  transactionInfo?.tx.transaction.V1.inputs[0].Utxo.id
-                    .Transaction
-                }
+                {transactionInfo?.tx.V1.inputs[0].Utxo.id.Transaction}
                 {", "}
-                {transactionInfo?.tx.transaction.V1.inputs[0].Utxo.index})
+                {transactionInfo?.tx.V1.inputs[0].Utxo.index})
               </p>
             </div>
             <div>

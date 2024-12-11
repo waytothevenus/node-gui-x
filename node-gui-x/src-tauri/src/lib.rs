@@ -14,7 +14,8 @@
 // limitations under the License.
 
 use chainstate::ChainInfo;
-use common::chain::DelegationId;
+use common::chain::signature::inputsig::InputWitness;
+use common::chain::{DelegationId, SignedTransaction};
 use common::time_getter::TimeGetter;
 use node_gui_backend::messages::{
     BackendEvent,
@@ -33,6 +34,8 @@ use node_gui_backend::AccountId;
 use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedNode, WalletMode };
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
+use serde_json::Value;
+use tokio::signal;
 use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -50,7 +53,7 @@ struct AppState {
 static GLOBAL_APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct OpenCreateWalletRequest {
+struct OpenCreateWalletRequest {
     mnemonic: String,
     file_path: String,
     import: bool,
@@ -58,13 +61,13 @@ pub struct OpenCreateWalletRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct OpenWalletRequest {
+struct OpenWalletRequest {
     file_path: String,
     wallet_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SendAmountRequest {
+struct SendAmountRequest {
     wallet_id: WalletId,
     account_id: AccountId,
     amount: String,
@@ -72,7 +75,7 @@ pub struct SendAmountRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StakeAmountRequest {
+struct StakeAmountRequest {
     wallet_id: WalletId,
     account_id: AccountId,
     pledge_amount: String,
@@ -82,21 +85,21 @@ pub struct StakeAmountRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DecommissionStakingPoolRequest {
+struct DecommissionStakingPoolRequest {
     pub wallet_id: WalletId,
     pub account_id: AccountId,
     pub pool_id: String,
     pub output_address: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DelegationCreateRequest {
+struct DelegationCreateRequest {
     pub wallet_id: WalletId,
     pub account_id: AccountId,
     pub pool_id: String,
     pub delegation_address: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StakingDelegateRequest {
+struct StakingDelegateRequest {
     pub wallet_id: WalletId,
     pub account_id: AccountId,
     pub delegation_id: DelegationId,
@@ -104,19 +107,19 @@ pub struct StakingDelegateRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NewAddressRequest {
+struct NewAddressRequest {
     wallet_id: WalletId,
     account_id: AccountId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateEncryptionRequest {
+struct UpdateEncryptionRequest {
     wallet_id: WalletId,
     action: String,
     password: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SendDelegateRequest {
+struct SendDelegateRequest {
     pub wallet_id: WalletId,
     pub account_id: AccountId,
     pub address: String,
@@ -125,30 +128,42 @@ pub struct SendDelegateRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NewAccountRequest {
+struct NewAccountRequest {
     wallet_id: WalletId,
     name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ToggleStakingRequest {
+struct ToggleStakingRequest {
     wallet_id: WalletId,
     account_id: AccountId,
     enabled: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ConsoleRequest {
+struct ConsoleRequest {
     wallet_id: WalletId,
     account_id: AccountId,
     command: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SubmitTransactionRequest {
-    tx: Transaction,
+#[derive(Debug, Deserialize)]
+struct SubmitTransactionRequest {
+    tx: common::chain::Transaction,
+    signature: Vec<InputWitness>,
     wallet_id: WalletId,
     account_id: AccountId,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct TransactionResult {
+    wallet_id: WalletId,
+    tx: Value,
+}
+impl TransactionResult {
+    pub fn new(wallet_id: WalletId, tx: Value) -> Self {
+        TransactionResult { wallet_id, tx }
+    }
 }
 
 impl Default for AppState {
@@ -278,13 +293,17 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Amount sent successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    let serialized_info = match transaction_info.tx.to_json(Arc::as_ref(&node.chain_config)){
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
                                         Ok(json) => json,
                                         Err(e) => {
                                             e.to_string().into()
                                         }
                                     };
-                                    app_handle.emit("SendAmount", serialized_info).unwrap();
+                                    // let tx = transaction_info.tx.take_tx();
+                                    // let signatures = serde::json(tx.signatures());
+                                    let transaction_result = TransactionResult::new(transaction_info.wallet_id, serialized_info);
+                                    app_handle.emit("SendAmount", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {
@@ -789,9 +808,11 @@ async fn submit_transaction_wrapper(
 ) -> Result<(), String> {
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
+    let signed_transaction = SignedTransaction::new(request.tx, request.signature).unwrap();
+    let tx = Transaction::new(signed_transaction);
     backend_sender.send(BackendRequest::SubmitTx {
         wallet_id: request.wallet_id,
-        tx: request.tx,
+        tx: tx,
     });
     Ok(())
 }

@@ -232,14 +232,9 @@ export type Signature = {
   };
 };
 
-export type Tx = {
-  transaction: Transaction; // Transaction object
-  signatures: Signature[]; // Array of Signature objects
-};
-
 export type Data = {
   wallet_id: number; // Wallet ID as a number
-  tx: Tx; // Transaction object
+  tx: Transaction; // Transaction object
 };
 
 type SetStatus = {

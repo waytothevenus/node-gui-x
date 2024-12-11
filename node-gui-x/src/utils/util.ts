@@ -4,7 +4,6 @@ import { bech32m } from "bech32";
 
 export const encodeToHash = (data: string) => {
   const hash = blake.blake2bHex(data, undefined, 32);
-  console.log("hash value is===>", hash);
   return hash;
 };
 
@@ -72,32 +71,3 @@ export const notify = (message: string, type: string) => {
       toast.info(message);
   }
 };
-
-export const hexToBytes = (hex: string) => {
-  if (hex.length % 2 !== 0) {
-    throw new Error("Invalid hex string");
-  }
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
-  }
-  return bytes;
-};
-
-// Function to convert a byte array to a string
-export const bytesToString = (bytes: Uint8Array) => {
-  return new TextDecoder().decode(bytes);
-};
-
-// Function to convert a hex string to an object
-export function hexStringToObject<T>(hex: string): T {
-  // Step 1: Convert hex to bytes
-  const bytes = hexToBytes(hex);
-  console.log("bytes array is", bytes);
-
-  // Step 2: Convert bytes to string
-  const jsonString = bytesToString(bytes);
-  console.log("json strig is ", jsonString);
-  // Step 3: Parse the JSON string to an object
-  return JSON.parse(jsonString) as T;
-}

@@ -189,8 +189,8 @@ const Delegation = (props: {
               <p className="text-start">
                 {encodeToHash(
                   JSON.stringify(
-                    transactionInfo?.tx.transaction.V1
-                      ? transactionInfo.tx.transaction.V1
+                    transactionInfo?.tx.V1
+                      ? transactionInfo.tx.V1
                       : {}
                   )
                 )}
@@ -201,7 +201,7 @@ const Delegation = (props: {
               <p className="text-start">
                 -Transaction({"0x"}
                 {
-                  transactionInfo?.tx.transaction.V1.inputs[0].Utxo.id
+                  transactionInfo?.tx.V1.inputs[0].Utxo.id
                     .Transaction
                 }
                 )
@@ -218,7 +218,7 @@ const Delegation = (props: {
                   "tmt",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                      transactionInfo?.tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[0]
                     ).toString()
@@ -229,7 +229,7 @@ const Delegation = (props: {
                   "tpool",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                      transactionInfo?.tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[1]
                     ).toString()
@@ -244,7 +244,7 @@ const Delegation = (props: {
                   "tmt",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                      transactionInfo?.tx.V1.outputs.find(
                         (output) => "Transfer" in output
                       )?.Transfer[1]
                     ).toString()
@@ -253,7 +253,7 @@ const Delegation = (props: {
                 ,{" "}
                 {parseInt(
                   new String(
-                    transactionInfo?.tx.transaction.V1.outputs.find(
+                    transactionInfo?.tx.V1.outputs.find(
                       (output) => "Transfer" in output
                     )?.Transfer[0].Coin.atoms
                   ).toString()

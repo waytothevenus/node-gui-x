@@ -235,9 +235,9 @@ export type Signature = {
 export type Data = {
   transaction_info: {
     wallet_id: number;
-    tx: string;
+    tx: { tx: string };
   }; // Wallet ID as a number
-  serialized_info: Transaction; // Transaction object
+  serialized_tx: Transaction; // Transaction object
 };
 
 type SetStatus = {

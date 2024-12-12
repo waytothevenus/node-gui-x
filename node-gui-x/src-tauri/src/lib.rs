@@ -158,7 +158,10 @@ struct TransactionResult {
 }
 impl TransactionResult {
     pub fn new(transaction_info: TransactionInfo, serialized_tx: Value) -> Self {
-        TransactionResult { transaction_info, serialized_tx }
+        TransactionResult {
+            transaction_info,
+            serialized_tx,
+        }
     }
 }
 
@@ -219,7 +222,6 @@ async fn initialize_node(
 #[tauri::command]
 async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let state_clone = state.clone(); // Clone the state to move into the async block
-    // tokio::spawn(async move {
     loop {
         // Acquire a read lock only when receiving messages
         let mut node_guard = state_clone.initialized_node.write().await;
@@ -228,11 +230,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
         let backend_receiver = backend_receiver_guard
             .as_mut()
             .expect("Backend receiver not initialized");
-
-        // Await the reception of a message outside of the lock
-        // let msg_opt = backend_receiver.recv().await;
-
-        // Lock is released here
 
         tokio::select! {
                     msg_opt = backend_receiver.recv() =>{

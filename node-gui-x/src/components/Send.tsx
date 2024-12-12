@@ -46,7 +46,7 @@ const Send = (props: {
       await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info.tx,
+          tx: transactionInfo?.transaction_info,
         },
       });
       const unsubscribe = await listen("SubmitTx", (event) => {
@@ -106,18 +106,18 @@ const Send = (props: {
               <p className="text-start whitespace-nowrap">
                 -Transaction id ({""}
                 {encodeToHash(
-                  JSON.stringify(transactionInfo?.serialized_info.V1)
+                  JSON.stringify(transactionInfo?.serialized_tx.V1)
                 )}
                 )
               </p>
               <p className="text-start whitespace-nowrap">
                 -Transaction ({"0x"}
                 {
-                  transactionInfo?.serialized_info.V1.inputs[0].Utxo.id
+                  transactionInfo?.serialized_tx.V1.inputs[0].Utxo.id
                     .Transaction
                 }
                 {", "}
-                {transactionInfo?.serialized_info.V1.inputs[0].Utxo.index})
+                {transactionInfo?.serialized_tx.V1.inputs[0].Utxo.index})
               </p>
             </div>
             <div>

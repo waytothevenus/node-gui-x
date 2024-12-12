@@ -132,7 +132,7 @@ const Delegation = (props: {
       await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info.tx,
+          tx: transactionInfo?.transaction_info,
         },
       });
       const unsubscribe = await listen("SubmitTx", (event) => {
@@ -188,8 +188,8 @@ const Delegation = (props: {
               <p className="text-start">
                 {encodeToHash(
                   JSON.stringify(
-                    transactionInfo?.serialized_info.V1
-                      ? transactionInfo.serialized_info.V1
+                    transactionInfo?.serialized_tx.V1
+                      ? transactionInfo.serialized_tx.V1
                       : {}
                   )
                 )}
@@ -200,7 +200,7 @@ const Delegation = (props: {
               <p className="text-start">
                 -Transaction({"0x"}
                 {
-                  transactionInfo?.serialized_info.V1.inputs[0].Utxo.id
+                  transactionInfo?.serialized_tx.V1.inputs[0].Utxo.id
                     .Transaction
                 }
                 )
@@ -217,7 +217,7 @@ const Delegation = (props: {
                   "tmt",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.serialized_info.V1.outputs.find(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[0]
                     ).toString()
@@ -228,7 +228,7 @@ const Delegation = (props: {
                   "tpool",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.serialized_info.V1.outputs.find(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[1]
                     ).toString()
@@ -243,7 +243,7 @@ const Delegation = (props: {
                   "tmt",
                   encodeToBytesForAddress(
                     new String(
-                      transactionInfo?.serialized_info.V1.outputs.find(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "Transfer" in output
                       )?.Transfer[1]
                     ).toString()
@@ -252,7 +252,7 @@ const Delegation = (props: {
                 ,{" "}
                 {parseInt(
                   new String(
-                    transactionInfo?.serialized_info.V1.outputs.find(
+                    transactionInfo?.serialized_tx.V1.outputs.find(
                       (output) => "Transfer" in output
                     )?.Transfer[0].Coin.atoms
                   ).toString()

@@ -45,16 +45,15 @@ const Send = (props: {
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
-          wallet_id: props.walletId,
-          account_id: props.accountId,
-          tx: transactionInfo?.tx,
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info.tx,
         },
       });
       const unsubscribe = await listen("SubmitTx", (event) => {
-        const result = event.payload as Data;
+        const result = event.payload;
         if (result) {
           console.log("trasaction info is =========>", result);
-          setTransactionInfo(result);
+          // setTransactionInfo(result);
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
         } else {
@@ -106,13 +105,19 @@ const Send = (props: {
               <p className="text-start text-bold">BEGIN OF INPUTS</p>
               <p className="text-start whitespace-nowrap">
                 -Transaction id ({""}
-                {encodeToHash(JSON.stringify(transactionInfo?.tx.V1))})
+                {encodeToHash(
+                  JSON.stringify(transactionInfo?.serialized_info.V1)
+                )}
+                )
               </p>
               <p className="text-start whitespace-nowrap">
                 -Transaction ({"0x"}
-                {transactionInfo?.tx.V1.inputs[0].Utxo.id.Transaction}
+                {
+                  transactionInfo?.serialized_info.V1.inputs[0].Utxo.id
+                    .Transaction
+                }
                 {", "}
-                {transactionInfo?.tx.V1.inputs[0].Utxo.index})
+                {transactionInfo?.serialized_info.V1.inputs[0].Utxo.index})
               </p>
             </div>
             <div>

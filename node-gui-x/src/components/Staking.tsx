@@ -146,9 +146,8 @@ const Staking = (props: {
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
-          wallet_id: props.currentWalletId,
-          account_id: props.currentAccountId,
-          tx: transactionInfo?.tx,
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info.tx,
         },
       });
       const unsubscribe = await listen("SubmitTx", (event) => {
@@ -257,8 +256,8 @@ const Staking = (props: {
               <p className="text-start">
                 {encodeToHash(
                   JSON.stringify(
-                    transactionInfo?.tx.V1
-                      ? transactionInfo.tx.V1
+                    transactionInfo?.serialized_info.V1
+                      ? transactionInfo.serialized_info.V1
                       : {}
                   )
                 )}
@@ -269,7 +268,7 @@ const Staking = (props: {
               <p className="text-start">
                 -Transaction({"0x"}
                 {
-                  transactionInfo?.tx.V1.inputs[0].Utxo.id
+                  transactionInfo?.serialized_info.V1.inputs[0].Utxo.id
                     .Transaction
                 }
                 )
@@ -280,7 +279,7 @@ const Staking = (props: {
             </div>
             <div>
               <p className="text-start">BEGIN OF OUTPUTS</p>
-              {transactionInfo?.tx.V1.outputs.find(
+              {transactionInfo?.serialized_info.V1.outputs.find(
                 (output) => "CreateStakePool" in output
               ) ? (
                 <>
@@ -290,7 +289,7 @@ const Staking = (props: {
                       "tpool",
                       encodeToBytesForAddress(
                         new String(
-                          transactionInfo?.tx.V1.outputs.find(
+                          transactionInfo?.serialized_info.V1.outputs.find(
                             (output) => "CreateStakePool" in output
                           )?.CreateStakePool[0]
                         ).toString()
@@ -305,7 +304,7 @@ const Staking = (props: {
                       "tpmt",
                       encodeToBytesForAddress(
                         new String(
-                          transactionInfo?.tx.V1.outputs.find(
+                          transactionInfo?.serialized_info.V1.outputs.find(
                             (output) => "CreateStakePool" in output
                           )?.CreateStakePool[1].staker
                         ).toString()
@@ -323,7 +322,7 @@ const Staking = (props: {
                       "tmt",
                       encodeToBytesForAddress(
                         new String(
-                          transactionInfo?.tx.V1.outputs.find(
+                          transactionInfo?.serialized_info.V1.outputs.find(
                             (output) => "Transfer" in output
                           )?.Transfer[1]
                         ).toString()
@@ -332,7 +331,7 @@ const Staking = (props: {
                     ,{" "}
                     {parseInt(
                       new String(
-                        transactionInfo?.tx.V1.outputs.find(
+                        transactionInfo?.serialized_info.V1.outputs.find(
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
@@ -348,7 +347,7 @@ const Staking = (props: {
                       "tpool",
                       encodeToBytesForAddress(
                         new String(
-                          transactionInfo?.tx.V1.outputs.find(
+                          transactionInfo?.serialized_info.V1.outputs.find(
                             (output) => "LockThenTransfer" in output
                           )?.LockThenTransfer[0]
                         ).toString()
@@ -357,14 +356,14 @@ const Staking = (props: {
                     ),{" "}
                     {parseInt(
                       new String(
-                        transactionInfo?.tx.V1.outputs.find(
+                        transactionInfo?.serialized_info.V1.outputs.find(
                           (output) => "LockThenTransfer" in output
                         )?.LockThenTransfer[1].Coin.atoms
                       ).toString()
                     ) / 1000000000000}
                     {", "}
                     {new String(
-                      transactionInfo?.tx.V1.outputs.find(
+                      transactionInfo?.serialized_info.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
                       )?.LockThenTransfer[2]
                     ).toString()}

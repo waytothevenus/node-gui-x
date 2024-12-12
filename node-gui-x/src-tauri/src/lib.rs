@@ -14,8 +14,7 @@
 // limitations under the License.
 
 use chainstate::ChainInfo;
-use common::chain::signature::inputsig::InputWitness;
-use common::chain::{DelegationId, SignedTransaction};
+use common::chain::DelegationId;
 use common::time_getter::TimeGetter;
 use node_gui_backend::messages::{
     BackendEvent,
@@ -27,7 +26,7 @@ use node_gui_backend::messages::{
     SendDelegateToAddressRequest,
     SendRequest,
     StakeRequest,
-    Transaction,
+    TransactionInfo,
     WalletId,
 };
 use node_gui_backend::AccountId;
@@ -35,7 +34,6 @@ use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedN
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
 use serde_json::Value;
-use tokio::signal;
 use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -149,20 +147,18 @@ struct ConsoleRequest {
 
 #[derive(Debug, Deserialize)]
 struct SubmitTransactionRequest {
-    tx: common::chain::Transaction,
-    signature: Vec<InputWitness>,
+    tx: TransactionInfo,
     wallet_id: WalletId,
-    account_id: AccountId,
 }
 
 #[derive(Debug, Clone, Serialize)]
 struct TransactionResult {
-    wallet_id: WalletId,
-    tx: Value,
+    transaction_info: TransactionInfo,
+    serialized_tx: Value,
 }
 impl TransactionResult {
-    pub fn new(wallet_id: WalletId, tx: Value) -> Self {
-        TransactionResult { wallet_id, tx }
+    pub fn new(transaction_info: TransactionInfo, serialized_tx: Value) -> Self {
+        TransactionResult { transaction_info, serialized_tx }
     }
 }
 
@@ -302,7 +298,7 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                                     };
                                     // let tx = transaction_info.tx.take_tx();
                                     // let signatures = serde::json(tx.signatures());
-                                    let transaction_result = TransactionResult::new(transaction_info.wallet_id, serialized_info);
+                                    let transaction_result = TransactionResult::new(transaction_info, serialized_info);
                                     app_handle.emit("SendAmount", transaction_result).unwrap();
                                 }
                             }
@@ -808,11 +804,10 @@ async fn submit_transaction_wrapper(
 ) -> Result<(), String> {
     let mut backend_sender_guard = state.backend_sender.write().await;
     let backend_sender = backend_sender_guard.as_mut().ok_or("Backend Sender not initialized")?;
-    let signed_transaction = SignedTransaction::new(request.tx, request.signature).unwrap();
-    let tx = Transaction::new(signed_transaction);
+
     backend_sender.send(BackendRequest::SubmitTx {
         wallet_id: request.wallet_id,
-        tx: tx,
+        tx: request.tx.tx,
     });
     Ok(())
 }

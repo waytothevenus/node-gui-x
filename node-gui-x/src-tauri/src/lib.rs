@@ -156,11 +156,33 @@ struct TransactionResult {
     transaction_info: TransactionInfo,
     serialized_tx: Value,
 }
+
 impl TransactionResult {
     pub fn new(transaction_info: TransactionInfo, serialized_tx: Value) -> Self {
         TransactionResult {
             transaction_info,
             serialized_tx,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct DelegateStakingResult {
+    transaction_info: TransactionInfo,
+    serialized_tx: Value,
+    delegation_id: DelegationId,
+}
+
+impl DelegateStakingResult {
+    pub fn new(
+        transaction_info: TransactionInfo,
+        serialized_tx: Value,
+        delegation_id: DelegationId
+    ) -> Self {
+        DelegateStakingResult {
+            transaction_info,
+            serialized_tx,
+            delegation_id,
         }
     }
 }
@@ -293,8 +315,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                                             e.to_string().into()
                                         }
                                     };
-                                    // let tx = transaction_info.tx.take_tx();
-                                    // let signatures = serde::json(tx.signatures());
                                     let transaction_result = TransactionResult::new(transaction_info, serialized_info);
                                     app_handle.emit("SendAmount", transaction_result).unwrap();
                                 }
@@ -353,7 +373,15 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Encryption updated successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("StakeAmount", transaction_info).unwrap();
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    let transaction_result = TransactionResult::new(transaction_info, serialized_info);
+                                    app_handle.emit("StakeAmount", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {
@@ -371,7 +399,15 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Pool decommissioned successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("DecommissionPool", transaction_info).unwrap();
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    let transaction_result = TransactionResult::new(transaction_info, serialized_info);
+                                    app_handle.emit("DecommissionPool", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {
@@ -389,7 +425,15 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Delegation created successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("CreateDelegation", transaction_info).unwrap();
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    let transaction_result = TransactionResult::new(transaction_info, serialized_info);
+                                    app_handle.emit("CreateDelegation", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {
@@ -407,7 +451,15 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Staking delegated successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("DelegateStaking", transaction_info).unwrap();
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.0.tx.to_json(chain_config_ref){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    let transaction_result = DelegateStakingResult::new(transaction_info.0, serialized_info, transaction_info.1);
+                                    app_handle.emit("DelegateStaking", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {
@@ -425,7 +477,15 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             Ok(transaction_info) => {
                                 println!("Sent delegation to address successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("SendDelegationToAddress", transaction_info).unwrap();
+                                    let chain_config_ref = Arc::as_ref(&node.chain_config);
+                                    let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
+                                        Ok(json) => json,
+                                        Err(e) => {
+                                            e.to_string().into()
+                                        }
+                                    };
+                                    let transaction_result = TransactionResult::new(transaction_info, serialized_info);
+                                    app_handle.emit("SendDelegationToAddress", transaction_result).unwrap();
                                 }
                             }
                             Err(e) => {

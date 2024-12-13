@@ -40,7 +40,6 @@ const WalletActions = (props: {
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);
 
-    // Validate the confirm password
     if (confirmPassword !== password) {
       setError("Passwords do not match.");
     } else if (confirmPassword.length < 8 || confirmPassword.length > 64) {
@@ -74,7 +73,6 @@ const WalletActions = (props: {
           );
           setShowEncryptWalletModal(false);
           notify("Wallet encrypted successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -112,7 +110,6 @@ const WalletActions = (props: {
             );
             setShowEncryptWalletModal(false);
             notify("Wallet encryption disabled successfully.", "success");
-          } else {
           }
           unsubscribe();
         });
@@ -148,7 +145,6 @@ const WalletActions = (props: {
           );
           setShowUnlockModal(false);
           notify("Wallet locked successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -181,7 +177,6 @@ const WalletActions = (props: {
           );
           setShowUnlockModal(false);
           notify("Wallet unlocked successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -206,7 +201,6 @@ const WalletActions = (props: {
           );
           props.handleRemoveWallet(closeWalletResult.wallet_id);
           notify("Wallet closed successfully.", "success");
-        } else {
         }
         unsubscribe();
       });

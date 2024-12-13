@@ -100,7 +100,7 @@ function Home() {
     const setupErrorListener = async () => {
       if (!errorListenerInitialized.current) {
         unsubscribeErrorListenerRef.current = await errorListener();
-        errorListenerInitialized.current = true; // Mark as initialized
+        errorListenerInitialized.current = true; 
       }
     };
 
@@ -129,7 +129,7 @@ function Home() {
       console.log("current wallet is ", currentWallet);
       setWalletsInfo((prevWallets) => {
         const updatedWallets = [...prevWallets];
-        updatedWallets[currentWalletId] = currentWallet; // Update the specific wallet
+        updatedWallets[currentWalletId] = currentWallet; 
         return updatedWallets;
       });
     }
@@ -139,7 +139,6 @@ function Home() {
     if (currentAccount) {
       console.log("current account is ", currentAccountId, currentAccount);
       setCurrentWallet((prevWallet) => {
-        // Only update if the account is different
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
         ) {
@@ -151,7 +150,7 @@ function Home() {
             },
           } as WalletInfo;
         }
-        return prevWallet; // Return previous wallet if no change
+        return prevWallet; 
       });
     }
   }, [currentAccount, currentAccountId]);
@@ -167,9 +166,9 @@ function Home() {
           );
 
           if (!exists) {
-            return [...prevP2pInfo, peerInfo]; // Add new peer
+            return [...prevP2pInfo, peerInfo]; 
           } else {
-            return prevP2pInfo; // Return unchanged state
+            return prevP2pInfo; 
           }
         });
       } else if ("PeerDisconnected" in newP2pInfo) {
@@ -255,7 +254,7 @@ function Home() {
         }
         setMnemonic("");
 
-        setShowMnemonicModal(false); // Ensure setShowMnemonicModal is defined
+        setShowMnemonicModal(false); 
       } else {
         console.error("No file selected");
       }
@@ -294,13 +293,8 @@ function Home() {
             if (walletInfo) {
               setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
               notify("Wallet recovered successfully", "success");
-            } else {
-            }
-
-            // Always set loading to false after processing
+            } 
             setLoading(false);
-
-            // Unsubscribe from the event after handling it
             unsubscribe();
           });
         } catch (invokeError) {
@@ -341,8 +335,6 @@ function Home() {
 
       if (filePath) {
         setLoading(true);
-
-        // Invoke the Rust backend function
         await invoke("add_open_wallet_wrapper", {
           request: {
             file_path: filePath,
@@ -350,7 +342,6 @@ function Home() {
           },
         });
 
-        // Listen for the "OpenWallet" event
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -358,19 +349,15 @@ function Home() {
             console.log("walletInfo is ==========>", walletInfo);
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
             notify("Wallet opened successfully", "success");
-          } else {
           }
-
-          // Always set loading to false after processing
           setLoading(false);
 
-          // Unsubscribe from the event after handling it
           unsubscribe();
         });
       }
     } catch (error) {
       console.error("Error opening wallet:", error);
-      setLoading(false); // Ensure loading state is reset on error
+      setLoading(false); 
     }
   };
 

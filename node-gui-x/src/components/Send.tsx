@@ -32,7 +32,6 @@ const Send = (props: {
 
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);
-        } else {
         }
         unsubscribe();
       });
@@ -49,15 +48,12 @@ const Send = (props: {
           tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
+      const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload;
         if (result) {
-          console.log("trasaction info is =========>", result);
-          // setTransactionInfo(result);
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
-        } else {
-        }
+        } 
         unsubscribe();
       });
     } catch (error) {

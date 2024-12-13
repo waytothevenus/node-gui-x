@@ -37,8 +37,7 @@ const Addresses = (props: {
             newAddress.address
           );
           notify("New address added", "success");
-        } else {
-        }
+        } 
         unsubscribe();
       });
       setIsLoading(false);

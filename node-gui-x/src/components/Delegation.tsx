@@ -45,10 +45,9 @@ const Delegation = (props: {
         },
       });
       const unsubscribe = await listen("DelegateStaking", (event) => {
-        const transactionInfo = event.payload as Data;
+        const transactionInfo = event.payload;
         if (transactionInfo) {
           console.log(transactionInfo);
-        } else {
         }
         unsubscribe();
       });
@@ -77,7 +76,6 @@ const Delegation = (props: {
         const transactionInfo = event.payload as Data;
         if (transactionInfo) {
           console.log(transactionInfo);
-        } else {
         }
         unsubscribe();
       });
@@ -116,11 +114,9 @@ const Delegation = (props: {
           console.log(transactionInfo);
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
-        } else {
         }
         unsubscribe();
       });
-      unsubscribe();
     } catch (error) {
       notify(new String(error).toString(), "error");
       setIsLoading(false);
@@ -141,7 +137,6 @@ const Delegation = (props: {
           console.log(transactionInfo);
           notify("Transaction confirmed successfully!", "success");
           setShowSuccessModal(true);
-        } else {
         }
         unsubscribe();
       });

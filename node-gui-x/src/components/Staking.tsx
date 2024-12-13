@@ -18,9 +18,6 @@ const Staking = (props: {
   currentAccountId: number | undefined;
   currentWalletId: number | undefined;
 }) => {
-  // const [poolInfo, setPoolInfo] = useState(
-  //   props.currentAccount?.staking_balance
-  // );
   const [currentPoolId, setCurrentPoolId] = useState("");
   const [pledgeAmount, setPledgeAmount] = useState(0);
   const [costPerBlock, setCostPerBlock] = useState(0);
@@ -64,8 +61,7 @@ const Staking = (props: {
             transactionResult.enabled ? "Staking started" : "Staking stopped",
             "success"
           );
-        } else {
-        }
+        } 
         unsubscribe();
       });
       setIsLoading(false);
@@ -82,7 +78,7 @@ const Staking = (props: {
       await invoke("decommission_pool_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
+          account_id: props.currentAccountId ? props.currentAccountId : 0, 
           pool_id: currentPoolId,
           output_address: receiveAddress,
         },
@@ -92,7 +88,6 @@ const Staking = (props: {
         if (transactionResult) {
           console.log("Pool decommissioned successfully", transactionResult);
           notify("Pool decommissioned", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -114,22 +109,20 @@ const Staking = (props: {
       await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
+          account_id: props.currentAccountId ? props.currentAccountId : 0, 
           pledge_amount: pledgeAmount.toString(),
           mpt: marginRatio.toString(),
           cost_per_block: costPerBlock.toString(),
           decommission_address: decommissionAddress,
         },
       });
-      const unsubscribe = await listen("CreateStake", (event) => {
+      const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
           console.log("trasaction info is =========>", transactionResult);
           setTransactionInfo(transactionResult);
           setShowConfirmTransactionModal(true);
-        } else {
         }
-
         unsubscribe();
       });
       setIsLoading(false);
@@ -159,7 +152,6 @@ const Staking = (props: {
           );
           notify("Transaction confirmed successfully!", "success");
           setShowSuccessModal(true);
-        } else {
         }
         unsubscribe();
       });

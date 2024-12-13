@@ -227,8 +227,8 @@ export type IssueFungibleTokenOutput = {
 
 export type Signature = {
   Standard: {
-    sighash_type: number; // Sighash type as a number
-    raw_signature: number[]; // Raw signature as an array of numbers
+    sighash_type: number;
+    raw_signature: number[];
   };
 };
 
@@ -236,8 +236,17 @@ export type Data = {
   transaction_info: {
     wallet_id: number;
     tx: { tx: string };
-  }; // Wallet ID as a number
-  serialized_tx: Transaction; // Transaction object
+  };
+  serialized_tx: Transaction;
+};
+
+export type DelegateStakingResult = {
+  transaction_info: {
+    wallet_id: number;
+    tx: { tx: string };
+  };
+  serialized_tx: Transaction;
+  delegation_id: string;
 };
 
 type SetStatus = {

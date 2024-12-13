@@ -10,7 +10,7 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
   };
   return (
     <div>
-      <table className="min-w-full border border-gray-200 rounded rounded-lg overflow-hidden shadow">
+      <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>
             <th className="py-3 px-4 text-center text-gray-600 font-semibold ">
@@ -59,7 +59,7 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                     </div>
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    {transactionInfo.timestamp.timestamp}
+                    {transactionInfo?.timestamp?.timestamp}
                   </td>
                   {(() => {
                     if ("Redeposit" in transactionInfo.tx_type) {

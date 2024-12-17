@@ -26,9 +26,13 @@ import SummaryTab from "../components/Summary";
 import NetworkingTab from "../components/Networking";
 import {
   AccountType,
+  AmountType,
+  BalanceType,
   ChainInfoType,
   P2p,
   PeerConnected,
+  PoolInfoType,
+  TransactionType,
   WalletInfo,
 } from "../types/Types";
 import WalletActions from "../components/WalletActions";
@@ -97,10 +101,14 @@ function Home() {
     init_node();
     chainStateEventListener();
     p2pEventListener();
+    balanceEventListener();
+    stakingBalanceEventListener();
+    delegationBalanceEventListener();
+    transactionListEventListener();
     const setupErrorListener = async () => {
       if (!errorListenerInitialized.current) {
         unsubscribeErrorListenerRef.current = await errorListener();
-        errorListenerInitialized.current = true; 
+        errorListenerInitialized.current = true;
       }
     };
 
@@ -129,7 +137,7 @@ function Home() {
       console.log("current wallet is ", currentWallet);
       setWalletsInfo((prevWallets) => {
         const updatedWallets = [...prevWallets];
-        updatedWallets[currentWalletId] = currentWallet; 
+        updatedWallets[currentWalletId] = currentWallet;
         return updatedWallets;
       });
     }
@@ -150,7 +158,7 @@ function Home() {
             },
           } as WalletInfo;
         }
-        return prevWallet; 
+        return prevWallet;
       });
     }
   }, [currentAccount, currentAccountId]);
@@ -166,9 +174,9 @@ function Home() {
           );
 
           if (!exists) {
-            return [...prevP2pInfo, peerInfo]; 
+            return [...prevP2pInfo, peerInfo];
           } else {
-            return prevP2pInfo; 
+            return prevP2pInfo;
           }
         });
       } else if ("PeerDisconnected" in newP2pInfo) {
@@ -200,6 +208,124 @@ function Home() {
     await listen("ChainInfo", (event) => {
       const newChainInfo: ChainInfoType = event.payload as ChainInfoType;
       setChainInfo(newChainInfo);
+    });
+  };
+  const balanceEventListener = async () => {
+    await listen("Balances", (event) => {
+      const newBalances = event.payload as {
+        wallet_id: number;
+        account_id: number;
+        balance: BalanceType;
+      };
+      console.log("balance updated, ", newBalances);
+      if (newBalances.balance) {
+        setCurrentAccount((prevAccount) => ({
+          name: prevAccount?.name ? prevAccount.name : "",
+          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
+          staking_enabled: prevAccount?.staking_enabled
+            ? prevAccount.staking_enabled
+            : false,
+          staking_balance: prevAccount?.staking_balance
+            ? prevAccount.staking_balance
+            : {},
+          delegations_balance: prevAccount?.delegations_balance
+            ? prevAccount.delegations_balance
+            : {},
+          balance: newBalances.balance,
+          transaction_list: prevAccount?.transaction_list
+            ? prevAccount.transaction_list
+            : { count: 0, skip: 0, total: 0, txs: [] },
+        }));
+      }
+    });
+  };
+  const stakingBalanceEventListener = async () => {
+    await listen("StakingBalance", (event) => {
+      const newStakingBalances = event.payload as {
+        wallet_id: number;
+        account_id: number;
+        staking_balance: Record<string, PoolInfoType>;
+      };
+      console.log("staking balance updated, ", newStakingBalances);
+
+      if (newStakingBalances.staking_balance) {
+        setCurrentAccount((prevAccount) => ({
+          name: prevAccount?.name ? prevAccount.name : "",
+          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
+          staking_enabled: prevAccount?.staking_enabled
+            ? prevAccount.staking_enabled
+            : false,
+          staking_balance: newStakingBalances.staking_balance,
+          delegations_balance: prevAccount?.delegations_balance
+            ? prevAccount.delegations_balance
+            : {},
+          balance: prevAccount?.balance
+            ? prevAccount.balance
+            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
+          transaction_list: prevAccount?.transaction_list
+            ? prevAccount.transaction_list
+            : { count: 0, skip: 0, total: 0, txs: [] },
+        }));
+      }
+    });
+  };
+  const transactionListEventListener = async () => {
+    await listen("TransactionList", (event) => {
+      const newTransactionList = event.payload as TransactionType;
+      console.log("transaction list updated, ", newTransactionList);
+
+      if (newTransactionList) {
+        setCurrentAccount((prevAccount) => ({
+          name: prevAccount?.name ? prevAccount.name : "",
+          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
+          staking_enabled: prevAccount?.staking_enabled
+            ? prevAccount.staking_enabled
+            : false,
+          staking_balance: prevAccount?.staking_balance
+            ? prevAccount.staking_balance
+            : {},
+          delegations_balance: prevAccount?.delegations_balance
+            ? prevAccount.delegations_balance
+            : {},
+          balance: prevAccount?.balance
+            ? prevAccount.balance
+            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
+          transaction_list: newTransactionList,
+        }));
+      }
+    });
+  };
+  const delegationBalanceEventListener = async () => {
+    await listen("Balances", (event) => {
+      const newDelegationBalance = event.payload as {
+        wallet_id: number;
+        account_id: number;
+        delegations_balance: Record<
+          string,
+          [pool_id: string, amount: AmountType]
+        >;
+      };
+      console.log("delegation balance updated, ", newDelegationBalance);
+
+      if (newDelegationBalance.delegations_balance) {
+        setCurrentAccount((prevAccount) => ({
+          name: prevAccount?.name ? prevAccount.name : "",
+          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
+          staking_enabled: prevAccount?.staking_enabled
+            ? prevAccount.staking_enabled
+            : false,
+          staking_balance: prevAccount?.staking_balance
+            ? prevAccount.staking_balance
+            : {},
+          delegations_balance: newDelegationBalance.delegations_balance,
+          balance: prevAccount?.balance
+            ? prevAccount.balance
+            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
+          transaction_list: prevAccount?.transaction_list
+            ? prevAccount.transaction_list
+            : { count: 0, skip: 0, total: 0, txs: [] },
+        }));
+      }
     });
   };
   const createNewWallet = () => {
@@ -254,7 +380,7 @@ function Home() {
         }
         setMnemonic("");
 
-        setShowMnemonicModal(false); 
+        setShowMnemonicModal(false);
       } else {
         console.error("No file selected");
       }
@@ -293,7 +419,7 @@ function Home() {
             if (walletInfo) {
               setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
               notify("Wallet recovered successfully", "success");
-            } 
+            }
             setLoading(false);
             unsubscribe();
           });
@@ -357,7 +483,7 @@ function Home() {
       }
     } catch (error) {
       console.error("Error opening wallet:", error);
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -416,6 +542,17 @@ function Home() {
     setCurrentAccountId(0);
   };
 
+  const handleUpdateStakingState = (enabled: boolean) => {
+    setCurrentAccount((currentAccount) => {
+      if (currentAccount) {
+        return {
+          ...currentAccount,
+          staking_enabled: enabled,
+        };
+      }
+    });
+  };
+
   const addAccount = (accountId: string, accountInfo: AccountType) => {
     setCurrentWallet(
       (prevWallet) =>
@@ -453,7 +590,6 @@ function Home() {
         if (newAccount) {
           addAccount(newAccount.account_id, newAccount.account_info);
           notify("Account created successfully!", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -864,6 +1000,7 @@ function Home() {
                       handleUpdateCurrentWalletEncryptionState={
                         handleUpdateCurrentWalletEncryptionState
                       }
+                      handleUpdateStakingState={handleUpdateStakingState}
                       handleRemoveWallet={handleRemoveWallet}
                     />
                   )}

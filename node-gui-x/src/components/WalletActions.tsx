@@ -9,10 +9,18 @@ import Transactions from "./Transactions";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
 import { notify } from "../utils/util";
-import { AccountType, ChainInfoType, WalletInfo } from "../types/Types";
+import {
+  AccountType,
+  ChainInfoType,
+  DelegationBalancesType,
+  StakingBalancesType,
+  WalletInfo,
+} from "../types/Types";
 const WalletActions = (props: {
   currentWallet: WalletInfo | undefined;
   currentAccount: AccountType | undefined;
+  stakingBalances: StakingBalancesType[];
+  delegationBalances: DelegationBalancesType[];
   activeTab: string;
   currentAccountId: number;
   chainInfo: ChainInfoType | undefined;
@@ -367,6 +375,7 @@ const WalletActions = (props: {
           chainInfo={props.chainInfo}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
+          stakingBalances={props.stakingBalances}
           currentAccountId={props.currentAccountId}
           currentWalletId={props.currentWallet?.wallet_id}
           handleUpdateStakingState={props.handleUpdateStakingState}
@@ -376,6 +385,7 @@ const WalletActions = (props: {
         <Delegation
           currentAccount={props.currentAccount}
           currentAccountId={props.currentAccountId}
+          delegationBalances={props.delegationBalances}
           currentWallet={props.currentWallet}
         />
       )}

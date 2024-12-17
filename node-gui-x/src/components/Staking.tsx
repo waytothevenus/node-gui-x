@@ -3,18 +3,20 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
+import { encodeToHash, notify } from "../utils/util";
 import {
-  encode,
-  encodeToBytesForAddress,
-  encodeToHash,
-  notify,
-} from "../utils/util";
-import { AccountType, WalletInfo, Data, ChainInfoType } from "../types/Types";
+  AccountType,
+  WalletInfo,
+  Data,
+  ChainInfoType,
+  StakingBalancesType,
+} from "../types/Types";
 
 const Staking = (props: {
   chainInfo: ChainInfoType | undefined;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
+  stakingBalances: StakingBalancesType[];
   currentAccountId: number | undefined;
   currentWalletId: number | undefined;
   handleUpdateStakingState: (enabled: boolean) => void;
@@ -285,49 +287,50 @@ const Staking = (props: {
                 <>
                   <p className="text-start">
                     -CreateStakePool(Id(
-                    {encode(
-                      "tpool",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.serialized_tx.V1.outputs.find(
-                            (output) => "CreateStakePool" in output
-                          )?.CreateStakePool[0]
-                        ).toString()
-                      )
-                    )}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[0]
+                    ).toString()}
                     )), Pledge(
                     {pledgeAmount})
                   </p>
                   <p className="text-start">
                     -Staker(
-                    {encode(
-                      "tpmt",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.serialized_tx.V1.outputs.find(
-                            (output) => "CreateStakePool" in output
-                          )?.CreateStakePool[1].staker
-                        ).toString()
-                      )
-                    )}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].staker
+                    ).toString()}
                     )
                   </p>
                   <p className="text-start">
-                    -Margin Ratio({marginRatio * 100}%)
+                    -Margin Ratio(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].margin_ratio_per_thousand
+                    }
+                    )
                   </p>
-                  <p className="text-start">-CostPerBlock({costPerBlock})</p>
+                  <p className="text-start">
+                    -CostPerBlock(
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "CreateStakePool" in output
+                        )?.CreateStakePool[1].cost_per_block.atoms
+                      ).toString()
+                    ) / 100000000000}
+                    )
+                  </p>
                   <p className="text-start">
                     -Transfer(
-                    {encode(
-                      "tmt",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.serialized_tx.V1.outputs.find(
-                            (output) => "Transfer" in output
-                          )?.Transfer[1]
-                        ).toString()
-                      )
-                    )}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "Transfer" in output
+                      )?.Transfer[1]
+                    ).toString()}
                     ,{" "}
                     {parseInt(
                       new String(
@@ -343,16 +346,11 @@ const Staking = (props: {
                 <>
                   <p className="text-start">
                     -LockThenTransfer(
-                    {encode(
-                      "tpool",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.serialized_tx.V1.outputs.find(
-                            (output) => "LockThenTransfer" in output
-                          )?.LockThenTransfer[0]
-                        ).toString()
-                      )
-                    )}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[0]
+                    ).toString()}
                     ),{" "}
                     {parseInt(
                       new String(
@@ -451,10 +449,19 @@ const Staking = (props: {
           </tr>
         </thead>
         <tbody>
-          {Object.values(
-            props.currentAccount?.staking_balance
-              ? props.currentAccount?.staking_balance
-              : {}
+          {(props.stakingBalances.find(
+            (balance) =>
+              balance.wallet_id === props.currentWalletId &&
+              balance.account_id === props.currentAccountId
+          )
+            ? Object.values(
+                props.stakingBalances.find(
+                  (balance) =>
+                    balance.wallet_id === props.currentWalletId &&
+                    balance.account_id === props.currentAccountId
+                )?.staking_balance || {}
+              )
+            : []
           ).map((stakeInfo, index) => {
             return (
               <tr

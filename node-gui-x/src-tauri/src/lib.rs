@@ -314,6 +314,11 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
         let backend_receiver = backend_receiver_guard
             .as_mut()
             .expect("Backend receiver not initialized");
+        let mut low_priority_backend_receiver_guard =
+            state_clone.low_priority_backend_receiver.write().await;
+        let low_priority_backend_receiver = low_priority_backend_receiver_guard
+            .as_mut()
+            .expect("Low priority event receiver not initialized");
 
         tokio::select! {
                     msg_opt = backend_receiver.recv() =>{
@@ -331,44 +336,7 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             app_handle.emit("ChainInfo", msg).unwrap();
                         }
                     }
-                    Some(BackendEvent::Balance(wallet_id, account_id, balance))=>{
-                        println!("Balance updated {:?}", balance);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            let balance = BalanceResult::new(wallet_id, account_id, balance);
-                            app_handle.emit("Balance", balance).unwrap();
-                        }
-                    }
-                    Some(BackendEvent::StakingBalance(wallet_id, account_id, staking_balance))=>{
-                        println!("staking Balance updated {:?}", staking_balance);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            let staking_balance = StakingBalanceResult::new(wallet_id, account_id, staking_balance);
-                            app_handle.emit("StakingBalance", staking_balance).unwrap();
-                        }
-                    }
-                    Some(BackendEvent::DelegationsBalance(wallet_id, account_id, delegations_balance))=>{
-                        println!("Delegaion Balance updated {:?}", delegations_balance);
-                        let delegations_balance = DelegationsBalanceResult::new(wallet_id, account_id, delegations_balance);
-                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                            app_handle.emit("DelegationBalance", delegations_balance).unwrap();
-                        }
-                    }
-                    Some(BackendEvent::TransactionList(_, _, msg))=>{
-                        match msg {
-                            Ok(transaction_list) => {
-                                println!("Transaction List received: {:?}", transaction_list);
-                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("TransactionList", transaction_list).unwrap();
-                                }
-                            }
-                            Err(e) => {
-                                let error_message = e.to_string();
-                                println!("Error receiving transaction list: {}", error_message);
-                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("Error", error_message).unwrap();
-                                }
-                            }
-                        }
-                    }
+                    
                     Some(BackendEvent::ImportWallet(msg)) => {
                         match msg {
                             Ok(wallet_info) => {
@@ -675,6 +643,76 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                         }
                     }
 
+                    None => {
+                        println!("No message received from backend");
+                    }
+                    _ => {
+                        println!("Received an unhandled backend event");
+                    }
+                }
+                    }
+                }
+        tokio::select! {
+                    msg_opt = low_priority_backend_receiver.recv() =>{
+                        println!("Backend event received {:?}", msg_opt.clone());
+        match msg_opt {
+                   
+                    Some(BackendEvent::Balance(wallet_id, account_id, balance))=>{
+                        println!("Balance updated {:?}", balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            let balance = BalanceResult::new(wallet_id, account_id, balance);
+                            app_handle.emit("Balance", balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::StakingBalance(wallet_id, account_id, staking_balance))=>{
+                        println!("staking Balance updated {:?}", staking_balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            let staking_balance = StakingBalanceResult::new(wallet_id, account_id, staking_balance);
+                            app_handle.emit("StakingBalance", staking_balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::DelegationsBalance(wallet_id, account_id, delegations_balance))=>{
+                        println!("Delegaion Balance updated {:?}", delegations_balance);
+                        let delegations_balance = DelegationsBalanceResult::new(wallet_id, account_id, delegations_balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            app_handle.emit("DelegationBalance", delegations_balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::TransactionList(_, _, msg))=>{
+                        match msg {
+                            Ok(transaction_list) => {
+                                println!("Transaction List received: {:?}", transaction_list);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("TransactionList", transaction_list).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error receiving transaction list: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
+                   
+                    Some(BackendEvent::NewAddress(msg)) => {
+                        match msg {
+                            Ok(address_info) => {
+                                println!("New address added successfully: {:?}", address_info);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("NewAddress", address_info).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error generating address wallet: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
+                        }
+                    }
                     None => {
                         println!("No message received from backend");
                     }

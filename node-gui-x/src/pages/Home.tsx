@@ -29,9 +29,11 @@ import {
   AmountType,
   BalanceType,
   ChainInfoType,
+  DelegationBalancesType,
   P2p,
   PeerConnected,
   PoolInfoType,
+  StakingBalancesType,
   TransactionType,
   WalletInfo,
 } from "../types/Types";
@@ -63,6 +65,12 @@ function Home() {
   const [currentAccountId, setCurrentAccountId] = useState(0);
   const [currentWalletId, setCurrentWalletId] = useState(0);
   const [accountName, setAccountName] = useState("");
+  const [stakingBalances, setStakingBalances] = useState<StakingBalancesType[]>(
+    []
+  );
+  const [delegationBalances, setDelegationBalances] = useState<
+    DelegationBalancesType[]
+  >([]);
 
   const [showMnemonicModal, setShowMnemonicModal] = useState(false);
   const [showRecoverWalletModal, setShowRecoverWalletModal] = useState(false);
@@ -71,6 +79,22 @@ function Home() {
   const [loadingMessage, setLoadingMessage] = useState("");
   const errorListenerInitialized = useRef(false);
   const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
+  const balanceEventListenerInitialized = useRef(false);
+  const unsubscribeBalanceListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const stakingBalanceListenerInitialized = useRef(false);
+  const unsubscribeStakingBalanceListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const delegationBalanceListenerInitialized = useRef(false);
+  const unsubscribeDelegationBalanceListenerRef = useRef<
+    UnlistenFn | undefined
+  >(undefined);
+  const transactionListEventListenerInitialized = useRef(false);
+  const unsubscribeTransactionListListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const init_node = async () => {
@@ -101,10 +125,7 @@ function Home() {
     init_node();
     chainStateEventListener();
     p2pEventListener();
-    balanceEventListener();
-    stakingBalanceEventListener();
-    delegationBalanceEventListener();
-    transactionListEventListener();
+
     const setupErrorListener = async () => {
       if (!errorListenerInitialized.current) {
         unsubscribeErrorListenerRef.current = await errorListener();
@@ -112,7 +133,42 @@ function Home() {
       }
     };
 
+    const setupBalanceEventListener = async () => {
+      if (!balanceEventListenerInitialized.current) {
+        unsubscribeBalanceListenerRef.current = await balanceEventListener();
+        balanceEventListenerInitialized.current = true;
+      }
+    };
+
+    const setupStakingBalanceEventListener = async () => {
+      if (!stakingBalanceListenerInitialized.current) {
+        unsubscribeStakingBalanceListenerRef.current =
+          await stakingBalanceEventListener();
+        stakingBalanceListenerInitialized.current = true;
+      }
+    };
+
+    const setupDelegationBalanceEventListener = async () => {
+      if (!delegationBalanceListenerInitialized.current) {
+        unsubscribeDelegationBalanceListenerRef.current =
+          await delegationBalanceEventListener();
+        delegationBalanceListenerInitialized.current = true;
+      }
+    };
+
+    const setupTransactionListEventListener = async () => {
+      if (!transactionListEventListenerInitialized.current) {
+        unsubscribeTransactionListListenerRef.current =
+          await transactionListEventListener();
+        transactionListEventListenerInitialized.current = true;
+      }
+    };
+
     setupErrorListener();
+    setupBalanceEventListener();
+    setupStakingBalanceEventListener();
+    setupDelegationBalanceEventListener();
+    setupTransactionListEventListener();
     return () => {
       if (unsubscribeErrorListenerRef.current) {
         unsubscribeErrorListenerRef.current();
@@ -164,28 +220,33 @@ function Home() {
   }, [currentAccount, currentAccountId]);
 
   const p2pEventListener = async () => {
-    await listen("P2p", (event) => {
-      const newP2pInfo = event.payload as P2p;
-      if ("PeerConnected" in newP2pInfo) {
-        const peerInfo = newP2pInfo.PeerConnected;
-        setP2pInfo((prevP2pInfo) => {
-          const exists = prevP2pInfo.some(
-            (peer) => peer.address === peerInfo.address
-          );
+    try {
+      const unsubscribe = await listen("P2p", (event) => {
+        const newP2pInfo = event.payload as P2p;
+        if ("PeerConnected" in newP2pInfo) {
+          const peerInfo = newP2pInfo.PeerConnected;
+          setP2pInfo((prevP2pInfo) => {
+            const exists = prevP2pInfo.some(
+              (peer) => peer.address === peerInfo.address
+            );
 
-          if (!exists) {
-            return [...prevP2pInfo, peerInfo];
-          } else {
-            return prevP2pInfo;
-          }
-        });
-      } else if ("PeerDisconnected" in newP2pInfo) {
-        const peerId = newP2pInfo.PeerDisconnected as number;
-        setP2pInfo((prevP2pInfo) =>
-          prevP2pInfo.filter((peer) => peer.id !== peerId)
-        );
-      }
-    });
+            if (!exists) {
+              return [...prevP2pInfo, peerInfo];
+            } else {
+              return prevP2pInfo;
+            }
+          });
+        } else if ("PeerDisconnected" in newP2pInfo) {
+          const peerId = newP2pInfo.PeerDisconnected as number;
+          setP2pInfo((prevP2pInfo) =>
+            prevP2pInfo.filter((peer) => peer.id !== peerId)
+          );
+        }
+        return unsubscribe;
+      });
+    } catch (error) {
+      console.error("Error setting up P2P event listener:", error);
+    }
   };
 
   const errorListener = async () => {
@@ -197,7 +258,6 @@ function Home() {
           notify(errorMessage[1], "error");
         }
       });
-
       return unsubscribe;
     } catch (error) {
       console.error("Error setting up error listener:", error);
@@ -205,128 +265,130 @@ function Home() {
   };
 
   const chainStateEventListener = async () => {
-    await listen("ChainInfo", (event) => {
-      const newChainInfo: ChainInfoType = event.payload as ChainInfoType;
-      setChainInfo(newChainInfo);
-    });
+    try {
+      const unsubscribe = await listen("ChainState", (event) => {
+        const newChainInfo = event.payload as ChainInfoType;
+        setChainInfo(newChainInfo);
+        return unsubscribe;
+      });
+    } catch (error) {
+      console.error("Error setting up chain state listener:", error);
+    }
   };
   const balanceEventListener = async () => {
-    await listen("Balances", (event) => {
-      const newBalances = event.payload as {
-        wallet_id: number;
-        account_id: number;
-        balance: BalanceType;
-      };
-      console.log("balance updated, ", newBalances);
-      if (newBalances.balance) {
-        setCurrentAccount((prevAccount) => ({
-          name: prevAccount?.name ? prevAccount.name : "",
-          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
-          staking_enabled: prevAccount?.staking_enabled
-            ? prevAccount.staking_enabled
-            : false,
-          staking_balance: prevAccount?.staking_balance
-            ? prevAccount.staking_balance
-            : {},
-          delegations_balance: prevAccount?.delegations_balance
-            ? prevAccount.delegations_balance
-            : {},
-          balance: newBalances.balance,
-          transaction_list: prevAccount?.transaction_list
-            ? prevAccount.transaction_list
-            : { count: 0, skip: 0, total: 0, txs: [] },
-        }));
-      }
-    });
+    try {
+      const unsubscribe = await listen("Balances", (event) => {
+        const newBalances = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          balance: BalanceType;
+        };
+        console.log("balance updated, ", newBalances);
+        if (newBalances.balance) {
+          setCurrentAccount((currentAccount) => {
+            if (currentAccount) {
+              return {
+                ...currentAccount,
+                balance: newBalances.balance,
+              };
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up balance listener:", error);
+    }
   };
   const stakingBalanceEventListener = async () => {
-    await listen("StakingBalance", (event) => {
-      const newStakingBalances = event.payload as {
-        wallet_id: number;
-        account_id: number;
-        staking_balance: Record<string, PoolInfoType>;
-      };
-      console.log("staking balance updated, ", newStakingBalances);
+    try {
+      const unsubscribe = await listen("StakingBalance", (event) => {
+        const newStakingBalances = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          staking_balance: Record<string, PoolInfoType>;
+        };
+        console.log("staking balance updated, ", newStakingBalances);
 
-      if (newStakingBalances.staking_balance) {
-        setCurrentAccount((prevAccount) => ({
-          name: prevAccount?.name ? prevAccount.name : "",
-          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
-          staking_enabled: prevAccount?.staking_enabled
-            ? prevAccount.staking_enabled
-            : false,
-          staking_balance: newStakingBalances.staking_balance,
-          delegations_balance: prevAccount?.delegations_balance
-            ? prevAccount.delegations_balance
-            : {},
-          balance: prevAccount?.balance
-            ? prevAccount.balance
-            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
-          transaction_list: prevAccount?.transaction_list
-            ? prevAccount.transaction_list
-            : { count: 0, skip: 0, total: 0, txs: [] },
-        }));
-      }
-    });
+        if (newStakingBalances) {
+          setStakingBalances((currentStakingBalance) => {
+            const index = currentStakingBalance.findIndex(
+              (balance) =>
+                balance.wallet_id === newStakingBalances.wallet_id &&
+                balance.account_id === newStakingBalances.account_id
+            );
+
+            if (index !== -1) {
+              const updateBalances = [...currentStakingBalance];
+              updateBalances[index] = newStakingBalances;
+              return updateBalances;
+            } else {
+              return [...currentStakingBalance, newStakingBalances];
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.log("Error setting up staking balance listener:", error);
+    }
   };
   const transactionListEventListener = async () => {
-    await listen("TransactionList", (event) => {
-      const newTransactionList = event.payload as TransactionType;
-      console.log("transaction list updated, ", newTransactionList);
+    try {
+      const unsubscribe = await listen("TransactionList", (event) => {
+        const newTransactionList = event.payload as TransactionType;
+        console.log("transaction list updated, ", newTransactionList);
 
-      if (newTransactionList) {
-        setCurrentAccount((prevAccount) => ({
-          name: prevAccount?.name ? prevAccount.name : "",
-          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
-          staking_enabled: prevAccount?.staking_enabled
-            ? prevAccount.staking_enabled
-            : false,
-          staking_balance: prevAccount?.staking_balance
-            ? prevAccount.staking_balance
-            : {},
-          delegations_balance: prevAccount?.delegations_balance
-            ? prevAccount.delegations_balance
-            : {},
-          balance: prevAccount?.balance
-            ? prevAccount.balance
-            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
-          transaction_list: newTransactionList,
-        }));
-      }
-    });
+        if (newTransactionList) {
+          setCurrentAccount((currentAccount) => {
+            if (currentAccount) {
+              return {
+                ...currentAccount,
+                transaction_list: newTransactionList,
+              };
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up transaction list listener:", error);
+    }
   };
   const delegationBalanceEventListener = async () => {
-    await listen("Balances", (event) => {
-      const newDelegationBalance = event.payload as {
-        wallet_id: number;
-        account_id: number;
-        delegations_balance: Record<
-          string,
-          [pool_id: string, amount: AmountType]
-        >;
-      };
-      console.log("delegation balance updated, ", newDelegationBalance);
+    try {
+      const unsubscribe = await listen("DelegationBalance", (event) => {
+        const newDelegationBalance = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          delegations_balance: Record<
+            string,
+            [pool_id: string, amount: AmountType]
+          >;
+        };
+        console.log("delegation balance updated, ", newDelegationBalance);
 
-      if (newDelegationBalance.delegations_balance) {
-        setCurrentAccount((prevAccount) => ({
-          name: prevAccount?.name ? prevAccount.name : "",
-          addresses: prevAccount?.addresses ? prevAccount.addresses : {},
-          staking_enabled: prevAccount?.staking_enabled
-            ? prevAccount.staking_enabled
-            : false,
-          staking_balance: prevAccount?.staking_balance
-            ? prevAccount.staking_balance
-            : {},
-          delegations_balance: newDelegationBalance.delegations_balance,
-          balance: prevAccount?.balance
-            ? prevAccount.balance
-            : { coins: { atoms: 0, decimal: 0 }, tokens: {} },
-          transaction_list: prevAccount?.transaction_list
-            ? prevAccount.transaction_list
-            : { count: 0, skip: 0, total: 0, txs: [] },
-        }));
-      }
-    });
+        if (newDelegationBalance) {
+          setDelegationBalances((currentBalances) => {
+            const index = currentBalances.findIndex(
+              (balance) =>
+                balance.wallet_id === newDelegationBalance.wallet_id &&
+                balance.account_id === newDelegationBalance.account_id
+            );
+            if (index !== -1) {
+              const updateBalances = [...currentBalances];
+              updateBalances[index] = newDelegationBalance;
+              return updateBalances;
+            } else {
+              return [...currentBalances, newDelegationBalance];
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up delegation balance listener:", error);
+    }
   };
   const createNewWallet = () => {
     try {
@@ -447,7 +509,7 @@ function Home() {
     setShowRecoverWalletModal(true);
   };
 
-  const openWallet = async () => {
+  const handleOpenWallet = async () => {
     setLoadingMessage("Opening wallet. Please wait.");
     try {
       const filePath = await open({
@@ -803,7 +865,7 @@ function Home() {
                       Recover {walletMode} Wallet
                     </button>
                     <button
-                      onClick={() => openWallet()}
+                      onClick={() => handleOpenWallet()}
                       className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
                     >
                       Open {walletMode} Wallet
@@ -842,8 +904,8 @@ function Home() {
                               key={wallet.wallet_id}
                               value={wallet.wallet_id}
                             >
-                              {wallet.path.substring(
-                                wallet.path.lastIndexOf("\\") + 1
+                              {wallet.path?.substring(
+                                wallet.path?.lastIndexOf("\\") + 1
                               )}
                             </option>
                           ))}
@@ -991,6 +1053,8 @@ function Home() {
                     <WalletActions
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
+                      stakingBalances = {stakingBalances}
+                      delegationBalances = {delegationBalances}
                       currentAccountId={currentAccountId}
                       chainInfo={chainInfo}
                       activeTab={activeTab}

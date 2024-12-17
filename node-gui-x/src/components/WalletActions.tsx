@@ -21,6 +21,7 @@ const WalletActions = (props: {
     wallet_id: number,
     encrypted: string
   ) => void;
+  handleUpdateStakingState: (enabled: boolean) => void;
   handleRemoveWallet: (wallet_id: number) => void;
 }) => {
   const [showEncryptWalletModal, setShowEncryptWalletModal] = useState(false);
@@ -368,6 +369,7 @@ const WalletActions = (props: {
           currentWallet={props.currentWallet}
           currentAccountId={props.currentAccountId}
           currentWalletId={props.currentWallet?.wallet_id}
+          handleUpdateStakingState={props.handleUpdateStakingState}
         />
       )}
       {props.activeTab === "delegation" && (

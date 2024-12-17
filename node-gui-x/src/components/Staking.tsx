@@ -17,13 +17,16 @@ const Staking = (props: {
   currentWallet: WalletInfo | undefined;
   currentAccountId: number | undefined;
   currentWalletId: number | undefined;
+  handleUpdateStakingState: (enabled: boolean) => void;
 }) => {
   const [currentPoolId, setCurrentPoolId] = useState("");
   const [pledgeAmount, setPledgeAmount] = useState(0);
   const [costPerBlock, setCostPerBlock] = useState(0);
   const [marginRatio, setMarginRatio] = useState(0);
   const [decommissionAddress, setDecommissionAddress] = useState("");
-  const [isStakingStarted, setIsStakingStarted] = useState(false);
+  const [isStakingStarted, setIsStakingStarted] = useState(
+    props.currentAccount?.staking_enabled
+  );
   const [showDecommissionModal, setShowDecommissionModal] = useState(false);
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
@@ -49,19 +52,20 @@ const Staking = (props: {
         },
       });
 
-      const unsubscribe = await listen("CreateStake", (event) => {
-        const transactionResult = event.payload as {
-          wallet_id: string;
-          account_id: string;
-          enabled: boolean;
-        };
-        if (transactionResult) {
-          setIsStakingStarted(transactionResult.enabled);
-          notify(
-            transactionResult.enabled ? "Staking started" : "Staking stopped",
-            "success"
-          );
-        } 
+      const unsubscribe = await listen("ToggleStaking", (event) => {
+        if (Array.isArray(event.payload)) {
+          const [wallet_id, account_id, enabled] = event.payload;
+          console.log("toggle staking result", enabled);
+          if (
+            wallet_id === props.currentWalletId &&
+            account_id === props.currentAccountId &&
+            event.payload
+          ) {
+            setIsStakingStarted(enabled);
+            props.handleUpdateStakingState(enabled);
+            notify(enabled ? "Staking started" : "Staking stopped", "success");
+          }
+        }
         unsubscribe();
       });
       setIsLoading(false);
@@ -78,7 +82,7 @@ const Staking = (props: {
       await invoke("decommission_pool_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0, 
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
           pool_id: currentPoolId,
           output_address: receiveAddress,
         },
@@ -109,7 +113,7 @@ const Staking = (props: {
       await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0, 
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
           pledge_amount: pledgeAmount.toString(),
           mpt: marginRatio.toString(),
           cost_per_block: costPerBlock.toString(),
@@ -137,6 +141,8 @@ const Staking = (props: {
   };
   const handleConfirmTransaction = async () => {
     try {
+      setLoadingMessage("Confirming transaction. Please wait.");
+      setIsLoading(true);
       await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: transactionInfo?.transaction_info.wallet_id,
@@ -155,9 +161,11 @@ const Staking = (props: {
         }
         unsubscribe();
       });
+      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
+    setIsLoading(false);
   };
 
   return (

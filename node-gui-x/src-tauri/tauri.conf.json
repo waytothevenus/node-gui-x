@@ -17,6 +17,7 @@
         "width": 1024,
         "height": 719,
         "resizable": false,
+        "maximizable": false,
         "fullscreen": false,
         "theme": "Light"
       }

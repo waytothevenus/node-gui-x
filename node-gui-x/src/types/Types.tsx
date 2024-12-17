@@ -35,6 +35,18 @@ export type AccountType = {
   transaction_list: TransactionType;
 };
 
+export type StakingBalancesType = {
+  account_id: number;
+  wallet_id: number;
+  staking_balance: Record<string, PoolInfoType>;
+};
+
+export type DelegationBalancesType = {
+  wallet_id: number;
+  account_id: number;
+  delegations_balance: Record<string, [pool_id: string, amount: AmountType]>;
+};
+
 export type AmountType = {
   atoms: string;
 };

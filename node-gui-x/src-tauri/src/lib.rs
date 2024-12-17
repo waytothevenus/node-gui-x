@@ -14,7 +14,8 @@
 // limitations under the License.
 
 use chainstate::ChainInfo;
-use common::chain::DelegationId;
+use common::chain::{ DelegationId, PoolId };
+use common::primitives::Amount;
 use common::time_getter::TimeGetter;
 use node_gui_backend::messages::{
     BackendEvent,
@@ -34,6 +35,8 @@ use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedN
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
 use serde_json::Value;
+use wallet_rpc_lib::types::{ Balances, PoolInfo };
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -187,6 +190,65 @@ impl DelegateStakingResult {
     }
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct StakingBalanceResult {
+    wallet_id: WalletId,
+    account_id: AccountId,
+    staking_balance: BTreeMap<PoolId, PoolInfo>,
+}
+
+impl StakingBalanceResult {
+    fn new(
+        wallet_id: WalletId,
+        account_id: AccountId,
+        staking_balance: BTreeMap<PoolId, PoolInfo>
+    ) -> Self {
+        StakingBalanceResult {
+            wallet_id,
+            account_id,
+            staking_balance,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct BalanceResult {
+    wallet_id: WalletId,
+    account_id: AccountId,
+    balance: Balances,
+}
+
+impl BalanceResult {
+    fn new(wallet_id: WalletId, account_id: AccountId, balance: Balances) -> Self {
+        BalanceResult {
+            wallet_id,
+            account_id,
+            balance,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct DelegationsBalanceResult {
+    wallet_id: WalletId,
+    account_id: AccountId,
+    delegations_balance: BTreeMap<DelegationId, (PoolId, Amount)>,
+}
+
+impl DelegationsBalanceResult {
+    fn new(
+        wallet_id: WalletId,
+        account_id: AccountId,
+        delegations_balance: BTreeMap<DelegationId, (PoolId, Amount)>
+    ) -> Self {
+        DelegationsBalanceResult {
+            wallet_id,
+            account_id,
+            delegations_balance,
+        }
+    }
+}
+
 impl Default for AppState {
     fn default() -> Self {
         AppState {
@@ -267,6 +329,44 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                         println!("ChainInfo event received {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("ChainInfo", msg).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::Balance(wallet_id, account_id, balance))=>{
+                        println!("Balance updated {:?}", balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            let balance = BalanceResult::new(wallet_id, account_id, balance);
+                            app_handle.emit("Balance", balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::StakingBalance(wallet_id, account_id, staking_balance))=>{
+                        println!("staking Balance updated {:?}", staking_balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            let staking_balance = StakingBalanceResult::new(wallet_id, account_id, staking_balance);
+                            app_handle.emit("StakingBalance", staking_balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::DelegationsBalance(wallet_id, account_id, delegations_balance))=>{
+                        println!("Delegaion Balance updated {:?}", delegations_balance);
+                        let delegations_balance = DelegationsBalanceResult::new(wallet_id, account_id, delegations_balance);
+                        if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                            app_handle.emit("DelegationBalance", delegations_balance).unwrap();
+                        }
+                    }
+                    Some(BackendEvent::TransactionList(_, _, msg))=>{
+                        match msg {
+                            Ok(transaction_list) => {
+                                println!("Transaction List received: {:?}", transaction_list);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("TransactionList", transaction_list).unwrap();
+                                }
+                            }
+                            Err(e) => {
+                                let error_message = e.to_string();
+                                println!("Error receiving transaction list: {}", error_message);
+                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    app_handle.emit("Error", error_message).unwrap();
+                                }
+                            }
                         }
                     }
                     Some(BackendEvent::ImportWallet(msg)) => {

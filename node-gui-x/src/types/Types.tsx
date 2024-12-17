@@ -19,6 +19,7 @@ export type PoolInfoType = {
   height: number;
   block_timestamp: { timestamp: number };
   vrf_public_key: string;
+  decommission_key: string;
   staker: string;
   margin_ratio_per_thousand: number;
   cost_per_block: RpcAmountOutType;

@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use chainstate::ChainInfo;
+use common::address::Address;
 use common::chain::{ DelegationId, PoolId };
 use common::primitives::Amount;
 use common::time_getter::TimeGetter;
@@ -232,14 +233,14 @@ impl BalanceResult {
 struct DelegationsBalanceResult {
     wallet_id: WalletId,
     account_id: AccountId,
-    delegations_balance: BTreeMap<DelegationId, (PoolId, Amount)>,
+    delegations_balance: BTreeMap<String, (String, Amount)>,
 }
 
 impl DelegationsBalanceResult {
     fn new(
         wallet_id: WalletId,
         account_id: AccountId,
-        delegations_balance: BTreeMap<DelegationId, (PoolId, Amount)>
+        delegations_balance: BTreeMap<String, (String, Amount)>
     ) -> Self {
         DelegationsBalanceResult {
             wallet_id,
@@ -673,7 +674,16 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     }
                     Some(BackendEvent::DelegationsBalance(wallet_id, account_id, delegations_balance))=>{
                         println!("Delegaion Balance updated {:?}", delegations_balance);
-                        let delegations_balance = DelegationsBalanceResult::new(wallet_id, account_id, delegations_balance);
+                        let chain_config_ref = Arc::as_ref(&node.chain_config);
+                        let mut delegation_balances = BTreeMap::new();
+                        for(delegation_id, (pool_id, balance)) in delegations_balance{
+                            let delegation_address = Address::new(chain_config_ref, delegation_id).map_err(|e|{
+                                e.to_string()
+                            })?.as_str().to_string();
+                            let pool_address = Address::new(chain_config_ref, pool_id).map_err(|e|e.to_string())?.as_str().to_string();
+                            delegation_balances.insert(delegation_address, (pool_address, balance));
+                        }
+                        let delegations_balance = DelegationsBalanceResult::new(wallet_id, account_id, delegation_balances);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("DelegationBalance", delegations_balance).unwrap();
                         }

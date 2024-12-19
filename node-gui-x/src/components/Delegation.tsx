@@ -137,12 +137,12 @@ const Delegation = (props: {
           tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          console.log(transactionInfo);
-          notify("Transaction confirmed successfully!", "success");
-          setShowSuccessModal(true);
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload;
+        if (result) {
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmTransactionModal(false);
+          setShowSuccessModal(false);
         }
         unsubscribe();
       });
@@ -424,7 +424,9 @@ const Delegation = (props: {
                   balance.account_id === props.currentAccountId
               )?.delegations_balance || {}
             );
-            const delegation_id = delegation_ids[0].replace("HexifiedDelegationId{", "").replace("}", "");
+            const delegation_id = delegation_ids[0]
+              .replace("HexifiedDelegationId{", "")
+              .replace("}", "");
             let pool_address = pool_id
               .replace("HexifiedPoolId{", "")
               .replace("}", "");
@@ -455,7 +457,7 @@ const Delegation = (props: {
                   {pool_address.slice(-4)}
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {amount.atoms}
+                  {parseInt(amount.atoms) / 100000000000}
                 </td>
 
                 <td className="py-2 px-4 border-b border-gray-200 flex justify-between space-x-2">

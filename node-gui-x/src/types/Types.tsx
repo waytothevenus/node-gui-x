@@ -209,13 +209,16 @@ export type TransferOutput = {
 
 export type LockThenTransferOutput = {
   LockThenTransfer: [
-    string,
     {
       Coin: {
         atoms: string;
       };
     },
-    string
+    string,
+    {
+      content: number;
+      type: string;
+    }
   ];
 };
 

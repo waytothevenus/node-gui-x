@@ -336,15 +336,23 @@ function Home() {
   const transactionListEventListener = async () => {
     try {
       const unsubscribe = await listen("TransactionList", (event) => {
-        const newTransactionList = event.payload as TransactionType;
+        const newTransactionList = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          transaction_list: TransactionType;
+        };
         console.log("transaction list updated, ", newTransactionList);
 
         if (newTransactionList) {
           setCurrentAccount((currentAccount) => {
-            if (currentAccount) {
+            if (
+              currentAccount &&
+              newTransactionList.wallet_id === currentWalletId &&
+              newTransactionList.account_id === currentAccountId
+            ) {
               return {
                 ...currentAccount,
-                transaction_list: newTransactionList,
+                transaction_list: newTransactionList.transaction_list,
               };
             }
           });
@@ -1053,8 +1061,8 @@ function Home() {
                     <WalletActions
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
-                      stakingBalances = {stakingBalances}
-                      delegationBalances = {delegationBalances}
+                      stakingBalances={stakingBalances}
+                      delegationBalances={delegationBalances}
                       currentAccountId={currentAccountId}
                       chainInfo={chainInfo}
                       activeTab={activeTab}

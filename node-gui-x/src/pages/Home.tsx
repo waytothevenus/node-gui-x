@@ -77,6 +77,7 @@ function Home() {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
   const errorListenerInitialized = useRef(false);
   const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
   const balanceEventListenerInitialized = useRef(false);
@@ -106,6 +107,7 @@ function Home() {
           });
           if (result) {
             console.log("Chain info: ", result);
+            setIsInitialized(true);
             setChainInfo(result);
             notify("Node initialized", "info");
             try {
@@ -113,6 +115,10 @@ function Home() {
               console.log("P2P event receiver triggered");
             } catch (err) {
               console.error("Error starting P2P event receiver: ", err);
+              notify(
+                "Error occurred while starting P2P event listener",
+                "error"
+              );
             }
           }
         }
@@ -121,8 +127,8 @@ function Home() {
         notify("Error occurred while initializing node", "error");
       }
     };
-
-    init_node();
+    console.log("isInitialized flag is", isInitialized);
+    !isInitialized && init_node();
     chainStateEventListener();
     p2pEventListener();
 

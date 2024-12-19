@@ -156,7 +156,17 @@ export type Transaction = {
   };
 };
 
-export type Input = {
+export type Input = Utxo | Account;
+export type Account = {
+  Account: {
+    account: {
+      DelegationBalance: [string, { atoms: string }];
+    };
+    nonce: number;
+  };
+};
+
+export type Utxo = {
   Utxo: {
     id: {
       Transaction: string; // Transaction ID as a string
@@ -223,11 +233,9 @@ export type LockThenTransferOutput = {
 };
 
 export type DelegateStakingOutput = {
-  DelegateStakingType: [
+  DelegateStaking: [
     {
-      Coin: {
-        atoms: string;
-      };
+      atoms: string;
     },
     string
   ];

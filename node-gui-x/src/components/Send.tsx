@@ -14,6 +14,8 @@ const Send = (props: {
   const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -42,6 +44,8 @@ const Send = (props: {
   };
 
   const handleConfirmTransaction = async () => {
+    setLoadingMessage("Confirming transaction. Please wait.");
+    setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
@@ -50,16 +54,19 @@ const Send = (props: {
         },
       });
       const unsubscribe = await listen("Broadcast", (event) => {
-        const result = event.payload;
+        const result = event.payload as number;
+        console.log(result);
         if (result) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
           setShowSuccessModal(true);
         }
         unsubscribe();
+        setIsLoading(false);
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
+      setIsLoading(false);
     }
   };
   return (
@@ -82,6 +89,14 @@ const Send = (props: {
           right: 36px; /* Adjust this value as needed */
         }
       `}</style>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
+            <div className="loader px-10">{loadingMessage}</div>
+          </div>
+        </div>
+      )}
 
       {showConfirmModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -111,11 +126,17 @@ const Send = (props: {
               <p className="text-start whitespace-nowrap">
                 -Transaction ({"0x"}
                 {
-                  transactionInfo?.serialized_tx.V1.inputs[0].Utxo.id
-                    .Transaction
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.id.Transaction
                 }
                 {", "}
-                {transactionInfo?.serialized_tx.V1.inputs[0].Utxo.index})
+                {
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.index
+                }
+                )
               </p>
             </div>
             <div>

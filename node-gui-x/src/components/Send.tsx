@@ -13,6 +13,7 @@ const Send = (props: {
   const [amount, setAmount] = useState("");
   const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -53,7 +54,8 @@ const Send = (props: {
         if (result) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
-        } 
+          setShowSuccessModal(true);
+        }
         unsubscribe();
       });
     } catch (error) {
@@ -143,6 +145,31 @@ const Send = (props: {
               }}
             >
               Confirm and Broadcast
+            </button>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
+            {/* Close Button */}
+            <button
+              className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
+              onClick={() => setShowSuccessModal(false)}
+            >
+              <IoCloseSharp />
+            </button>
+            <h2 className="text-lg font-bold mb-4">Success</h2>
+            <p className="text-start">
+              Please wait for your transaction to be included in a block
+            </p>
+
+            <button
+              className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Okay
             </button>
           </div>
         </div>

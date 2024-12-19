@@ -38,7 +38,7 @@ const Staking = (props: {
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const handleStaking = async () => {
+  const handleToggleStaking = async () => {
     try {
       setLoadingMessage(
         isStakingStarted
@@ -77,7 +77,7 @@ const Staking = (props: {
     }
     setIsLoading(false);
   };
-  const handleDecommission = async () => {
+  const handleDecommissionStaking = async () => {
     try {
       setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       setIsLoading(true);
@@ -92,8 +92,13 @@ const Staking = (props: {
       const unsubscribe = await listen("DecommissionPool", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("Pool decommissioned successfully", transactionResult);
-          notify("Pool decommissioned", "success");
+          const transactionResult = event.payload as Data;
+          if (transactionResult) {
+            console.log("trasaction info is =========>", transactionResult);
+            setTransactionInfo(transactionResult);
+            setShowConfirmTransactionModal(true);
+          }
+          unsubscribe();
         }
         unsubscribe();
       });
@@ -151,14 +156,11 @@ const Staking = (props: {
           tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
-        const trasactionResult = event.payload as Data;
-        if (trasactionResult) {
-          console.log(
-            "sending amount transaction result is ========>",
-            trasactionResult
-          );
-          notify("Transaction confirmed successfully!", "success");
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload;
+        if (result) {
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmTransactionModal(false);
           setShowSuccessModal(true);
         }
         unsubscribe();
@@ -229,7 +231,7 @@ const Staking = (props: {
             />
             <button
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
-              onClick={handleDecommission}
+              onClick={handleDecommissionStaking}
             >
               Decommission
             </button>
@@ -349,22 +351,23 @@ const Staking = (props: {
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[0]
+                      )?.LockThenTransfer[1]
                     ).toString()}
-                    ),{" "}
+                    ,{" "}
                     {parseInt(
                       new String(
                         transactionInfo?.serialized_tx.V1.outputs.find(
                           (output) => "LockThenTransfer" in output
-                        )?.LockThenTransfer[1].Coin.atoms
+                        )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
                     ) / 1000000000000}
-                    {", "}
+                    {", "}OutpugTimeLock::ForBlockCound(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[2]
-                    ).toString()}
+                      )?.LockThenTransfer[2].content
+                    ).toString()}{" "}
+                    blocks))
                   </p>
                 </>
               )}
@@ -423,7 +426,7 @@ const Staking = (props: {
               ? "py-1 px-4 border text-[#E02424] border-[#E02424] bg-white rounded-lg transition-all duration-200 hover:outline-none hover:bg-[#E02424] hover:text-white hover:border-[#E02424]"
               : "w-40 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000]  hover:text-[#69EE96] hover:bg-black "
           }
-          onClick={handleStaking}
+          onClick={handleToggleStaking}
         >
           {isStakingStarted ? "STOP STAKING" : "BEGIN STAKING"}
         </button>

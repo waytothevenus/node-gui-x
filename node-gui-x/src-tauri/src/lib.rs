@@ -36,6 +36,7 @@ use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedN
 use once_cell::sync::OnceCell;
 use serde::{ Deserialize, Serialize };
 use serde_json::Value;
+use wallet::account::transaction_list::TransactionList;
 use wallet_rpc_lib::types::{ Balances, PoolInfo };
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -246,6 +247,23 @@ impl DelegationsBalanceResult {
             wallet_id,
             account_id,
             delegations_balance,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct TransactionListResult {
+    wallet_id: WalletId,
+    account_id: AccountId,
+    transaction_list: TransactionList,
+}
+
+impl TransactionListResult {
+    fn new(wallet_id: WalletId, account_id: AccountId, transaction_list: TransactionList) -> Self {
+        TransactionListResult {
+            wallet_id,
+            account_id,
+            transaction_list,
         }
     }
 }
@@ -688,12 +706,13 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             app_handle.emit("DelegationBalance", delegations_balance).unwrap();
                         }
                     }
-                    Some(BackendEvent::TransactionList(_, _, msg))=>{
+                    Some(BackendEvent::TransactionList(wallet_id, account_id, msg))=>{
                         match msg {
                             Ok(transaction_list) => {
                                 println!("Transaction List received: {:?}", transaction_list);
+                                let transaction_list_result = TransactionListResult::new(wallet_id, account_id, transaction_list);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                                    app_handle.emit("TransactionList", transaction_list).unwrap();
+                                    app_handle.emit("TransactionList", transaction_list_result).unwrap();
                                 }
                             }
                             Err(e) => {

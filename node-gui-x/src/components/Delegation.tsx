@@ -8,12 +8,7 @@ import {
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
-import {
-  encode,
-  encodeToBytesForAddress,
-  encodeToHash,
-  notify,
-} from "../utils/util";
+import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
@@ -37,6 +32,7 @@ const Delegation = (props: {
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleDeposit = async () => {
+    setShowDepositModal(false);
     setLoadingMessage("Depositing to delegation. Please wait.");
     setIsLoading(true);
     try {
@@ -46,14 +42,16 @@ const Delegation = (props: {
             ? props.currentWallet.wallet_id
             : 0,
           account_id: props.currentAccountId,
-          pool_id: poolAddress,
-          delegation_amount: depositAmount,
+          delegation_id: currentDelegationId,
+          delegation_amount: depositAmount.toString(),
         },
       });
       const unsubscribe = await listen("DelegateStaking", (event) => {
-        const transactionInfo = event.payload;
+        const transactionInfo = event.payload as Data;
         if (transactionInfo) {
           console.log(transactionInfo);
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
         }
         unsubscribe();
       });
@@ -66,6 +64,7 @@ const Delegation = (props: {
   const handleWithdraw = async () => {
     setLoadingMessage("Withdrawing from delegation. Please wait.");
     setIsLoading(true);
+    setShowWithdrawModal(false);
     try {
       await invoke("send_delegation_to_address_wrapper", {
         request: {
@@ -74,7 +73,7 @@ const Delegation = (props: {
             : 0,
           account_id: props.currentAccountId,
           address: withdrawAddress,
-          amount: withdrawAmount,
+          amount: withdrawAmount.toString(),
           delegation_id: currentDelegationId,
         },
       });
@@ -82,10 +81,11 @@ const Delegation = (props: {
         const transactionInfo = event.payload as Data;
         if (transactionInfo) {
           console.log(transactionInfo);
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
         }
         unsubscribe();
       });
-      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -120,6 +120,7 @@ const Delegation = (props: {
           console.log(transactionInfo);
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
+          setIsLoading(false);
         }
         unsubscribe();
       });
@@ -130,6 +131,8 @@ const Delegation = (props: {
   };
 
   const handleConfirmTransaction = async () => {
+    setLoadingMessage("Confirming transaction. Please wait.");
+    setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
@@ -138,15 +141,17 @@ const Delegation = (props: {
         },
       });
       const unsubscribe = await listen("Broadcast", (event) => {
-        const result = event.payload;
+        const result = event.payload as number;
         if (result) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmTransactionModal(false);
-          setShowSuccessModal(false);
+          setShowSuccessModal(true);
         }
         unsubscribe();
+        setIsLoading(false);
       });
     } catch (error) {
+      setIsLoading(false);
       notify(new String(error).toString(), "error");
     }
   };
@@ -169,7 +174,7 @@ const Delegation = (props: {
             style={{
               display: "inline-block",
               minWidth: "300px",
-              maxWidth: "65%",
+              maxWidth: "75%",
               whiteSpace: "wrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -196,71 +201,189 @@ const Delegation = (props: {
                 )}
               </p>
             </div>
-            <div>
-              <p className="text-start text-bold">BEGIN OF INPUTS</p>
-              <p className="text-start">
-                -Transaction({"0x"}
-                {
-                  transactionInfo?.serialized_tx.V1.inputs[0].Utxo.id
-                    .Transaction
-                }
-                )
-              </p>
-            </div>
-            <div>
-              <p className="text-start  text-bold">END OF INPUTS</p>
-            </div>
-            <div>
-              <p className="text-start">BEGIN OF OUTPUTS</p>
-              <p className="text-start">
-                -CreateDelegationId(Owner(
-                {encode(
-                  "tmt",
-                  encodeToBytesForAddress(
-                    new String(
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "CreateDelegationId" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -Transaction({"0x"}
+                    {
+                      transactionInfo.serialized_tx.V1.inputs.find(
+                        (output) => "Utxo" in output
+                      )?.Utxo.id.Transaction
+                    }
+                    )
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -CreateDelegationId(Owner(
+                    {
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[0]
-                    ).toString()
-                  )
-                )}
-                ), StakingPool(
-                {encode(
-                  "tpool",
-                  encodeToBytesForAddress(
-                    new String(
+                    }
+                    ), StakingPool(
+                    {
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[1]
-                    ).toString()
-                  )
-                )}
-                ))
-              </p>
+                    }
+                    ))
+                  </p>
 
-              <p className="text-start">
-                -Transfer(
-                {encode(
-                  "tmt",
-                  encodeToBytesForAddress(
-                    new String(
+                  <p className="text-start">
+                    -Transfer(
+                    {
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "Transfer" in output
                       )?.Transfer[1]
-                    ).toString()
-                  )
-                )}
-                ,{" "}
-                {parseInt(
-                  new String(
-                    transactionInfo?.serialized_tx.V1.outputs.find(
-                      (output) => "Transfer" in output
-                    )?.Transfer[0].Coin.atoms
-                  ).toString()
-                ) / 1000000000000}
-                )
-              </p>
-            </div>
+                    }
+                    ,{" "}
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "Transfer" in output
+                        )?.Transfer[0].Coin.atoms
+                      ).toString()
+                    ) / DECIMAL}
+                    )
+                  </p>
+                </div>
+              </>
+            )}
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "DelegateStaking" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -Transaction(
+                    {
+                      transactionInfo.serialized_tx.V1.inputs.find(
+                        (output) => "Utxo" in output
+                      )?.Utxo.id.Transaction
+                    }
+                    )
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -DelegateStaking(Amount(
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "DelegateStaking" in output
+                        )?.DelegateStaking[0]?.atoms
+                          ? transactionInfo?.serialized_tx.V1.outputs.find(
+                              (output) => "DelegateStaking" in output
+                            )?.DelegateStaking[0]?.atoms
+                          : "0"
+                      ).toString()
+                    ) / 100000000000}
+                    ), Delegation(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "DelegateStaking" in output
+                      )?.DelegateStaking[1]
+                    }
+                    ))
+                  </p>
+
+                  <p className="text-start">
+                    -Transfer(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "Transfer" in output
+                      )?.Transfer[1]
+                    }
+                    ,{" "}
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "Transfer" in output
+                        )?.Transfer[0].Coin.atoms
+                      ).toString()
+                    ) / DECIMAL}
+                    )
+                  </p>
+                </div>
+              </>
+            )}
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "LockThenTransfer" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -AccountOutPoint
+                    {`
+                      ${
+                        "nonce:" +
+                        "AccountNoce(" +
+                        transactionInfo.serialized_tx.V1.inputs
+                          .find((output) => "Account" in output)
+                          ?.Account.nonce?.toString() +
+                        ")," +
+                        " account: DelegationBalance(" +
+                        transactionInfo.serialized_tx.V1.inputs.find(
+                          (output) => "Account" in output
+                        )?.Account.account.DelegationBalance[0] +
+                        parseInt(
+                          new String(
+                            transactionInfo.serialized_tx.V1.inputs.find(
+                              (output) => "Account" in output
+                            )?.Account.account.DelegationBalance[1].atoms
+                          ).toString()
+                        ) /
+                          100000000000
+                      }
+                     `}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -LockThenTransfer(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[1]
+                    }
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "LockThenTransfer" in output
+                        )?.LockThenTransfer[0].Coin.atoms
+                      ).toString()
+                    ) / 100000000000}
+                    ), OutputTimeLock::ForBlockCount(
+                    {
+                      transactionInfo.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[2].content
+                    }
+                    blocks)
+                    {}
+                  </p>
+                </div>
+              </>
+            )}
             <div>
               <p className="text-start text-bold">END OF OUTPUTS</p>
             </div>
@@ -268,7 +391,6 @@ const Delegation = (props: {
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
               onClick={() => {
                 handleConfirmTransaction();
-                setShowConfirmTransactionModal(false);
               }}
             >
               Confirm and Broadcast

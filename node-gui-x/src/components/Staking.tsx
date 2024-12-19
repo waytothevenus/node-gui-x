@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import { encodeToHash, notify } from "../utils/util";
+import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
@@ -157,7 +157,7 @@ const Staking = (props: {
         },
       });
       const unsubscribe = await listen("Broadcast", (event) => {
-        const result = event.payload;
+        const result = event.payload as number;
         if (result) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmTransactionModal(false);
@@ -168,8 +168,8 @@ const Staking = (props: {
       setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
@@ -272,8 +272,9 @@ const Staking = (props: {
               <p className="text-start">
                 -Transaction({"0x"}
                 {
-                  transactionInfo?.serialized_tx.V1.inputs[0].Utxo.id
-                    .Transaction
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.id.Transaction
                 }
                 )
               </p>
@@ -294,37 +295,34 @@ const Staking = (props: {
                         (output) => "CreateStakePool" in output
                       )?.CreateStakePool[0]
                     ).toString()}
-                    )), Pledge(
-                    {pledgeAmount})
-                  </p>
-                  <p className="text-start">
-                    -Staker(
+                    ), Pledge(
+                    {pledgeAmount}), Staker(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateStakePool" in output
                       )?.CreateStakePool[1].staker
                     ).toString()}
-                    )
-                  </p>
-                  <p className="text-start">
-                    -Margin Ratio(
+                    ), VRFPubKey(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].vrf_public_key
+                    }
+                    ), Margin Ratio(
                     {
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateStakePool" in output
                       )?.CreateStakePool[1].margin_ratio_per_thousand
                     }
-                    )
-                  </p>
-                  <p className="text-start">
-                    -CostPerBlock(
+                    ), CostPerBlock(
                     {parseInt(
                       new String(
                         transactionInfo?.serialized_tx.V1.outputs.find(
                           (output) => "CreateStakePool" in output
                         )?.CreateStakePool[1].cost_per_block.atoms
                       ).toString()
-                    ) / 100000000000}
-                    )
+                    ) / DECIMAL}
+                    ))
                   </p>
                   <p className="text-start">
                     -Transfer(
@@ -340,7 +338,7 @@ const Staking = (props: {
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
-                    ) / 1000000000000}
+                    ) / DECIMAL}
                     )
                   </p>
                 </>
@@ -360,8 +358,8 @@ const Staking = (props: {
                           (output) => "LockThenTransfer" in output
                         )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
-                    ) / 1000000000000}
-                    {", "}OutpugTimeLock::ForBlockCound(
+                    ) / DECIMAL}
+                    {", "}OutpugTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output

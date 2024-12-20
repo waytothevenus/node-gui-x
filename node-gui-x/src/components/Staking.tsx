@@ -57,7 +57,6 @@ const Staking = (props: {
       const unsubscribe = await listen("ToggleStaking", (event) => {
         if (Array.isArray(event.payload)) {
           const [wallet_id, account_id, enabled] = event.payload;
-          console.log("toggle staking result", enabled);
           if (
             wallet_id === props.currentWalletId &&
             account_id === props.currentAccountId &&
@@ -94,7 +93,6 @@ const Staking = (props: {
         if (transactionResult) {
           const transactionResult = event.payload as Data;
           if (transactionResult) {
-            console.log("trasaction info is =========>", transactionResult);
             setTransactionInfo(transactionResult);
             setShowConfirmTransactionModal(true);
           }
@@ -130,7 +128,6 @@ const Staking = (props: {
       const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("trasaction info is =========>", transactionResult);
           setTransactionInfo(transactionResult);
           setShowConfirmTransactionModal(true);
         }

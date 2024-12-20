@@ -204,10 +204,6 @@ const WalletActions = (props: {
       const unsubscribe = await listen("CloseWallet", (event) => {
         const closeWalletResult = event.payload as { wallet_id: number };
         if (closeWalletResult) {
-          console.log(
-            "wallet closed successfully, ",
-            closeWalletResult.wallet_id
-          );
           props.handleRemoveWallet(closeWalletResult.wallet_id);
           notify("Wallet closed successfully.", "success");
         }

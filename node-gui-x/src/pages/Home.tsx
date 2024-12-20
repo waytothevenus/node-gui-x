@@ -106,13 +106,11 @@ function Home() {
             mode: walletMode,
           });
           if (result) {
-            console.log("Chain info: ", result);
             setIsInitialized(true);
             setChainInfo(result);
             notify("Node initialized", "info");
             try {
               await invoke("listen_events");
-              console.log("P2P event receiver triggered");
             } catch (err) {
               console.error("Error starting P2P event receiver: ", err);
               notify(
@@ -127,7 +125,6 @@ function Home() {
         notify("Error occurred while initializing node", "error");
       }
     };
-    console.log("isInitialized flag is", isInitialized);
     !isInitialized && init_node();
     chainStateEventListener();
     p2pEventListener();
@@ -178,7 +175,6 @@ function Home() {
     return () => {
       if (unsubscribeErrorListenerRef.current) {
         unsubscribeErrorListenerRef.current();
-        console.log("Error listener stopped");
       }
     };
   }, [netMode, walletMode]);
@@ -196,7 +192,6 @@ function Home() {
         setCurrentAccount(firstAccount);
       }
 
-      console.log("current wallet is ", currentWallet);
       setWalletsInfo((prevWallets) => {
         const updatedWallets = [...prevWallets];
         updatedWallets[currentWalletId] = currentWallet;
@@ -207,7 +202,6 @@ function Home() {
 
   useEffect(() => {
     if (currentAccount) {
-      console.log("current account is ", currentAccountId, currentAccount);
       setCurrentWallet((prevWallet) => {
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
@@ -251,7 +245,7 @@ function Home() {
         return unsubscribe;
       });
     } catch (error) {
-      console.error("Error setting up P2P event listener:", error);
+      notify("Error setting up p2p event listener", "error");
     }
   };
 
@@ -266,7 +260,7 @@ function Home() {
       });
       return unsubscribe;
     } catch (error) {
-      console.error("Error setting up error listener:", error);
+      notify("Error setting up  error listener", "error");
     }
   };
 
@@ -278,7 +272,7 @@ function Home() {
         return unsubscribe;
       });
     } catch (error) {
-      console.error("Error setting up chain state listener:", error);
+      notify("Error setting up chain state listener", "error");
     }
   };
   const balanceEventListener = async () => {
@@ -289,7 +283,6 @@ function Home() {
           account_id: number;
           balance: BalanceType;
         };
-        console.log("balance updated, ", newBalances);
         if (newBalances.balance) {
           setCurrentAccount((currentAccount) => {
             if (currentAccount) {
@@ -303,7 +296,7 @@ function Home() {
       });
       return unsubscribe;
     } catch (error) {
-      console.error("Error setting up balance listener:", error);
+      notify("Error setting up  balance listener", "error");
     }
   };
   const stakingBalanceEventListener = async () => {
@@ -314,7 +307,6 @@ function Home() {
           account_id: number;
           staking_balance: Record<string, PoolInfoType>;
         };
-        console.log("staking balance updated, ", newStakingBalances);
 
         if (newStakingBalances) {
           setStakingBalances((currentStakingBalance) => {
@@ -336,7 +328,7 @@ function Home() {
       });
       return unsubscribe;
     } catch (error) {
-      console.log("Error setting up staking balance listener:", error);
+      notify("Error setting up  staking balance listener", "error");
     }
   };
   const transactionListEventListener = async () => {
@@ -347,7 +339,6 @@ function Home() {
           account_id: number;
           transaction_list: TransactionType;
         };
-        console.log("transaction list updated, ", newTransactionList);
 
         if (newTransactionList) {
           setCurrentAccount((currentAccount) => {
@@ -380,7 +371,6 @@ function Home() {
             [pool_id: string, amount: AmountType]
           >;
         };
-        console.log("delegation balance updated, ", newDelegationBalance);
 
         if (newDelegationBalance) {
           setDelegationBalances((currentBalances) => {
@@ -548,7 +538,6 @@ function Home() {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
           if (walletInfo) {
-            console.log("walletInfo is ==========>", walletInfo);
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
             notify("Wallet opened successfully", "success");
           }
@@ -662,7 +651,6 @@ function Home() {
           account_id: string;
           account_info: AccountType;
         };
-        console.log("new account info is ========>", newAccount.account_info);
         if (newAccount) {
           addAccount(newAccount.account_id, newAccount.account_info);
           notify("Account created successfully!", "success");

@@ -341,16 +341,13 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
 
         tokio::select! {
                     msg_opt = backend_receiver.recv() =>{
-                        println!("Backend event received {:?}", msg_opt.clone());
         match msg_opt {
                     Some(BackendEvent::P2p(msg)) => {
-                        println!("P2P event received {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("P2p", msg).unwrap();
                         }
                     }
                     Some(BackendEvent::ChainInfo(msg)) => {
-                        println!("ChainInfo event received {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("ChainInfo", msg).unwrap();
                         }
@@ -359,14 +356,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::ImportWallet(msg)) => {
                         match msg {
                             Ok(wallet_info) => {
-                                println!("Wallet created successfully: {:?}", wallet_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("ImportWallet", wallet_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error creating wallet: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -376,14 +371,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::OpenWallet(msg)) => {
                         match msg {
                             Ok(wallet_info) => {
-                                println!("Wallet Opened successfully: {:?}", wallet_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("OpenWallet", wallet_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error creating wallet: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -393,7 +386,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::SendAmount(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Amount sent successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
@@ -408,7 +400,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error sending amount: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -418,14 +409,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::NewAddress(msg)) => {
                         match msg {
                             Ok(address_info) => {
-                                println!("New address added successfully: {:?}", address_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("NewAddress", address_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error generating address wallet: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -435,14 +424,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::UpdateEncryption(msg)) => {
                         match msg {
                             Ok(encryption_info) => {
-                                println!("Encryption updated successfully: {:?}", encryption_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("UpdateEncryption", encryption_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error updating encryption: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -450,7 +437,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                         }
                     }
                     Some(BackendEvent::CloseWallet(msg)) => {
-                        println!("Wallet closed successfully: {:?}", msg);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             app_handle.emit("CloseWallet", msg).unwrap();
                         }
@@ -458,7 +444,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::StakeAmount(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Encryption updated successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
@@ -473,7 +458,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error staking amount: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -484,7 +468,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::DecommissionPool(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Pool decommissioned successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
@@ -499,7 +482,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error decommissioning pool: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -510,7 +492,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::CreateDelegation(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Delegation created successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
@@ -525,7 +506,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error creating delegation: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -536,7 +516,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::DelegateStaking(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Staking delegated successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.0.tx.to_json(chain_config_ref){
@@ -551,7 +530,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error delegating staking: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -562,7 +540,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::SendDelegationToAddress(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Sent delegation to address successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     let chain_config_ref = Arc::as_ref(&node.chain_config);
                                     let serialized_info = match transaction_info.tx.to_json(chain_config_ref){
@@ -577,7 +554,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error sending delegation to address: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -588,14 +564,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::NewAccount(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("New account created successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("NewAccount", transaction_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error creating new account: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -606,14 +580,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::ToggleStaking(msg)) => {
                         match msg {
                             Ok(transaction_info) => {
-                                println!("Staking toggled successfully: {:?}", transaction_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("ToggleStaking", transaction_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error toggling staking: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -624,19 +596,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::ConsoleResponse(wallet_id, account_id, result)) => {
                         match result {
                             Ok(console_command) => {
-                                println!(
-                                    "Command executed successfully: wallet_id:, account_id:, console_command: {:?}, {:?}, {:?}",
-                                    wallet_id,
-                                    account_id,
-                                    console_command
-                                );
-                                if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                                    if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("ConsoleResponse", console_command).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error toggling staking: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("ConsoleResponse", error_message).unwrap();
                                 }
@@ -647,14 +612,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::Broadcast(msg)) => {
                         match msg {
                             Ok(wallet_id) => {
-                                println!("Transaction submitted successfully: {:?}", wallet_id);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Broadcast", wallet_id).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error toggling staking: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -673,25 +636,21 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                 }
         tokio::select! {
                     msg_opt = low_priority_backend_receiver.recv() =>{
-                        println!("Backend event received {:?}", msg_opt.clone());
         match msg_opt {
                    
                     Some(BackendEvent::Balance(wallet_id, account_id, balance))=>{
-                        println!("Balance updated {:?}", balance);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             let balance = BalanceResult::new(wallet_id, account_id, balance);
                             app_handle.emit("Balance", balance).unwrap();
                         }
                     }
                     Some(BackendEvent::StakingBalance(wallet_id, account_id, staking_balance))=>{
-                        println!("staking Balance updated {:?}", staking_balance);
                         if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                             let staking_balance = StakingBalanceResult::new(wallet_id, account_id, staking_balance);
                             app_handle.emit("StakingBalance", staking_balance).unwrap();
                         }
                     }
                     Some(BackendEvent::DelegationsBalance(wallet_id, account_id, delegations_balance))=>{
-                        println!("Delegaion Balance updated {:?}", delegations_balance);
                         let chain_config_ref = Arc::as_ref(&node.chain_config);
                         let mut delegation_balances = BTreeMap::new();
                         for(delegation_id, (pool_id, balance)) in delegations_balance{
@@ -709,7 +668,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::TransactionList(wallet_id, account_id, msg))=>{
                         match msg {
                             Ok(transaction_list) => {
-                                println!("Transaction List received: {:?}", transaction_list);
                                 let transaction_list_result = TransactionListResult::new(wallet_id, account_id, transaction_list);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("TransactionList", transaction_list_result).unwrap();
@@ -717,7 +675,6 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error receiving transaction list: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -728,14 +685,12 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                     Some(BackendEvent::NewAddress(msg)) => {
                         match msg {
                             Ok(address_info) => {
-                                println!("New address added successfully: {:?}", address_info);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("NewAddress", address_info).unwrap();
                                 }
                             }
                             Err(e) => {
                                 let error_message = e.to_string();
-                                println!("Error generating address wallet: {}", error_message);
                                 if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
                                     app_handle.emit("Error", error_message).unwrap();
                                 }
@@ -761,7 +716,6 @@ async fn add_create_wallet_wrapper(
 ) -> Result<(), String> {
     let mnemonic = wallet_controller::mnemonic::Mnemonic::parse(request.mnemonic).map_err(|e| {
         let error_message = e.to_string();
-        println!("Error parsing mnemonic: {}", error_message);
         error_message
     })?;
 
@@ -1081,7 +1035,6 @@ pub fn run() {
         .run(|_app_handle, event| {
             match event {
                 tauri::RunEvent::Ready => {
-                    println!("Window loaded");
                     GLOBAL_APP_HANDLE.set(_app_handle.clone()).expect(
                         "Failed to set global app handle"
                     );

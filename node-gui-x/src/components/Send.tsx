@@ -31,7 +31,6 @@ const Send = (props: {
       const unsubscribe = await listen("SendAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("transaction info is =========>", transactionResult);
 
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);
@@ -55,7 +54,6 @@ const Send = (props: {
       });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
-        console.log(result);
         if (result) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);

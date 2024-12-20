@@ -69,7 +69,6 @@ const Console = (props: {
         unsubscribe();
       });
     } catch (error) {
-      console.log(error);
       notify(new String(error).toString(), "error");
     }
   };

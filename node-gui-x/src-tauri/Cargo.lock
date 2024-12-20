@@ -4,8 +4,8 @@ version = 3
 
 [[package]]
 name = "accounting"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "parity-scale-codec",
@@ -208,7 +208,7 @@ checksum = "df099ccb16cd014ff054ac1bf392c67feeef57164b05c42f037cd40f5d4357f4"
 dependencies = [
  "clipboard-win",
  "core-graphics 0.23.2",
- "image 0.25.5",
+ "image",
  "log",
  "objc2",
  "objc2-app-kit",
@@ -408,9 +408,9 @@ dependencies = [
 
 [[package]]
 name = "atk"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4af014b17dd80e8af9fa689b2d4a211ddba6eb583c1622f35d0cb543f6b17e4"
+checksum = "241b621213072e993be4f6f3a9e4b45f65b7e6faad43001be957184b7bb1824b"
 dependencies = [
  "atk-sys",
  "glib",
@@ -419,9 +419,9 @@ dependencies = [
 
 [[package]]
 name = "atk-sys"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "251e0b7d90e33e0ba930891a505a9a35ece37b2dd37a14f3ffc306c13b980009"
+checksum = "c5e48b684b0ca77d2bbadeef17424c2ea3c897d44d566a1617e7e8f30614d086"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -515,12 +515,6 @@ dependencies = [
  "unicode-normalization",
  "zeroize",
 ]
-
-[[package]]
-name = "bit_field"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc827186963e592360843fb5ba4b973e145841266c1357f7180c43526f2e5b61"
 
 [[package]]
 name = "bitcoin-internals"
@@ -622,8 +616,8 @@ dependencies = [
 
 [[package]]
 name = "blockprod"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -837,9 +831,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.2"
+version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f34d93e62b03caf570cccc334cbc6c2fceca82f39211051345108adcba3eebdc"
+checksum = "27f657647bcff5394bf56c7317665bbf790a137a50eaaa5c6bfbb9e27a518f2d"
 dependencies = [
  "shlex",
 ]
@@ -909,8 +903,8 @@ dependencies = [
 
 [[package]]
 name = "chainstate"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "async-trait",
@@ -920,7 +914,7 @@ dependencies = [
  "consensus",
  "constraints-value-accumulator",
  "crypto",
- "derive_more",
+ "derive_more 1.0.0",
  "hex",
  "itertools 0.13.0",
  "jsonrpsee",
@@ -952,8 +946,8 @@ dependencies = [
 
 [[package]]
 name = "chainstate-launcher"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "chainstate",
  "chainstate-storage",
@@ -968,8 +962,8 @@ dependencies = [
 
 [[package]]
 name = "chainstate-storage"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -990,12 +984,12 @@ dependencies = [
 
 [[package]]
 name = "chainstate-types"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "crypto",
- "derive_more",
+ "derive_more 1.0.0",
  "enum-iterator",
  "generic-array",
  "logging",
@@ -1011,9 +1005,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.38"
+version = "0.4.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
+checksum = "7e36cc9d416881d2e24f9a963be5fb1cd90966419ac844274161d10488b3e825"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -1037,9 +1031,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.22"
+version = "4.5.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69371e34337c4c984bbe322360c2547210bf632eb2814bbe78a6e87a2935bd2b"
+checksum = "3135e7ec2ef7b10c6ed8950f0f792ed96ee093fa088608f1c76e569722700c84"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1047,9 +1041,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.22"
+version = "4.5.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e24c1b4099818523236a8ca881d2b45db98dadfb4625cf6608c12069fcbbde1"
+checksum = "30582fc632330df2bd26877bde0c1f4470d57c582bbc070376afcd04d8cb4838"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1071,9 +1065,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afb84c814227b90d6895e01398aee0d8033c00e7466aca416fb6a8e0eb19d8a7"
+checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "clipboard-win"
@@ -1115,12 +1109,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "color_quant"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
-
-[[package]]
 name = "colorchoice"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1138,8 +1126,8 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "bech32",
@@ -1185,8 +1173,8 @@ dependencies = [
 
 [[package]]
 name = "consensus"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "chainstate-types",
  "common",
@@ -1205,8 +1193,8 @@ dependencies = [
 
 [[package]]
 name = "constraints-value-accumulator"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "crypto",
@@ -1224,6 +1212,15 @@ name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
+
+[[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
 
 [[package]]
 name = "cookie"
@@ -1420,6 +1417,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossterm"
+version = "0.28.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "829d955a0bb380ef178a640b91779e3987da38c9aea133b20614cfed8cdea9c6"
+dependencies = [
+ "bitflags 2.6.0",
+ "crossterm_winapi",
+ "mio 1.0.3",
+ "parking_lot",
+ "rustix",
+ "signal-hook",
+ "signal-hook-mio",
+ "winapi",
+]
+
+[[package]]
 name = "crossterm_winapi"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1429,15 +1442,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "crunchy"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
-
-[[package]]
 name = "crypto"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "argon2",
  "bip39",
@@ -1638,11 +1645,33 @@ version = "0.99.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f33878137e4dafd7fa914ad4e259e18a4e8e532b9617a2d0150262bf53abfce"
 dependencies = [
- "convert_case",
+ "convert_case 0.4.0",
  "proc-macro2",
  "quote",
  "rustc_version",
  "syn 2.0.90",
+]
+
+[[package]]
+name = "derive_more"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
+dependencies = [
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
+dependencies = [
+ "convert_case 0.6.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.90",
+ "unicode-xid",
 ]
 
 [[package]]
@@ -1964,21 +1993,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "exr"
-version = "1.73.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f83197f59927b46c04a183a619b7c29df34e63e63c7869320862268c0ef687e0"
-dependencies = [
- "bit_field",
- "half",
- "lebe",
- "miniz_oxide",
- "rayon-core",
- "smallvec",
- "zune-inflate",
-]
-
-[[package]]
 name = "fallible-iterator"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1992,9 +2006,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fastrand"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "486f806e73c5707928240ddc295403b1b93c96a02038563881c4a2fd84b81ac4"
+checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fd-lock"
@@ -2009,9 +2023,9 @@ dependencies = [
 
 [[package]]
 name = "fdeflate"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07c6f4c64c1d33a3111c4466f7365ebdcc37c5bd1ea0d62aae2e3d722aacbedb"
+checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
 dependencies = [
  "simd-adler32",
 ]
@@ -2288,9 +2302,9 @@ dependencies = [
 
 [[package]]
 name = "gdk"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5ba081bdef3b75ebcdbfc953699ed2d7417d6bd853347a42a37d76406a33646"
+checksum = "d9f245958c627ac99d8e529166f9823fb3b838d1d41fd2b297af3075093c2691"
 dependencies = [
  "cairo-rs",
  "gdk-pixbuf",
@@ -2329,9 +2343,9 @@ dependencies = [
 
 [[package]]
 name = "gdk-sys"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31ff856cb3386dae1703a920f803abafcc580e9b5f711ca62ed1620c25b51ff2"
+checksum = "5c2d13f38594ac1e66619e188c6d5a1adb98d11b2fcf7894fc416ad76aa2f3f7"
 dependencies = [
  "cairo-sys-rs",
  "gdk-pixbuf-sys",
@@ -2346,9 +2360,9 @@ dependencies = [
 
 [[package]]
 name = "gdkwayland-sys"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a90fbf5c033c65d93792192a49a8efb5bb1e640c419682a58bb96f5ae77f3d4a"
+checksum = "140071d506d223f7572b9f09b5e155afbd77428cd5cc7af8f2694c41d98dfe69"
 dependencies = [
  "gdk-sys",
  "glib-sys",
@@ -2360,9 +2374,9 @@ dependencies = [
 
 [[package]]
 name = "gdkx11"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db2ea8a4909d530f79921290389cbd7c34cb9d623bfe970eaae65ca5f9cd9cce"
+checksum = "3caa00e14351bebbc8183b3c36690327eb77c49abc2268dd4bd36b856db3fbfe"
 dependencies = [
  "gdk",
  "gdkx11-sys",
@@ -2374,9 +2388,9 @@ dependencies = [
 
 [[package]]
 name = "gdkx11-sys"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee8f00f4ee46cad2939b8990f5c70c94ff882c3028f3cc5abf950fa4ab53043"
+checksum = "6e2e7445fe01ac26f11601db260dd8608fe172514eb63b3b5e261ea6b0f4428d"
 dependencies = [
  "gdk-sys",
  "glib-sys",
@@ -2470,16 +2484,6 @@ checksum = "f0d8a4362ccb29cb0b265253fb0a2728f592895ee6854fd9bc13f2ffda266ff1"
 dependencies = [
  "opaque-debug",
  "polyval",
-]
-
-[[package]]
-name = "gif"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fb2d69b19215e18bb912fa30f7ce15846e301408695e44e0ef719f1da9e19f2"
-dependencies = [
- "color_quant",
- "weezl",
 ]
 
 [[package]]
@@ -2586,9 +2590,9 @@ dependencies = [
 
 [[package]]
 name = "gtk"
-version = "0.18.1"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93c4f5e0e20b60e10631a5f06da7fe3dda744b05ad0ea71fee2f47adf865890c"
+checksum = "fd56fb197bfc42bd5d2751f4f017d44ff59fbb58140c6b49f9b3b2bdab08506a"
 dependencies = [
  "atk",
  "cairo-rs",
@@ -2607,9 +2611,9 @@ dependencies = [
 
 [[package]]
 name = "gtk-sys"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "771437bf1de2c1c0b496c11505bdf748e26066bbe942dfc8f614c9460f6d7722"
+checksum = "8f29a1c21c59553eb7dd40e918be54dccd60c52b049b75119d5d96ce6b624414"
 dependencies = [
  "atk-sys",
  "cairo-sys-rs",
@@ -2625,9 +2629,9 @@ dependencies = [
 
 [[package]]
 name = "gtk3-macros"
-version = "0.18.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6063efb63db582968fb7df72e1ae68aa6360dcfb0a75143f34fc7d616bad75e"
+checksum = "52ff3c5b21f14f0736fed6dcfc0bfb4225ebf5725f3c0209edeec181e4d73e9d"
 dependencies = [
  "proc-macro-crate 1.3.1",
  "proc-macro-error",
@@ -2672,16 +2676,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
-]
-
-[[package]]
-name = "half"
-version = "2.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dd08c532ae367adf81c312a4580bc67f1d0fe8bc9c460520283f4c0ff277888"
-dependencies = [
- "cfg-if",
- "crunchy",
 ]
 
 [[package]]
@@ -2923,7 +2917,7 @@ dependencies = [
  "rustls 0.23.19",
  "rustls-pki-types",
  "tokio",
- "tokio-rustls 0.26.0",
+ "tokio-rustls 0.26.1",
  "tower-service",
  "webpki-roots",
 ]
@@ -3127,24 +3121,6 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.24.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5690139d2f55868e080017335e4b94cb7414274c74f1669c84fb5feba2c9f69d"
-dependencies = [
- "bytemuck",
- "byteorder",
- "color_quant",
- "exr",
- "gif",
- "jpeg-decoder",
- "num-traits",
- "png",
- "qoi",
- "tiff",
-]
-
-[[package]]
-name = "image"
 version = "0.25.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd6f44aed642f18953a158afeb30206f4d50da59fbc66ecb53c66488de73563b"
@@ -3338,15 +3314,12 @@ name = "jpeg-decoder"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5d4a7da358eff58addd2877a45865158f0d78c911d43a5784ceb7bbf52833b0"
-dependencies = [
- "rayon",
-]
 
 [[package]]
 name = "js-sys"
-version = "0.3.74"
+version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a865e038f7f6ed956f788f0d7d60c541fff74c7bd74272c5d4cf15c63743e705"
+checksum = "6717b6b5b077764fb5966237269cb3c64edddde4b14ce42647430a78ced9e7b7"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
@@ -3559,12 +3532,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
-name = "lebe"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
-
-[[package]]
 name = "libappindicator"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3590,9 +3557,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.167"
+version = "0.2.168"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09d6582e104315a817dff97f75133544b2e094ee22447d2acf4a74e189ba06fc"
+checksum = "5aaeb2981e0606ca11d79718f8bb01164f1d6ed75080182d3abf017e6d244b6d"
 
 [[package]]
 name = "libloading"
@@ -3627,9 +3594,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.28.0"
+version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c10584274047cb335c23d3e61bcef8e323adae7c5c8c760540f73610177fc3f"
+checksum = "2e99fb7a497b1e3339bc746195567ed8d3e24945ecd636e3619d20b9de9e9149"
 dependencies = [
  "cc",
  "pkg-config",
@@ -3695,10 +3662,10 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "log_error"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
- "derive_more",
+ "derive_more 1.0.0",
  "proc-macro2",
  "quote",
  "syn 2.0.90",
@@ -3706,8 +3673,8 @@ dependencies = [
 
 [[package]]
 name = "logging"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "log",
  "thiserror 1.0.69",
@@ -3803,8 +3770,8 @@ dependencies = [
 
 [[package]]
 name = "mempool"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "anyhow",
@@ -3842,8 +3809,8 @@ dependencies = [
 
 [[package]]
 name = "mempool-types"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "p2p-types",
  "rpc-description",
@@ -3881,9 +3848,9 @@ checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
 name = "minisign-verify"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a05b5d0594e0cb1ad8cee3373018d2b84e25905dc75b2468114cc9a8e86cfc20"
+checksum = "6367d84fb54d4242af283086402907277715b8fe46976963af5ebf173f8efba3"
 
 [[package]]
 name = "miniz_oxide"
@@ -3897,8 +3864,8 @@ dependencies = [
 
 [[package]]
 name = "mintscript"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "crypto",
@@ -3931,20 +3898,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2886843bf800fba2e3377cff24abf6379b4c4d5c6681eaf9ea5b0d15090450bd"
 dependencies = [
  "libc",
+ "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "mockall"
-version = "0.12.1"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43766c2b5203b10de348ffe19f7e54564b64f3d6018ff7648d1e2d6d3a0f0a48"
+checksum = "39a6bfcc6c8c7eed5ee98b9c3e33adc726054389233e201c95dab2d41a3839d2"
 dependencies = [
  "cfg-if",
  "downcast",
  "fragile",
- "lazy_static",
  "mockall_derive",
  "predicates",
  "predicates-tree",
@@ -3952,9 +3919,9 @@ dependencies = [
 
 [[package]]
 name = "mockall_derive"
-version = "0.12.1"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af7cbce79ec385a1d4f54baa90a76401eb15d9cab93685f62e7e9f942aa00ae2"
+checksum = "25ca3004c2efe9011bd4e461bd8256445052b9615405b4f7ea43fc8ca5c20898"
 dependencies = [
  "cfg-if",
  "proc-macro2",
@@ -4014,8 +3981,8 @@ dependencies = [
 
 [[package]]
 name = "networking"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4057,8 +4024,8 @@ dependencies = [
 
 [[package]]
 name = "node-comm"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4083,8 +4050,8 @@ dependencies = [
 
 [[package]]
 name = "node-gui-backend"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "chainstate",
@@ -4098,6 +4065,7 @@ dependencies = [
  "node-lib",
  "p2p",
  "serde",
+ "serde_json",
  "serde_with",
  "serialization",
  "subsystem",
@@ -4159,8 +4127,8 @@ dependencies = [
 
 [[package]]
 name = "node-lib"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "blockprod",
@@ -4645,8 +4613,8 @@ dependencies = [
 
 [[package]]
 name = "orders-accounting"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -4690,13 +4658,13 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "p2p"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "chainstate",
  "common",
- "derive_more",
+ "derive_more 1.0.0",
  "dyn-clone",
  "enum-iterator",
  "futures",
@@ -4732,8 +4700,8 @@ dependencies = [
 
 [[package]]
 name = "p2p-types"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "parity-scale-codec",
@@ -5049,9 +5017,9 @@ dependencies = [
 
 [[package]]
 name = "png"
-version = "0.17.14"
+version = "0.17.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52f9d46a34a05a6a57566bc2bfae066ef07585a6e3fa30fbbdff5936380623f0"
+checksum = "b67582bd5b65bdff614270e2ea89a1cf15bef71245cc1e5f7ea126977144211d"
 dependencies = [
  "bitflags 1.3.2",
  "crc32fast",
@@ -5100,8 +5068,8 @@ dependencies = [
 
 [[package]]
 name = "pos-accounting"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "common",
@@ -5258,9 +5226,9 @@ dependencies = [
 
 [[package]]
 name = "psl"
-version = "2.1.65"
+version = "2.1.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "116ebba3917694f4abc8de221600dd24e2686afaf04bb1ab5b4c966f35cecf88"
+checksum = "8cbff41b2931331425a4b70e26bcf1e185b62747d1531b1ff903109d64afbff4"
 dependencies = [
  "psl-types",
 ]
@@ -5299,15 +5267,6 @@ checksum = "6f42ea446cab60335f76979ec15e12619a2165b5ae2c12166bef27d283a9fadf"
 dependencies = [
  "idna",
  "psl-types",
-]
-
-[[package]]
-name = "qoi"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f6d64c71eb498fe9eae14ce4ec935c555749aef511cca85b5568910d6e48001"
-dependencies = [
- "bytemuck",
 ]
 
 [[package]]
@@ -5356,7 +5315,7 @@ dependencies = [
  "rustc-hash 2.1.0",
  "rustls 0.23.19",
  "socket2",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "tokio",
  "tracing",
 ]
@@ -5375,7 +5334,7 @@ dependencies = [
  "rustls 0.23.19",
  "rustls-pki-types",
  "slab",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "tinyvec",
  "tracing",
  "web-time",
@@ -5383,9 +5342,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-udp"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d5a626c6807713b15cac82a6acaccd6043c9a5408c24baae07611fec3f243da"
+checksum = "52cd4b1eff68bf27940dd39811292c49e007f4d0b4c357358dc9b0197be6b527"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -5502,8 +5461,8 @@ dependencies = [
 
 [[package]]
 name = "randomness"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "rand 0.8.5",
 ]
@@ -5562,7 +5521,7 @@ checksum = "abf59e4c97b5049ba96b052cdb652368305a2eddcbce9bf1c16f9d003139eeea"
 dependencies = [
  "chrono",
  "crossbeam",
- "crossterm",
+ "crossterm 0.27.0",
  "fd-lock",
  "itertools 0.12.1",
  "nu-ansi-term 0.50.1",
@@ -5691,7 +5650,7 @@ dependencies = [
  "sync_wrapper",
  "system-configuration",
  "tokio",
- "tokio-rustls 0.26.0",
+ "tokio-rustls 0.26.1",
  "tokio-util",
  "tower-service",
  "url",
@@ -5787,8 +5746,8 @@ checksum = "afab94fb28594581f62d981211a9a4d53cc8130bbcbbb89a0440d9b8e81a7746"
 
 [[package]]
 name = "rpc"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5814,8 +5773,8 @@ dependencies = [
 
 [[package]]
 name = "rpc-description"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "rpc-description-macro",
  "serde_json",
@@ -5823,8 +5782,8 @@ dependencies = [
 
 [[package]]
 name = "rpc-description-macro"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5833,8 +5792,8 @@ dependencies = [
 
 [[package]]
 name = "rpc-types"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "hex",
  "rpc-description",
@@ -5845,9 +5804,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.31.0"
+version = "0.32.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b838eba278d213a8beaf485bd313fd580ca4505a00d5871caeb1457c55322cae"
+checksum = "7753b721174eb8ff87a9a0e799e2d7bc3749323e773db92e0984debb00019d6e"
 dependencies = [
  "bitflags 2.6.0",
  "fallible-iterator",
@@ -5908,15 +5867,15 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.41"
+version = "0.38.42"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7f649912bc1495e167a6edee79151c84b1bad49748cb4f1f1167f459f6224f6"
+checksum = "f93dc38ecbab2eb790ff964bb77fa94faf256fd3e73285fd7ba0903b76bedb85"
 dependencies = [
  "bitflags 2.6.0",
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6122,8 +6081,8 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "script"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "crypto",
  "hex",
@@ -6201,7 +6160,7 @@ checksum = "df320f1889ac4ba6bc0cdc9c9af7af4bd64bb927bccdf32d81140dc1f9be12fe"
 dependencies = [
  "bitflags 1.3.2",
  "cssparser",
- "derive_more",
+ "derive_more 0.99.18",
  "fxhash",
  "log",
  "matches",
@@ -6224,9 +6183,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6513c1ad0b11a9376da888e3e0baa0077f1aed55c17f50e7b2397136129fb88f"
+checksum = "0b9781016e935a97e8beecf0c933758c97a5520d32930e460142b4cd80c6338e"
 dependencies = [
  "serde_derive",
 ]
@@ -6253,9 +6212,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad1e866f866923f252f05c889987993144fb74e722403468a4ebd70c3cd756c0"
+checksum = "46f859dbbf73865c6627ed570e78961cd3ac92407a2d117204c49232485da55e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6349,8 +6308,8 @@ dependencies = [
 
 [[package]]
 name = "serialization"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "hex",
  "rpc-description",
@@ -6363,16 +6322,16 @@ dependencies = [
 
 [[package]]
 name = "serialization-core"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "parity-scale-codec",
 ]
 
 [[package]]
 name = "serialization-tagged"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "serialization-core",
  "serialization-tagged-derive",
@@ -6381,8 +6340,8 @@ dependencies = [
 
 [[package]]
 name = "serialization-tagged-derive"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "itertools 0.13.0",
  "proc-macro2",
@@ -6521,6 +6480,7 @@ checksum = "34db1a06d485c9142248b7a054f034b349b212551f3dfd19c94d45a754a217cd"
 dependencies = [
  "libc",
  "mio 0.8.11",
+ "mio 1.0.3",
  "signal-hook",
 ]
 
@@ -6707,8 +6667,8 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "storage"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "serialization",
@@ -6718,8 +6678,8 @@ dependencies = [
 
 [[package]]
 name = "storage-core"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "common",
  "itertools 0.13.0",
@@ -6730,16 +6690,16 @@ dependencies = [
 
 [[package]]
 name = "storage-inmemory"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "storage-core",
 ]
 
 [[package]]
 name = "storage-lmdb"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "lmdb-mintlayer",
  "logging",
@@ -6749,8 +6709,8 @@ dependencies = [
 
 [[package]]
 name = "storage-sqlite"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "hex",
  "logging",
@@ -6824,8 +6784,8 @@ dependencies = [
 
 [[package]]
 name = "subsystem"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "cfg-if",
@@ -7052,7 +7012,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-runtime-wry",
  "tauri-utils",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "tokio",
  "tray-icon",
  "url",
@@ -7105,7 +7065,7 @@ dependencies = [
  "sha2",
  "syn 2.0.90",
  "tauri-utils",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "time",
  "url",
  "uuid",
@@ -7145,9 +7105,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.1"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bccd4692b56822a60874542c7655546c8e7aed3c2e2926166e1498e595bd2a2"
+checksum = "e5458ae16eac81bdbe8d9da2a9f3e01e8cdedbc381cc1727c01127542c8a61c5"
 dependencies = [
  "clap",
  "log",
@@ -7155,30 +7115,29 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.69",
+ "thiserror 2.0.6",
 ]
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.7"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "becbc5a692e842f8d6a7ab5e490c3c36d267b5c3d5bf4b6a0cdd039d7df25569"
+checksum = "5be2c6f5d82396c1a86d5b16052cc97976a82e92244bf074dd6e2f6272d8619d"
 dependencies = [
  "arboard",
- "image 0.24.9",
  "log",
  "serde",
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.69",
+ "thiserror 2.0.6",
 ]
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.4"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0962c2b9210e43cd849790d33bdf3d28c0e50d9884493fb340835244a708b5ba"
+checksum = "8b59fd750551b1066744ab956a1cd6b1ea3e1b3763b0b9153ac27a044d596426"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -7188,15 +7147,15 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-plugin-fs",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "url",
 ]
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0cdaf6701ee5efc83161cf41004aa5aec4d255c9fb2d2b11fe518fe506acc588"
+checksum = "a1a1edf18000f02903a7c2e5997fb89aca455ecbc0acc15c6535afbb883be223"
 dependencies = [
  "anyhow",
  "dunce",
@@ -7209,7 +7168,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-utils",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "toml 0.8.19",
  "url",
  "uuid",
@@ -7217,9 +7176,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.4"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd6f26c4e715b50f06e3fde65cda1d805dae23f04869a01380c4cf8708dbb296"
+checksum = "e62a9bde54d6a0218b63f5a248f02056ad4316ba6ad81dfb9e4f73715df5deb1"
 dependencies = [
  "data-url",
  "http 1.2.0",
@@ -7231,7 +7190,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-plugin-fs",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "tokio",
  "url",
  "urlpattern",
@@ -7239,9 +7198,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.1"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef492a2d19b6376bb4c9e0c4fab3f3bf8a220ea112d24f35027b737ff55de20c"
+checksum = "46ab803095f14ac6521fdb6477210a49e86fed6623c3c97d8e4b2b35e045e922"
 dependencies = [
  "log",
  "notify-rust",
@@ -7251,16 +7210,16 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.69",
+ "thiserror 2.0.6",
  "time",
  "url",
 ]
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.1"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbc5f23a86f37687c7f4fecfdc706b279087bc44f7a46702f7307ff1551ee03a"
+checksum = "dda2d571a9baf0664c1f2088db227e3072f9028602fafa885deade7547c3b738"
 dependencies = [
  "gethostname 0.5.0",
  "log",
@@ -7271,14 +7230,14 @@ dependencies = [
  "sys-locale",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.69",
+ "thiserror 2.0.6",
 ]
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.1"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae06a00087c148962a52814a2d7265b1a0505bced5ffb74f8c284a5f96a4d03d"
+checksum = "40cc553ab29581c8c43dfa5fb0c9d5aee8ba962ad3b42908eea26c79610441b7"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -7286,9 +7245,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.2"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ad7880c5586b6b2104be451e3d7fc0f3800c84bda69e9ba81c828f87cb34267"
+checksum = "bb2c50a63e60fb8925956cc5b7569f4b750ac197a4d39f13b8dd46ea8e2bad79"
 dependencies = [
  "encoding_rs",
  "log",
@@ -7301,20 +7260,20 @@ dependencies = [
  "shared_child",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.69",
+ "thiserror 2.0.6",
  "tokio",
 ]
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.2"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "494d348f82cfa766df4d2ebd96fc38b9cada6d120f13a36fd11395180213ec74"
+checksum = "0f36019ee9832dc99e4450bb55a21cfad8633b19c2c18bd17c7741939b070ede"
 dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "tracing",
  "windows-sys 0.59.0",
  "zbus 4.4.0",
@@ -7322,9 +7281,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.1.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50ba9adaede60b0df5e0764692c6ac176eb133aade95d326bddeb968ad793320"
+checksum = "b7351014c140906bcfff59d96e04b1170c8f602557f40eb37f7de356d4e7067b"
 dependencies = [
  "base64 0.22.1",
  "dirs",
@@ -7342,7 +7301,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tempfile",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "time",
  "tokio",
  "url",
@@ -7364,7 +7323,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri-utils",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "url",
  "windows 0.58.0",
 ]
@@ -7424,7 +7383,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "swift-rs",
- "thiserror 2.0.4",
+ "thiserror 2.0.6",
  "toml 0.8.19",
  "url",
  "urlpattern",
@@ -7496,8 +7455,8 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 
 [[package]]
 name = "test-rpc-functions"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "chainstate",
@@ -7534,11 +7493,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.4"
+version = "2.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f49a1853cf82743e3b7950f77e0f4d622ca36cf4317cba00c767838bac8d490"
+checksum = "8fec2a1820ebd077e2b90c4df007bebf344cd394098a13c563957d0afc83ea47"
 dependencies = [
- "thiserror-impl 2.0.4",
+ "thiserror-impl 2.0.6",
 ]
 
 [[package]]
@@ -7554,9 +7513,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.4"
+version = "2.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8381894bb3efe0c4acac3ded651301ceee58a15d47c2e34885ed1908ad667061"
+checksum = "d65750cab40f4ff1929fb1ba509e9914eb756131cef4210da8d5d700d26f6312"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7642,8 +7601,8 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokens-accounting"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "chainstate-types",
@@ -7710,12 +7669,11 @@ dependencies = [
 
 [[package]]
 name = "tokio-rustls"
-version = "0.26.0"
+version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c7bc40d0e5a97695bb96e27995cd3a08538541b0a846f65bba7a359f36700d4"
+checksum = "5f6d0975eaace0cf0fcadee4e4aaa5da15b5c079146f2cffb67c113be122bf37"
 dependencies = [
  "rustls 0.23.19",
- "rustls-pki-types",
  "tokio",
 ]
 
@@ -7733,9 +7691,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-stream"
-version = "0.1.16"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f4e6ce100d0eb49a2734f8c0812bcd324cf357d21810932c5df6b96ef2b86f1"
+checksum = "eca58d7bba4a75707817a2c44174253f9236b2d5fbd055602e9d5c07c139a047"
 dependencies = [
  "futures-core",
  "pin-project-lite",
@@ -7987,8 +7945,8 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "tx-verifier"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "accounting",
  "chainstate-storage",
@@ -8021,16 +7979,16 @@ checksum = "0e13db2e0ccd5e14a544e8a246ba2312cd25223f616442d7f2cb0e3db614236e"
 
 [[package]]
 name = "typename"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "typename-derive",
 ]
 
 [[package]]
 name = "typename-derive"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "itertools 0.13.0",
  "quote",
@@ -8123,6 +8081,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
+name = "unicode-xid"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
 name = "universal-hash"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8194,8 +8158,8 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utils"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "clap",
@@ -8219,8 +8183,8 @@ dependencies = [
 
 [[package]]
 name = "utils-networking"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "addr",
  "itertools 0.13.0",
@@ -8232,8 +8196,8 @@ dependencies = [
 
 [[package]]
 name = "utxo"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "chainstate-types",
  "common",
@@ -8330,8 +8294,8 @@ dependencies = [
 
 [[package]]
 name = "wallet"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "bip39",
  "chainstate",
@@ -8362,15 +8326,15 @@ dependencies = [
 
 [[package]]
 name = "wallet-cli-commands"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "chainstate",
  "clap",
  "common",
  "consensus",
- "crossterm",
+ "crossterm 0.28.1",
  "crypto",
  "directories",
  "futures",
@@ -8403,8 +8367,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-controller"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "bip39",
@@ -8435,8 +8399,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-rpc-client"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -8463,8 +8427,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-rpc-lib"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8498,8 +8462,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-storage"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "bip39",
  "common",
@@ -8516,8 +8480,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-types"
-version = "1.0.0"
-source = "git+https://github.com/mintlayer/mintlayer-core?branch=fix/minor_gui_backend_fixes#2ba08d791bd7c8824153e086adea36974fb1102d"
+version = "1.0.1"
+source = "git+https://github.com/mintlayer/mintlayer-core?rev=1c8c0b408df886b6d1ad3ed9114dcf421cde85d6#1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"
 dependencies = [
  "bip39",
  "common",
@@ -8558,9 +8522,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d15e63b4482863c109d70a7b8706c1e364eb6ea449b201a76c5b89cedcec2d5c"
+checksum = "a474f6281d1d70c17ae7aa6a613c87fce69a127e2624002df63dcb39d6cf6396"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -8569,13 +8533,12 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d36ef12e3aaca16ddd3f67922bc63e48e953f126de60bd33ccc0101ef9998cd"
+checksum = "5f89bb38646b4f81674e8f5c3fb81b562be1fd936d84320f3264486418519c79"
 dependencies = [
  "bumpalo",
  "log",
- "once_cell",
  "proc-macro2",
  "quote",
  "syn 2.0.90",
@@ -8584,9 +8547,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.47"
+version = "0.4.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9dfaf8f50e5f293737ee323940c7d8b08a66a95a419223d9f41610ca08b0833d"
+checksum = "38176d9b44ea84e9184eff0bc34cc167ed044f816accfe5922e54d84cf48eca2"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -8597,9 +8560,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "705440e08b42d3e4b36de7d66c944be628d579796b8090bfa3471478a2260051"
+checksum = "2cc6181fd9a7492eef6fef1f33961e3695e4579b9872a6f7c83aee556666d4fe"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -8607,9 +8570,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c9ae5a76e46f4deecd0f0255cc223cfa18dc9b261213b8aa0c7b36f61b3f1d"
+checksum = "30d7a95b763d3c45903ed6c81f156801839e5ee968bb07e534c44df0fcd330c2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8620,9 +8583,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.97"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ee99da9c5ba11bd675621338ef6fa52296b76b83305e9b6e5c77d4c286d6d49"
+checksum = "943aab3fdaaa029a6e0271b35ea10b72b943135afe9bffca82384098ad0e06a6"
 
 [[package]]
 name = "wasm-streams"
@@ -8699,9 +8662,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.74"
+version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a98bc3c33f0fe7e59ad7cd041b89034fa82a7c2d4365ca538dda6cdaf513863c"
+checksum = "04dd7223427d52553d3702c004d3b2fe07c148165faa56313cb00211e31c12bc"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -9628,16 +9591,7 @@ dependencies = [
  "displaydoc",
  "indexmap 2.7.0",
  "memchr",
- "thiserror 2.0.4",
-]
-
-[[package]]
-name = "zune-inflate"
-version = "0.2.54"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73ab332fe2f6680068f3582b16a24f90ad7096d5d39b974d1c0aff0125116f02"
-dependencies = [
- "simd-adler32",
+ "thiserror 2.0.6",
 ]
 
 [[package]]

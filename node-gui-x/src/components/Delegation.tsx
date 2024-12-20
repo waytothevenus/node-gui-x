@@ -2,18 +2,19 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
-import { AccountType, Data, WalletInfo } from "../types/Types";
 import {
-  encode,
-  encodeToBytesForAddress,
-  encodeToHash,
-  notify,
-} from "../utils/util";
+  AccountType,
+  Data,
+  DelegationBalancesType,
+  WalletInfo,
+} from "../types/Types";
+import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
   currentAccount: AccountType | undefined;
   currentAccountId: number;
+  delegationBalances: DelegationBalancesType[];
   currentWallet: WalletInfo | undefined;
 }) => {
   const [transactionInfo, setTransactionInfo] = useState<Data>();
@@ -31,24 +32,25 @@ const Delegation = (props: {
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleDeposit = async () => {
+    setShowDepositModal(false);
     setLoadingMessage("Depositing to delegation. Please wait.");
     setIsLoading(true);
     try {
       await invoke("delegate_staking_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           account_id: props.currentAccountId,
-          pool_id: poolAddress,
-          delegation_amount: depositAmount,
+          delegation_id: currentDelegationId,
+          delegation_amount: depositAmount.toString(),
         },
       });
       const unsubscribe = await listen("DelegateStaking", (event) => {
         const transactionInfo = event.payload as Data;
         if (transactionInfo) {
-          console.log(transactionInfo);
-        } else {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
         }
         unsubscribe();
       });
@@ -61,27 +63,27 @@ const Delegation = (props: {
   const handleWithdraw = async () => {
     setLoadingMessage("Withdrawing from delegation. Please wait.");
     setIsLoading(true);
+    setShowWithdrawModal(false);
     try {
       await invoke("send_delegation_to_address_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           account_id: props.currentAccountId,
           address: withdrawAddress,
-          amount: withdrawAmount,
+          amount: withdrawAmount.toString(),
           delegation_id: currentDelegationId,
         },
       });
       const unsubscribe = await listen("SendDelegationToAddress", (event) => {
         const transactionInfo = event.payload as Data;
         if (transactionInfo) {
-          console.log(transactionInfo);
-        } else {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
         }
         unsubscribe();
       });
-      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -102,9 +104,9 @@ const Delegation = (props: {
     try {
       await invoke("create_delegation_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           account_id: props.currentAccountId,
           pool_id: poolAddress,
           delegation_address: delegationAddress,
@@ -113,14 +115,12 @@ const Delegation = (props: {
       const unsubscribe = await listen("CreateDelegation", (event) => {
         const transactionInfo = event.payload as Data;
         if (transactionInfo) {
-          console.log(transactionInfo);
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
-        } else {
+          setIsLoading(false);
         }
         unsubscribe();
       });
-      unsubscribe();
     } catch (error) {
       notify(new String(error).toString(), "error");
       setIsLoading(false);
@@ -128,25 +128,27 @@ const Delegation = (props: {
   };
 
   const handleConfirmTransaction = async () => {
+    setLoadingMessage("Confirming transaction. Please wait.");
+    setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
-          wallet_id: props.currentWallet?.wallet_id,
-          account_id: props.currentAccountId,
-          tx: transactionInfo?.tx,
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          console.log(transactionInfo);
-          notify("Transaction confirmed successfully!", "success");
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload as number;
+        if (result) {
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmTransactionModal(false);
           setShowSuccessModal(true);
-        } else {
         }
         unsubscribe();
+        setIsLoading(false);
       });
     } catch (error) {
+      setIsLoading(false);
       notify(new String(error).toString(), "error");
     }
   };
@@ -169,7 +171,7 @@ const Delegation = (props: {
             style={{
               display: "inline-block",
               minWidth: "300px",
-              maxWidth: "65%",
+              maxWidth: "75%",
               whiteSpace: "wrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -189,78 +191,196 @@ const Delegation = (props: {
               <p className="text-start">
                 {encodeToHash(
                   JSON.stringify(
-                    transactionInfo?.tx.transaction.V1
-                      ? transactionInfo.tx.transaction.V1
+                    transactionInfo?.serialized_tx.V1
+                      ? transactionInfo.serialized_tx.V1
                       : {}
                   )
                 )}
               </p>
             </div>
-            <div>
-              <p className="text-start text-bold">BEGIN OF INPUTS</p>
-              <p className="text-start">
-                -Transaction({"0x"}
-                {
-                  transactionInfo?.tx.transaction.V1.inputs[0].Utxo.id
-                    .Transaction
-                }
-                )
-              </p>
-            </div>
-            <div>
-              <p className="text-start  text-bold">END OF INPUTS</p>
-            </div>
-            <div>
-              <p className="text-start">BEGIN OF OUTPUTS</p>
-              <p className="text-start">
-                -CreateDelegationId(Owner(
-                {encode(
-                  "tmt",
-                  encodeToBytesForAddress(
-                    new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "CreateDelegationId" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -Transaction({"0x"}
+                    {
+                      transactionInfo.serialized_tx.V1.inputs.find(
+                        (output) => "Utxo" in output
+                      )?.Utxo.id.Transaction
+                    }
+                    )
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -CreateDelegationId(Owner(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[0]
-                    ).toString()
-                  )
-                )}
-                ), StakingPool(
-                {encode(
-                  "tpool",
-                  encodeToBytesForAddress(
-                    new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                    }
+                    ), StakingPool(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "CreateDelegationId" in output
                       )?.CreateDelegationId[1]
-                    ).toString()
-                  )
-                )}
-                ))
-              </p>
+                    }
+                    ))
+                  </p>
 
-              <p className="text-start">
-                -Transfer(
-                {encode(
-                  "tmt",
-                  encodeToBytesForAddress(
-                    new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                  <p className="text-start">
+                    -Transfer(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "Transfer" in output
                       )?.Transfer[1]
-                    ).toString()
-                  )
-                )}
-                ,{" "}
-                {parseInt(
-                  new String(
-                    transactionInfo?.tx.transaction.V1.outputs.find(
-                      (output) => "Transfer" in output
-                    )?.Transfer[0].Coin.atoms
-                  ).toString()
-                ) / 1000000000000}
-                )
-              </p>
-            </div>
+                    }
+                    ,{" "}
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "Transfer" in output
+                        )?.Transfer[0].Coin.atoms
+                      ).toString()
+                    ) / DECIMAL}
+                    )
+                  </p>
+                </div>
+              </>
+            )}
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "DelegateStaking" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -Transaction(
+                    {
+                      transactionInfo.serialized_tx.V1.inputs.find(
+                        (output) => "Utxo" in output
+                      )?.Utxo.id.Transaction
+                    }
+                    )
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -DelegateStaking(Amount(
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "DelegateStaking" in output
+                        )?.DelegateStaking[0]?.atoms
+                          ? transactionInfo?.serialized_tx.V1.outputs.find(
+                              (output) => "DelegateStaking" in output
+                            )?.DelegateStaking[0]?.atoms
+                          : "0"
+                      ).toString()
+                    ) / 100000000000}
+                    ), Delegation(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "DelegateStaking" in output
+                      )?.DelegateStaking[1]
+                    }
+                    ))
+                  </p>
+
+                  <p className="text-start">
+                    -Transfer(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "Transfer" in output
+                      )?.Transfer[1]
+                    }
+                    ,{" "}
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "Transfer" in output
+                        )?.Transfer[0].Coin.atoms
+                      ).toString()
+                    ) / DECIMAL}
+                    )
+                  </p>
+                </div>
+              </>
+            )}
+            {transactionInfo?.serialized_tx.V1.outputs.find(
+              (output) => "LockThenTransfer" in output
+            ) && (
+              <>
+                <div>
+                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
+                  <p className="text-start">
+                    -AccountOutPoint
+                    {`
+                      ${
+                        "nonce:" +
+                        "AccountNoce(" +
+                        transactionInfo.serialized_tx.V1.inputs
+                          .find((output) => "Account" in output)
+                          ?.Account.nonce?.toString() +
+                        ")," +
+                        " account: DelegationBalance(" +
+                        transactionInfo.serialized_tx.V1.inputs.find(
+                          (output) => "Account" in output
+                        )?.Account.account.DelegationBalance[0] +
+                        parseInt(
+                          new String(
+                            transactionInfo.serialized_tx.V1.inputs.find(
+                              (output) => "Account" in output
+                            )?.Account.account.DelegationBalance[1].atoms
+                          ).toString()
+                        ) /
+                          100000000000
+                      }
+                     `}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-start  text-bold">END OF INPUTS</p>
+                </div>
+                <div>
+                  <p className="text-start">BEGIN OF OUTPUTS</p>
+                  <p className="text-start">
+                    -LockThenTransfer(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[1]
+                    }
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "LockThenTransfer" in output
+                        )?.LockThenTransfer[0].Coin.atoms
+                      ).toString()
+                    ) / 100000000000}
+                    ), OutputTimeLock::ForBlockCount(
+                    {
+                      transactionInfo.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[2].content
+                    }
+                    blocks)
+                    {}
+                  </p>
+                </div>
+              </>
+            )}
             <div>
               <p className="text-start text-bold">END OF OUTPUTS</p>
             </div>
@@ -268,7 +388,6 @@ const Delegation = (props: {
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
               onClick={() => {
                 handleConfirmTransaction();
-                setShowConfirmTransactionModal(false);
               }}
             >
               Confirm and Broadcast
@@ -403,24 +522,49 @@ const Delegation = (props: {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(
-            props.currentAccount?.delegations_balance
-              ? props.currentAccount.delegations_balance
-              : {}
-          ).map(([key, [pool_id, amount]]) => {
+          {(props.delegationBalances.find(
+            (balance) =>
+              balance.wallet_id === props.currentWallet?.wallet_id &&
+              balance.account_id === props.currentAccountId
+          )
+            ? Object.values(
+                props.delegationBalances.find(
+                  (balance) =>
+                    balance.wallet_id === props.currentWallet?.wallet_id &&
+                    balance.account_id === props.currentAccountId
+                )?.delegations_balance || {}
+              )
+            : []
+          ).map(([pool_id, amount], index) => {
+            let delegation_ids = Object.keys(
+              props.delegationBalances.find(
+                (balance) =>
+                  balance.wallet_id === props.currentWallet?.wallet_id &&
+                  balance.account_id === props.currentAccountId
+              )?.delegations_balance || {}
+            );
+            const delegation_id = delegation_ids[0]
+              .replace("HexifiedDelegationId{", "")
+              .replace("}", "");
+            let pool_address = pool_id
+              .replace("HexifiedPoolId{", "")
+              .replace("}", "");
+
             return (
               <tr
-                key={key}
+                key={index}
                 className="hover:bg-gray-50 transition duration-200"
               >
                 <td className="py-2 px-4 border-b border-gray-200">
                   <div className="flex justify-between space-x-2">
                     <p>
-                      {pool_id.slice(0, 9)}...
-                      {pool_id.slice(-4)}
+                      {delegation_id.slice(0, 9)}...
+                      {delegation_id.slice(-4)}
                     </p>
                     <button
-                      onClick={() => navigator.clipboard.writeText(pool_id)}
+                      onClick={() =>
+                        navigator.clipboard.writeText(delegation_id)
+                      }
                       className="flex items-center justify-center p-0 bg-transparent border-none shadow-none focus:outline-none"
                     >
                       <AiOutlineCopy />
@@ -428,18 +572,18 @@ const Delegation = (props: {
                   </div>
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {pool_id.slice(0, 8)}...
-                  {pool_id.slice(-4)}
+                  {pool_address.slice(0, 8)}...
+                  {pool_address.slice(-4)}
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {amount.atoms}
+                  {parseInt(amount.atoms) / 100000000000}
                 </td>
 
                 <td className="py-2 px-4 border-b border-gray-200 flex justify-between space-x-2">
                   <button
                     onClick={() => {
                       setShowDepositModal(true);
-                      setCurrentDelegationId(pool_id);
+                      setCurrentDelegationId(delegation_id);
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
@@ -448,7 +592,7 @@ const Delegation = (props: {
                   <button
                     onClick={() => {
                       setShowWithdrawModal(true);
-                      setCurrentDelegationId(pool_id);
+                      setCurrentDelegationId(delegation_id);
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >

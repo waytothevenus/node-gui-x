@@ -19,6 +19,7 @@ export type PoolInfoType = {
   height: number;
   block_timestamp: { timestamp: number };
   vrf_public_key: string;
+  decommission_key: string;
   staker: string;
   margin_ratio_per_thousand: number;
   cost_per_block: RpcAmountOutType;
@@ -32,6 +33,18 @@ export type AccountType = {
   staking_balance: Record<string, PoolInfoType>;
   delegations_balance: Record<string, [pool_id: string, amount: AmountType]>;
   transaction_list: TransactionType;
+};
+
+export type StakingBalancesType = {
+  account_id: number;
+  wallet_id: number;
+  staking_balance: Record<string, PoolInfoType>;
+};
+
+export type DelegationBalancesType = {
+  wallet_id: number;
+  account_id: number;
+  delegations_balance: Record<string, [pool_id: string, amount: AmountType]>;
 };
 
 export type AmountType = {
@@ -72,7 +85,7 @@ export type TransactionType = {
 };
 
 export type WalletInfo = {
-  wallet_id: string;
+  wallet_id: number;
   path: string;
   encryption: string;
   accounts: Record<string, AccountType>;
@@ -143,7 +156,17 @@ export type Transaction = {
   };
 };
 
-export type Input = {
+export type Input = Utxo | Account;
+export type Account = {
+  Account: {
+    account: {
+      DelegationBalance: [string, { atoms: string }];
+    };
+    nonce: number;
+  };
+};
+
+export type Utxo = {
   Utxo: {
     id: {
       Transaction: string; // Transaction ID as a string
@@ -196,22 +219,23 @@ export type TransferOutput = {
 
 export type LockThenTransferOutput = {
   LockThenTransfer: [
-    string,
     {
       Coin: {
         atoms: string;
       };
     },
-    string
+    string,
+    {
+      content: number;
+      type: string;
+    }
   ];
 };
 
 export type DelegateStakingOutput = {
-  DelegateStakingType: [
+  DelegateStaking: [
     {
-      Coin: {
-        atoms: string;
-      };
+      atoms: string;
     },
     string
   ];
@@ -227,19 +251,26 @@ export type IssueFungibleTokenOutput = {
 
 export type Signature = {
   Standard: {
-    sighash_type: number; // Sighash type as a number
-    raw_signature: number[]; // Raw signature as an array of numbers
+    sighash_type: number;
+    raw_signature: number[];
   };
 };
 
-export type Tx = {
-  transaction: Transaction; // Transaction object
-  signatures: Signature[]; // Array of Signature objects
+export type Data = {
+  transaction_info: {
+    wallet_id: number;
+    tx: { tx: string };
+  };
+  serialized_tx: Transaction;
 };
 
-export type Data = {
-  wallet_id: number; // Wallet ID as a number
-  tx: Tx; // Transaction object
+export type DelegateStakingResult = {
+  transaction_info: {
+    wallet_id: number;
+    tx: { tx: string };
+  };
+  serialized_tx: Transaction;
+  delegation_id: string;
 };
 
 type SetStatus = {

@@ -36,11 +36,9 @@ const Console = (props: {
     try {
       await invoke("handle_console_command_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id
-              ? props.currentWallet?.wallet_id
-              : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet?.wallet_id
+            : 0,
           account_id: props.currentAccountId,
           command: command,
         },
@@ -71,7 +69,6 @@ const Console = (props: {
         unsubscribe();
       });
     } catch (error) {
-      console.log(error);
       notify(new String(error).toString(), "error");
     }
   };

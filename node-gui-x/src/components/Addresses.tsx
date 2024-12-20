@@ -30,15 +30,13 @@ const Addresses = (props: {
           index: number;
           address: string;
         };
-        console.log("New address info is======>", newAddress);
         if (newAddress) {
           props.handleUpdateCurrentAccount(
             newAddress.index.toString(),
             newAddress.address
           );
           notify("New address added", "success");
-        } else {
-        }
+        } 
         unsubscribe();
       });
       setIsLoading(false);
@@ -49,7 +47,6 @@ const Addresses = (props: {
         notify(errorMessage[1], "error");
       }
       setIsLoading(false);
-      console.log(err);
     }
   };
   return (

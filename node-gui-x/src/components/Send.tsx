@@ -13,6 +13,9 @@ const Send = (props: {
   const [amount, setAmount] = useState("");
   const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -28,10 +31,9 @@ const Send = (props: {
       const unsubscribe = await listen("SendAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("trasaction info is =========>", transactionResult);
+
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);
-        } else {
         }
         unsubscribe();
       });
@@ -41,27 +43,28 @@ const Send = (props: {
   };
 
   const handleConfirmTransaction = async () => {
+    setLoadingMessage("Confirming transaction. Please wait.");
+    setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
-          wallet_id: props.walletId,
-          account_id: props.accountId,
-          tx: transactionInfo?.tx,
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
-        const result = event.payload as Data;
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload as number;
         if (result) {
-          console.log("trasaction info is =========>", result);
-          setTransactionInfo(result);
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
-        } else {
+          setShowSuccessModal(true);
         }
         unsubscribe();
+        setIsLoading(false);
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
+      setIsLoading(false);
     }
   };
   return (
@@ -84,6 +87,14 @@ const Send = (props: {
           right: 36px; /* Adjust this value as needed */
         }
       `}</style>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
+            <div className="loader px-10">{loadingMessage}</div>
+          </div>
+        </div>
+      )}
 
       {showConfirmModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -106,18 +117,24 @@ const Send = (props: {
               <p className="text-start whitespace-nowrap">
                 -Transaction id ({""}
                 {encodeToHash(
-                  JSON.stringify(transactionInfo?.tx.transaction.V1)
+                  JSON.stringify(transactionInfo?.serialized_tx.V1)
                 )}
                 )
               </p>
               <p className="text-start whitespace-nowrap">
                 -Transaction ({"0x"}
                 {
-                  transactionInfo?.tx.transaction.V1.inputs[0].Utxo.id
-                    .Transaction
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.id.Transaction
                 }
                 {", "}
-                {transactionInfo?.tx.transaction.V1.inputs[0].Utxo.index})
+                {
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.index
+                }
+                )
               </p>
             </div>
             <div>
@@ -147,6 +164,31 @@ const Send = (props: {
               }}
             >
               Confirm and Broadcast
+            </button>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
+            {/* Close Button */}
+            <button
+              className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
+              onClick={() => setShowSuccessModal(false)}
+            >
+              <IoCloseSharp />
+            </button>
+            <h2 className="text-lg font-bold mb-4">Success</h2>
+            <p className="text-start">
+              Please wait for your transaction to be included in a block
+            </p>
+
+            <button
+              className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Okay
             </button>
           </div>
         </div>
@@ -198,7 +240,7 @@ const Send = (props: {
 
         <button
           type="submit"
-          className="py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+          className="py-1 px-4 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
         >
           Send
         </button>

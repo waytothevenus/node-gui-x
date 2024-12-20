@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import Addresses from "./Addresses";
 import Console from "./Console";
@@ -9,19 +9,28 @@ import Transactions from "./Transactions";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
 import { notify } from "../utils/util";
-import { AccountType, ChainInfoType, WalletInfo } from "../types/Types";
+import {
+  AccountType,
+  ChainInfoType,
+  DelegationBalancesType,
+  StakingBalancesType,
+  WalletInfo,
+} from "../types/Types";
 const WalletActions = (props: {
   currentWallet: WalletInfo | undefined;
   currentAccount: AccountType | undefined;
+  stakingBalances: StakingBalancesType[];
+  delegationBalances: DelegationBalancesType[];
   activeTab: string;
   currentAccountId: number;
   chainInfo: ChainInfoType | undefined;
   handleUpdateCurrentAccount: (index: string, address: string) => void;
   handleUpdateCurrentWalletEncryptionState: (
-    wallet_id: string,
+    wallet_id: number,
     encrypted: string
   ) => void;
-  handleRemoveWallet: (wallet_id: string) => void;
+  handleUpdateStakingState: (enabled: boolean) => void;
+  handleRemoveWallet: (wallet_id: number) => void;
 }) => {
   const [showEncryptWalletModal, setShowEncryptWalletModal] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -33,10 +42,13 @@ const WalletActions = (props: {
   const [unLockPassword, setUnLockPassword] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setWalletState(props.currentWallet?.encryption);
+  }, [props.currentWallet]);
+
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);
 
-    // Validate the confirm password
     if (confirmPassword !== password) {
       setError("Passwords do not match.");
     } else if (confirmPassword.length < 8 || confirmPassword.length > 64) {
@@ -50,9 +62,9 @@ const WalletActions = (props: {
     try {
       await invoke("update_encryption_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           action: "set_password",
           password: password,
         },
@@ -65,12 +77,11 @@ const WalletActions = (props: {
         if (encryptionResult) {
           setWalletState("EnabledUnLocked");
           props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
             "EnabledUnlocked"
           );
           setShowEncryptWalletModal(false);
           notify("Wallet encrypted successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -87,11 +98,9 @@ const WalletActions = (props: {
       try {
         await invoke("update_encryption_wrapper", {
           request: {
-            wallet_id: parseInt(
-              props.currentWallet?.wallet_id
-                ? props.currentWallet.wallet_id
-                : "0"
-            ),
+            wallet_id: props.currentWallet?.wallet_id
+              ? props.currentWallet.wallet_id
+              : 0,
             action: "remove_password",
           },
         });
@@ -105,12 +114,11 @@ const WalletActions = (props: {
             props.handleUpdateCurrentWalletEncryptionState(
               props.currentWallet?.wallet_id
                 ? props.currentWallet.wallet_id
-                : "",
+                : 0,
               "Disabled"
             );
             setShowEncryptWalletModal(false);
             notify("Wallet encryption disabled successfully.", "success");
-          } else {
           }
           unsubscribe();
         });
@@ -126,9 +134,9 @@ const WalletActions = (props: {
     try {
       await invoke("update_encryption_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           action: "lock",
         },
       });
@@ -141,12 +149,11 @@ const WalletActions = (props: {
         if (encryptionResult) {
           setWalletState("EnabledLocked");
           props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
             "EnabledLocked"
           );
           setShowUnlockModal(false);
           notify("Wallet locked successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -159,9 +166,9 @@ const WalletActions = (props: {
     try {
       await invoke("update_encryption_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          ),
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
           action: "unlock",
           password: unLockPassword,
         },
@@ -174,12 +181,11 @@ const WalletActions = (props: {
         if (encryptionResult) {
           setWalletState("EnabledUnlocked");
           props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "",
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
             "EnabledUnlocked"
           );
           setShowUnlockModal(false);
           notify("Wallet unlocked successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -196,15 +202,10 @@ const WalletActions = (props: {
         walletId: wallet_id,
       });
       const unsubscribe = await listen("CloseWallet", (event) => {
-        const closeWalletResult = event.payload as { wallet_id: string };
+        const closeWalletResult = event.payload as { wallet_id: number };
         if (closeWalletResult) {
-          console.log(
-            "wallet closed successfully, ",
-            closeWalletResult.wallet_id
-          );
           props.handleRemoveWallet(closeWalletResult.wallet_id);
           notify("Wallet closed successfully.", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -329,11 +330,9 @@ const WalletActions = (props: {
             } mt-8 mb-8 border text-[#E02424] border-[#E02424]  rounded-lg transition-all duration-200 `}
             onClick={() =>
               handleCloseWallet(
-                parseInt(
-                  props.currentWallet?.wallet_id
-                    ? props.currentWallet.wallet_id
-                    : "0"
-                )
+                props.currentWallet?.wallet_id
+                  ? props.currentWallet.wallet_id
+                  : 0
               )
             }
           >
@@ -351,9 +350,9 @@ const WalletActions = (props: {
               ? props.currentAccount.addresses
               : {}
           }
-          walletId={parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          )}
+          walletId={
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          }
           accountId={props.currentAccountId}
           handleUpdateCurrentAccount={props.handleUpdateCurrentAccount}
         />
@@ -361,9 +360,9 @@ const WalletActions = (props: {
       {props.activeTab === "send" && (
         <Send
           currentAccount={props.currentAccount}
-          walletId={parseInt(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : "0"
-          )}
+          walletId={
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          }
           accountId={props.currentAccountId}
         />
       )}
@@ -372,14 +371,17 @@ const WalletActions = (props: {
           chainInfo={props.chainInfo}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
+          stakingBalances={props.stakingBalances}
           currentAccountId={props.currentAccountId}
           currentWalletId={props.currentWallet?.wallet_id}
+          handleUpdateStakingState={props.handleUpdateStakingState}
         />
       )}
       {props.activeTab === "delegation" && (
         <Delegation
           currentAccount={props.currentAccount}
           currentAccountId={props.currentAccountId}
+          delegationBalances={props.delegationBalances}
           currentWallet={props.currentWallet}
         />
       )}

@@ -26,9 +26,15 @@ import SummaryTab from "../components/Summary";
 import NetworkingTab from "../components/Networking";
 import {
   AccountType,
+  AmountType,
+  BalanceType,
   ChainInfoType,
+  DelegationBalancesType,
   P2p,
   PeerConnected,
+  PoolInfoType,
+  StakingBalancesType,
+  TransactionType,
   WalletInfo,
 } from "../types/Types";
 import WalletActions from "../components/WalletActions";
@@ -59,14 +65,37 @@ function Home() {
   const [currentAccountId, setCurrentAccountId] = useState(0);
   const [currentWalletId, setCurrentWalletId] = useState(0);
   const [accountName, setAccountName] = useState("");
+  const [stakingBalances, setStakingBalances] = useState<StakingBalancesType[]>(
+    []
+  );
+  const [delegationBalances, setDelegationBalances] = useState<
+    DelegationBalancesType[]
+  >([]);
 
   const [showMnemonicModal, setShowMnemonicModal] = useState(false);
   const [showRecoverWalletModal, setShowRecoverWalletModal] = useState(false);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
   const errorListenerInitialized = useRef(false);
   const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
+  const balanceEventListenerInitialized = useRef(false);
+  const unsubscribeBalanceListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const stakingBalanceListenerInitialized = useRef(false);
+  const unsubscribeStakingBalanceListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const delegationBalanceListenerInitialized = useRef(false);
+  const unsubscribeDelegationBalanceListenerRef = useRef<
+    UnlistenFn | undefined
+  >(undefined);
+  const transactionListEventListenerInitialized = useRef(false);
+  const unsubscribeTransactionListListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const init_node = async () => {
@@ -77,14 +106,17 @@ function Home() {
             mode: walletMode,
           });
           if (result) {
-            console.log("Chain info: ", result);
+            setIsInitialized(true);
             setChainInfo(result);
             notify("Node initialized", "info");
             try {
               await invoke("listen_events");
-              console.log("P2P event receiver triggered");
             } catch (err) {
               console.error("Error starting P2P event receiver: ", err);
+              notify(
+                "Error occurred while starting P2P event listener",
+                "error"
+              );
             }
           }
         }
@@ -93,22 +125,56 @@ function Home() {
         notify("Error occurred while initializing node", "error");
       }
     };
-
-    init_node();
+    !isInitialized && init_node();
     chainStateEventListener();
     p2pEventListener();
+
     const setupErrorListener = async () => {
       if (!errorListenerInitialized.current) {
         unsubscribeErrorListenerRef.current = await errorListener();
-        errorListenerInitialized.current = true; // Mark as initialized
+        errorListenerInitialized.current = true;
+      }
+    };
+
+    const setupBalanceEventListener = async () => {
+      if (!balanceEventListenerInitialized.current) {
+        unsubscribeBalanceListenerRef.current = await balanceEventListener();
+        balanceEventListenerInitialized.current = true;
+      }
+    };
+
+    const setupStakingBalanceEventListener = async () => {
+      if (!stakingBalanceListenerInitialized.current) {
+        unsubscribeStakingBalanceListenerRef.current =
+          await stakingBalanceEventListener();
+        stakingBalanceListenerInitialized.current = true;
+      }
+    };
+
+    const setupDelegationBalanceEventListener = async () => {
+      if (!delegationBalanceListenerInitialized.current) {
+        unsubscribeDelegationBalanceListenerRef.current =
+          await delegationBalanceEventListener();
+        delegationBalanceListenerInitialized.current = true;
+      }
+    };
+
+    const setupTransactionListEventListener = async () => {
+      if (!transactionListEventListenerInitialized.current) {
+        unsubscribeTransactionListListenerRef.current =
+          await transactionListEventListener();
+        transactionListEventListenerInitialized.current = true;
       }
     };
 
     setupErrorListener();
+    setupBalanceEventListener();
+    setupStakingBalanceEventListener();
+    setupDelegationBalanceEventListener();
+    setupTransactionListEventListener();
     return () => {
       if (unsubscribeErrorListenerRef.current) {
         unsubscribeErrorListenerRef.current();
-        console.log("Error listener stopped");
       }
     };
   }, [netMode, walletMode]);
@@ -126,10 +192,9 @@ function Home() {
         setCurrentAccount(firstAccount);
       }
 
-      console.log("current wallet is ", currentWallet);
       setWalletsInfo((prevWallets) => {
         const updatedWallets = [...prevWallets];
-        updatedWallets[currentWalletId] = currentWallet; // Update the specific wallet
+        updatedWallets[currentWalletId] = currentWallet;
         return updatedWallets;
       });
     }
@@ -137,9 +202,7 @@ function Home() {
 
   useEffect(() => {
     if (currentAccount) {
-      console.log("current account is ", currentAccountId, currentAccount);
       setCurrentWallet((prevWallet) => {
-        // Only update if the account is different
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
         ) {
@@ -151,34 +214,39 @@ function Home() {
             },
           } as WalletInfo;
         }
-        return prevWallet; // Return previous wallet if no change
+        return prevWallet;
       });
     }
   }, [currentAccount, currentAccountId]);
 
   const p2pEventListener = async () => {
-    await listen("P2p", (event) => {
-      const newP2pInfo = event.payload as P2p;
-      if ("PeerConnected" in newP2pInfo) {
-        const peerInfo = newP2pInfo.PeerConnected;
-        setP2pInfo((prevP2pInfo) => {
-          const exists = prevP2pInfo.some(
-            (peer) => peer.address === peerInfo.address
-          );
+    try {
+      const unsubscribe = await listen("P2p", (event) => {
+        const newP2pInfo = event.payload as P2p;
+        if ("PeerConnected" in newP2pInfo) {
+          const peerInfo = newP2pInfo.PeerConnected;
+          setP2pInfo((prevP2pInfo) => {
+            const exists = prevP2pInfo.some(
+              (peer) => peer.address === peerInfo.address
+            );
 
-          if (!exists) {
-            return [...prevP2pInfo, peerInfo]; // Add new peer
-          } else {
-            return prevP2pInfo; // Return unchanged state
-          }
-        });
-      } else if ("PeerDisconnected" in newP2pInfo) {
-        const peerId = newP2pInfo.PeerDisconnected as number;
-        setP2pInfo((prevP2pInfo) =>
-          prevP2pInfo.filter((peer) => peer.id !== peerId)
-        );
-      }
-    });
+            if (!exists) {
+              return [...prevP2pInfo, peerInfo];
+            } else {
+              return prevP2pInfo;
+            }
+          });
+        } else if ("PeerDisconnected" in newP2pInfo) {
+          const peerId = newP2pInfo.PeerDisconnected as number;
+          setP2pInfo((prevP2pInfo) =>
+            prevP2pInfo.filter((peer) => peer.id !== peerId)
+          );
+        }
+        return unsubscribe;
+      });
+    } catch (error) {
+      notify("Error setting up p2p event listener", "error");
+    }
   };
 
   const errorListener = async () => {
@@ -190,18 +258,141 @@ function Home() {
           notify(errorMessage[1], "error");
         }
       });
-
       return unsubscribe;
     } catch (error) {
-      console.error("Error setting up error listener:", error);
+      notify("Error setting up  error listener", "error");
     }
   };
 
   const chainStateEventListener = async () => {
-    await listen("ChainInfo", (event) => {
-      const newChainInfo: ChainInfoType = event.payload as ChainInfoType;
-      setChainInfo(newChainInfo);
-    });
+    try {
+      const unsubscribe = await listen("ChainState", (event) => {
+        const newChainInfo = event.payload as ChainInfoType;
+        setChainInfo(newChainInfo);
+        return unsubscribe;
+      });
+    } catch (error) {
+      notify("Error setting up chain state listener", "error");
+    }
+  };
+  const balanceEventListener = async () => {
+    try {
+      const unsubscribe = await listen("Balances", (event) => {
+        const newBalances = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          balance: BalanceType;
+        };
+        if (newBalances.balance) {
+          setCurrentAccount((currentAccount) => {
+            if (currentAccount) {
+              return {
+                ...currentAccount,
+                balance: newBalances.balance,
+              };
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      notify("Error setting up  balance listener", "error");
+    }
+  };
+  const stakingBalanceEventListener = async () => {
+    try {
+      const unsubscribe = await listen("StakingBalance", (event) => {
+        const newStakingBalances = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          staking_balance: Record<string, PoolInfoType>;
+        };
+
+        if (newStakingBalances) {
+          setStakingBalances((currentStakingBalance) => {
+            const index = currentStakingBalance.findIndex(
+              (balance) =>
+                balance.wallet_id === newStakingBalances.wallet_id &&
+                balance.account_id === newStakingBalances.account_id
+            );
+
+            if (index !== -1) {
+              const updateBalances = [...currentStakingBalance];
+              updateBalances[index] = newStakingBalances;
+              return updateBalances;
+            } else {
+              return [...currentStakingBalance, newStakingBalances];
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      notify("Error setting up  staking balance listener", "error");
+    }
+  };
+  const transactionListEventListener = async () => {
+    try {
+      const unsubscribe = await listen("TransactionList", (event) => {
+        const newTransactionList = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          transaction_list: TransactionType;
+        };
+
+        if (newTransactionList) {
+          setCurrentAccount((currentAccount) => {
+            if (
+              currentAccount &&
+              newTransactionList.wallet_id === currentWalletId &&
+              newTransactionList.account_id === currentAccountId
+            ) {
+              return {
+                ...currentAccount,
+                transaction_list: newTransactionList.transaction_list,
+              };
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up transaction list listener:", error);
+    }
+  };
+  const delegationBalanceEventListener = async () => {
+    try {
+      const unsubscribe = await listen("DelegationBalance", (event) => {
+        const newDelegationBalance = event.payload as {
+          wallet_id: number;
+          account_id: number;
+          delegations_balance: Record<
+            string,
+            [pool_id: string, amount: AmountType]
+          >;
+        };
+
+        if (newDelegationBalance) {
+          setDelegationBalances((currentBalances) => {
+            const index = currentBalances.findIndex(
+              (balance) =>
+                balance.wallet_id === newDelegationBalance.wallet_id &&
+                balance.account_id === newDelegationBalance.account_id
+            );
+            if (index !== -1) {
+              const updateBalances = [...currentBalances];
+              updateBalances[index] = newDelegationBalance;
+              return updateBalances;
+            } else {
+              return [...currentBalances, newDelegationBalance];
+            }
+          });
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up delegation balance listener:", error);
+    }
   };
   const createNewWallet = () => {
     try {
@@ -255,7 +446,7 @@ function Home() {
         }
         setMnemonic("");
 
-        setShowMnemonicModal(false); // Ensure setShowMnemonicModal is defined
+        setShowMnemonicModal(false);
       } else {
         console.error("No file selected");
       }
@@ -294,13 +485,8 @@ function Home() {
             if (walletInfo) {
               setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
               notify("Wallet recovered successfully", "success");
-            } else {
             }
-
-            // Always set loading to false after processing
             setLoading(false);
-
-            // Unsubscribe from the event after handling it
             unsubscribe();
           });
         } catch (invokeError) {
@@ -327,7 +513,7 @@ function Home() {
     setShowRecoverWalletModal(true);
   };
 
-  const openWallet = async () => {
+  const handleOpenWallet = async () => {
     setLoadingMessage("Opening wallet. Please wait.");
     try {
       const filePath = await open({
@@ -341,8 +527,6 @@ function Home() {
 
       if (filePath) {
         setLoading(true);
-
-        // Invoke the Rust backend function
         await invoke("add_open_wallet_wrapper", {
           request: {
             file_path: filePath,
@@ -350,27 +534,21 @@ function Home() {
           },
         });
 
-        // Listen for the "OpenWallet" event
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
           if (walletInfo) {
-            console.log("walletInfo is ==========>", walletInfo);
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
             notify("Wallet opened successfully", "success");
-          } else {
           }
-
-          // Always set loading to false after processing
           setLoading(false);
 
-          // Unsubscribe from the event after handling it
           unsubscribe();
         });
       }
     } catch (error) {
       console.error("Error opening wallet:", error);
-      setLoading(false); // Ensure loading state is reset on error
+      setLoading(false);
     }
   };
 
@@ -403,7 +581,7 @@ function Home() {
   };
 
   const handleUpdateCurrentWalletEncryptionState = (
-    wallet_id: string,
+    wallet_id: number,
     encrypted: string
   ) => {
     const updatedWallet: WalletInfo = {
@@ -419,7 +597,7 @@ function Home() {
     setCurrentWallet(updatedWallet);
   };
 
-  const handleRemoveWallet = (wallet_id: string) => {
+  const handleRemoveWallet = (wallet_id: number) => {
     setWalletsInfo((wallets) =>
       wallets.filter((wallet) => wallet.wallet_id !== wallet_id)
     );
@@ -427,6 +605,17 @@ function Home() {
     setCurrentWalletId(0);
     setCurrentAccount(undefined);
     setCurrentAccountId(0);
+  };
+
+  const handleUpdateStakingState = (enabled: boolean) => {
+    setCurrentAccount((currentAccount) => {
+      if (currentAccount) {
+        return {
+          ...currentAccount,
+          staking_enabled: enabled,
+        };
+      }
+    });
   };
 
   const addAccount = (accountId: string, accountInfo: AccountType) => {
@@ -462,11 +651,9 @@ function Home() {
           account_id: string;
           account_info: AccountType;
         };
-        console.log("new account info is ========>", newAccount.account_info);
         if (newAccount) {
           addAccount(newAccount.account_id, newAccount.account_info);
           notify("Account created successfully!", "success");
-        } else {
         }
         unsubscribe();
       });
@@ -680,7 +867,7 @@ function Home() {
                       Recover {walletMode} Wallet
                     </button>
                     <button
-                      onClick={() => openWallet()}
+                      onClick={() => handleOpenWallet()}
                       className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
                     >
                       Open {walletMode} Wallet
@@ -706,7 +893,8 @@ function Home() {
                           onChange={(e) => {
                             setCurrentWallet(
                               walletsInfo.find(
-                                (wallet) => wallet.wallet_id == e?.target.value
+                                (wallet) =>
+                                  wallet.wallet_id == parseInt(e?.target.value)
                               )
                             );
                             setCurrentWalletId(parseInt(e.target.value));
@@ -718,8 +906,8 @@ function Home() {
                               key={wallet.wallet_id}
                               value={wallet.wallet_id}
                             >
-                              {wallet.path.substring(
-                                wallet.path.lastIndexOf("\\") + 1
+                              {wallet.path?.substring(
+                                wallet.path?.lastIndexOf("\\") + 1
                               )}
                             </option>
                           ))}
@@ -867,6 +1055,8 @@ function Home() {
                     <WalletActions
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
+                      stakingBalances={stakingBalances}
+                      delegationBalances={delegationBalances}
                       currentAccountId={currentAccountId}
                       chainInfo={chainInfo}
                       activeTab={activeTab}
@@ -876,6 +1066,7 @@ function Home() {
                       handleUpdateCurrentWalletEncryptionState={
                         handleUpdateCurrentWalletEncryptionState
                       }
+                      handleUpdateStakingState={handleUpdateStakingState}
                       handleRemoveWallet={handleRemoveWallet}
                     />
                   )}

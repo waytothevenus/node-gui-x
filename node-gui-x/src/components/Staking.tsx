@@ -3,35 +3,32 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import {
-  encode,
-  encodeToBytesForAddress,
-  encodeToHash,
-  notify,
-} from "../utils/util";
+import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
   Data,
   ChainInfoType,
+  StakingBalancesType,
 } from "../types/Types";
 
 const Staking = (props: {
   chainInfo: ChainInfoType | undefined;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
+  stakingBalances: StakingBalancesType[];
   currentAccountId: number | undefined;
-  currentWalletId: string | undefined;
+  currentWalletId: number | undefined;
+  handleUpdateStakingState: (enabled: boolean) => void;
 }) => {
-  // const [poolInfo, setPoolInfo] = useState(
-  //   props.currentAccount?.staking_balance
-  // );
   const [currentPoolId, setCurrentPoolId] = useState("");
   const [pledgeAmount, setPledgeAmount] = useState(0);
   const [costPerBlock, setCostPerBlock] = useState(0);
   const [marginRatio, setMarginRatio] = useState(0);
   const [decommissionAddress, setDecommissionAddress] = useState("");
-  const [isStakingStarted, setIsStakingStarted] = useState(false);
+  const [isStakingStarted, setIsStakingStarted] = useState(
+    props.currentAccount?.staking_enabled
+  );
   const [showDecommissionModal, setShowDecommissionModal] = useState(false);
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
@@ -41,7 +38,7 @@ const Staking = (props: {
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const handleStaking = async () => {
+  const handleToggleStaking = async () => {
     try {
       setLoadingMessage(
         isStakingStarted
@@ -51,27 +48,24 @@ const Staking = (props: {
       setIsLoading(true);
       await invoke("toggle_stakig_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
           account_id: props.currentAccountId ? props.currentAccountId : 0,
           enabled: !isStakingStarted,
         },
       });
 
-      const unsubscribe = await listen("CreateStake", (event) => {
-        const transactionResult = event.payload as {
-          wallet_id: string;
-          account_id: string;
-          enabled: boolean;
-        };
-        if (transactionResult) {
-          setIsStakingStarted(transactionResult.enabled);
-          notify(
-            transactionResult.enabled ? "Staking started" : "Staking stopped",
-            "success"
-          );
-        } else {
+      const unsubscribe = await listen("ToggleStaking", (event) => {
+        if (Array.isArray(event.payload)) {
+          const [wallet_id, account_id, enabled] = event.payload;
+          if (
+            wallet_id === props.currentWalletId &&
+            account_id === props.currentAccountId &&
+            event.payload
+          ) {
+            setIsStakingStarted(enabled);
+            props.handleUpdateStakingState(enabled);
+            notify(enabled ? "Staking started" : "Staking stopped", "success");
+          }
         }
         unsubscribe();
       });
@@ -82,16 +76,14 @@ const Staking = (props: {
     }
     setIsLoading(false);
   };
-  const handleDecommission = async () => {
+  const handleDecommissionStaking = async () => {
     try {
       setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       setIsLoading(true);
       await invoke("decommission_pool_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
-          account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
           pool_id: currentPoolId,
           output_address: receiveAddress,
         },
@@ -99,9 +91,12 @@ const Staking = (props: {
       const unsubscribe = await listen("DecommissionPool", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("Pool decommissioned successfully", transactionResult);
-          notify("Pool decommissioned", "success");
-        } else {
+          const transactionResult = event.payload as Data;
+          if (transactionResult) {
+            setTransactionInfo(transactionResult);
+            setShowConfirmTransactionModal(true);
+          }
+          unsubscribe();
         }
         unsubscribe();
       });
@@ -122,25 +117,20 @@ const Staking = (props: {
       setIsLoading(true);
       await invoke("stake_amount_wrapper", {
         request: {
-          wallet_id: parseInt(
-            props.currentWalletId ? props.currentWalletId : "0"
-          ),
-          account_id: props.currentAccountId ? props.currentAccountId : 0, // Change to parseInt
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
           pledge_amount: pledgeAmount.toString(),
           mpt: marginRatio.toString(),
           cost_per_block: costPerBlock.toString(),
           decommission_address: decommissionAddress,
         },
       });
-      const unsubscribe = await listen("CreateStake", (event) => {
+      const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-          console.log("trasaction info is =========>", transactionResult);
           setTransactionInfo(transactionResult);
           setShowConfirmTransactionModal(true);
-        } else {
         }
-
         unsubscribe();
       });
       setIsLoading(false);
@@ -155,28 +145,27 @@ const Staking = (props: {
   };
   const handleConfirmTransaction = async () => {
     try {
+      setLoadingMessage("Confirming transaction. Please wait.");
+      setIsLoading(true);
       await invoke("submit_transaction_wrapper", {
         request: {
-          wallet_id: props.currentWalletId,
-          account_id: props.currentAccountId,
-          tx: transactionInfo?.tx,
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
         },
       });
-      const unsubscribe = await listen("SubmitTx", (event) => {
-        const trasactionResult = event.payload as Data;
-        if (trasactionResult) {
-          console.log(
-            "sending amount transaction result is ========>",
-            trasactionResult
-          );
-          notify("Transaction confirmed successfully!", "success");
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload as number;
+        if (result) {
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmTransactionModal(false);
           setShowSuccessModal(true);
-        } else {
         }
         unsubscribe();
       });
+      setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
+      setIsLoading(false);
     }
   };
 
@@ -239,7 +228,7 @@ const Staking = (props: {
             />
             <button
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
-              onClick={handleDecommission}
+              onClick={handleDecommissionStaking}
             >
               Decommission
             </button>
@@ -268,8 +257,8 @@ const Staking = (props: {
               <p className="text-start">
                 {encodeToHash(
                   JSON.stringify(
-                    transactionInfo?.tx.transaction.V1
-                      ? transactionInfo.tx.transaction.V1
+                    transactionInfo?.serialized_tx.V1
+                      ? transactionInfo.serialized_tx.V1
                       : {}
                   )
                 )}
@@ -280,8 +269,9 @@ const Staking = (props: {
               <p className="text-start">
                 -Transaction({"0x"}
                 {
-                  transactionInfo?.tx.transaction.V1.inputs[0].Utxo.id
-                    .Transaction
+                  transactionInfo?.serialized_tx.V1.inputs.find(
+                    (output) => "Utxo" in output
+                  )?.Utxo.id.Transaction
                 }
                 )
               </p>
@@ -291,63 +281,61 @@ const Staking = (props: {
             </div>
             <div>
               <p className="text-start">BEGIN OF OUTPUTS</p>
-              {transactionInfo?.tx.transaction.V1.outputs.find(
+              {transactionInfo?.serialized_tx.V1.outputs.find(
                 (output) => "CreateStakePool" in output
               ) ? (
                 <>
                   <p className="text-start">
                     -CreateStakePool(Id(
-                    {encode(
-                      "tpool",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.tx.transaction.V1.outputs.find(
-                            (output) => "CreateStakePool" in output
-                          )?.CreateStakePool[0]
-                        ).toString()
-                      )
-                    )}
-                    )), Pledge(
-                    {pledgeAmount})
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[0]
+                    ).toString()}
+                    ), Pledge(
+                    {pledgeAmount}), Staker(
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].staker
+                    ).toString()}
+                    ), VRFPubKey(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].vrf_public_key
+                    }
+                    ), Margin Ratio(
+                    {
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "CreateStakePool" in output
+                      )?.CreateStakePool[1].margin_ratio_per_thousand
+                    }
+                    ), CostPerBlock(
+                    {parseInt(
+                      new String(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
+                          (output) => "CreateStakePool" in output
+                        )?.CreateStakePool[1].cost_per_block.atoms
+                      ).toString()
+                    ) / DECIMAL}
+                    ))
                   </p>
-                  <p className="text-start">
-                    -Staker(
-                    {encode(
-                      "tpmt",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.tx.transaction.V1.outputs.find(
-                            (output) => "CreateStakePool" in output
-                          )?.CreateStakePool[1].staker
-                        ).toString()
-                      )
-                    )}
-                    )
-                  </p>
-                  <p className="text-start">
-                    -Margin Ratio({marginRatio * 100}%)
-                  </p>
-                  <p className="text-start">-CostPerBlock({costPerBlock})</p>
                   <p className="text-start">
                     -Transfer(
-                    {encode(
-                      "tmt",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.tx.transaction.V1.outputs.find(
-                            (output) => "Transfer" in output
-                          )?.Transfer[1]
-                        ).toString()
-                      )
-                    )}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "Transfer" in output
+                      )?.Transfer[1]
+                    ).toString()}
                     ,{" "}
                     {parseInt(
                       new String(
-                        transactionInfo?.tx.transaction.V1.outputs.find(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
-                    ) / 1000000000000}
+                    ) / DECIMAL}
                     )
                   </p>
                 </>
@@ -355,30 +343,26 @@ const Staking = (props: {
                 <>
                   <p className="text-start">
                     -LockThenTransfer(
-                    {encode(
-                      "tpool",
-                      encodeToBytesForAddress(
-                        new String(
-                          transactionInfo?.tx.transaction.V1.outputs.find(
-                            (output) => "LockThenTransfer" in output
-                          )?.LockThenTransfer[0]
-                        ).toString()
-                      )
-                    )}
-                    ),{" "}
+                    {new String(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "LockThenTransfer" in output
+                      )?.LockThenTransfer[1]
+                    ).toString()}
+                    ,{" "}
                     {parseInt(
                       new String(
-                        transactionInfo?.tx.transaction.V1.outputs.find(
+                        transactionInfo?.serialized_tx.V1.outputs.find(
                           (output) => "LockThenTransfer" in output
-                        )?.LockThenTransfer[1].Coin.atoms
+                        )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
-                    ) / 1000000000000}
-                    {", "}
+                    ) / DECIMAL}
+                    {", "}OutpugTimeLock::ForBlockCount(
                     {new String(
-                      transactionInfo?.tx.transaction.V1.outputs.find(
+                      transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[2]
-                    ).toString()}
+                      )?.LockThenTransfer[2].content
+                    ).toString()}{" "}
+                    blocks))
                   </p>
                 </>
               )}
@@ -424,7 +408,7 @@ const Staking = (props: {
           </div>
         </div>
       )}
-      <div className="border border-gray-200 rounded rounded-lg w-full py-6">
+      <div className="border border-gray-200  rounded-lg w-full py-6">
         <p className="font-bold text-lg text-center">RUN STAKING POOLS</p>
         <p className="text-center py-6">
           {isStakingStarted
@@ -435,15 +419,15 @@ const Staking = (props: {
           className={
             isStakingStarted
               ? "py-1 px-4 border text-[#E02424] border-[#E02424] bg-white rounded-lg transition-all duration-200 hover:outline-none hover:bg-[#E02424] hover:text-white hover:border-[#E02424]"
-              : "w-40 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black "
+              : "w-40 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000]  hover:text-[#69EE96] hover:bg-black "
           }
-          onClick={handleStaking}
+          onClick={handleToggleStaking}
         >
           {isStakingStarted ? "STOP STAKING" : "BEGIN STAKING"}
         </button>
       </div>
       <p className="text-lg text-start py-8">Staking Pool Summary</p>
-      <table className="rounded rounded-lg overflow-hidden shadow">
+      <table className=" rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>
             <th className="py-3 px-4 text-center text-gray-600 font-semibold"></th>
@@ -463,10 +447,19 @@ const Staking = (props: {
           </tr>
         </thead>
         <tbody>
-          {Object.values(
-            props.currentAccount?.staking_balance
-              ? props.currentAccount?.staking_balance
-              : {}
+          {(props.stakingBalances.find(
+            (balance) =>
+              balance.wallet_id === props.currentWalletId &&
+              balance.account_id === props.currentAccountId
+          )
+            ? Object.values(
+                props.stakingBalances.find(
+                  (balance) =>
+                    balance.wallet_id === props.currentWalletId &&
+                    balance.account_id === props.currentAccountId
+                )?.staking_balance || {}
+              )
+            : []
           ).map((stakeInfo, index) => {
             return (
               <tr
@@ -526,7 +519,7 @@ const Staking = (props: {
         <input
           type="number"
           placeholder="Enter amount"
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={pledgeAmount}
           onChange={(e) => setPledgeAmount(parseInt(e.target.value))}
         />
@@ -536,7 +529,7 @@ const Staking = (props: {
         <input
           type="number"
           placeholder="Enter amount"
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={costPerBlock}
           onChange={(e) => setCostPerBlock(parseInt(e.target.value))}
         />
@@ -551,7 +544,7 @@ const Staking = (props: {
           placeholder="Enter amount"
           step="0.001"
           min={0}
-          className="rounded rounded-lg"
+          className=" rounded-lg"
           value={marginRatio}
           onChange={(e) => setMarginRatio(parseFloat(e.target.value))}
         />
@@ -560,7 +553,7 @@ const Staking = (props: {
         <p className="text-start">Decommission address</p>
         <input
           placeholder="Enter address"
-          className="rounded rounded-lg border-black p-2"
+          className=" rounded-lg border-black p-2"
           value={decommissionAddress}
           type="text"
           onChange={(e) => setDecommissionAddress(e.target.value)}
@@ -569,7 +562,7 @@ const Staking = (props: {
       <div>
         <button
           onClick={handleCreateStakingPool}
-          className="w-60 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] rounded hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
+          className="w-60 py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000]  hover:text-[#69EE96] hover:bg-black mt-8 mb-8"
         >
           Create Staking Pool
         </button>

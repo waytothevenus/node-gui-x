@@ -1,40 +1,21 @@
-// Copyright (c) 2024 RBB S.r.l
-// opensource@mintlayer.org
-// SPDX-License-Identifier: MIT
-// Licensed under the MIT License;
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// https://github.com/mintlayer/node-gui-x/blob/master/LICENSE
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import { useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
 import { encodeToHash, notify } from "../utils/util";
-import { AccountType, TransactionData } from "../types/Types";
+import { AccountType, Data } from "../types/Types";
 const Send = (props: {
-  isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
-  loadingMessage: string;
-  setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   walletId: number;
   accountId: number;
 }) => {
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
-  const [transactionInfo, setTransactionInfo] = useState<
-    TransactionData | undefined
-  >();
+  const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -48,7 +29,7 @@ const Send = (props: {
         },
       });
       const unsubscribe = await listen("SendAmount", (event) => {
-        const transactionResult = event.payload as TransactionData;
+        const transactionResult = event.payload as Data;
         if (transactionResult) {
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);
@@ -61,28 +42,28 @@ const Send = (props: {
   };
 
   const handleConfirmTransaction = async () => {
-    props.setLoadingMessage("Confirming transaction. Please wait.");
-    props.setIsLoading(true);
+    setLoadingMessage("Confirming transaction. Please wait.");
+    setIsLoading(true);
     try {
-      const unsubscribe = await listen("Broadcast", (event) => {
-        const result = event.payload as number;
-        if (result === props.walletId) {
-          notify("Transaction submitted successfully!", "success");
-          setShowConfirmModal(false);
-          setShowSuccessModal(true);
-        }
-        unsubscribe();
-        props.setIsLoading(false);
-      });
       await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: transactionInfo?.transaction_info.wallet_id,
           tx: transactionInfo?.transaction_info,
         },
       });
+      const unsubscribe = await listen("Broadcast", (event) => {
+        const result = event.payload as number;
+        if (result) {
+          notify("Transaction submitted successfully!", "success");
+          setShowConfirmModal(false);
+          setShowSuccessModal(true);
+        }
+        unsubscribe();
+        setIsLoading(false);
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
-      props.setIsLoading(false);
+      setIsLoading(false);
     }
   };
   return (
@@ -105,6 +86,14 @@ const Send = (props: {
           right: 36px; /* Adjust this value as needed */
         }
       `}</style>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
+            <div className="loader px-10">{loadingMessage}</div>
+          </div>
+        </div>
+      )}
 
       {showConfirmModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">

@@ -257,16 +257,18 @@ function Home() {
         if (errorMessage) {
           notify(errorMessage[1], "error");
         }
+        setLoading(false);
       });
       return unsubscribe;
     } catch (error) {
       notify("Error setting up  error listener", "error");
+      setLoading(false);
     }
   };
 
   const chainStateEventListener = async () => {
     try {
-      const unsubscribe = await listen("ChainState", (event) => {
+      const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
         setChainInfo(newChainInfo);
         return unsubscribe;
@@ -520,7 +522,7 @@ function Home() {
         filters: [
           {
             name: "Key file",
-            extensions: ["dat"],
+            extensions: ["*"],
           },
         ],
       });
@@ -541,8 +543,8 @@ function Home() {
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
             notify("Wallet opened successfully", "success");
           }
-          setLoading(false);
 
+          setLoading(false);
           unsubscribe();
         });
       }

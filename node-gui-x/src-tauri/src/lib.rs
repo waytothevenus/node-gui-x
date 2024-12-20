@@ -593,7 +593,7 @@ async fn listen_events(state: tauri::State<'_, AppState>) -> Result<(), String> 
                         }
                     }
 
-                    Some(BackendEvent::ConsoleResponse(wallet_id, account_id, result)) => {
+                    Some(BackendEvent::ConsoleResponse(_, _, result)) => {
                         match result {
                             Ok(console_command) => {
                                     if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {

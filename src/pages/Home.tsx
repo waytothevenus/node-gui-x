@@ -109,15 +109,6 @@ function Home() {
             setIsInitialized(true);
             setChainInfo(result);
             notify("Node initialized", "info");
-            try {
-              await invoke("listen_events");
-            } catch (err) {
-              console.error("Error starting P2P event receiver: ", err);
-              notify(
-                "Error occurred while starting P2P event listener",
-                "error"
-              );
-            }
           }
         }
       } catch (err) {

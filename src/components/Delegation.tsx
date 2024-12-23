@@ -140,14 +140,14 @@ const Delegation = (props: {
       });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
-        if (result) {
+        if (result === props.currentWallet?.wallet_id) {
           notify("Transaction submitted successfully!", "success");
-          setShowConfirmTransactionModal(false);
           setShowSuccessModal(true);
         }
         unsubscribe();
-        props.setIsLoading(false);
+        setShowConfirmTransactionModal(false);
       });
+      props.setIsLoading(false);
     } catch (error) {
       props.setIsLoading(false);
       notify(new String(error).toString(), "error");
@@ -544,12 +544,6 @@ const Delegation = (props: {
                   balance.account_id === props.currentAccountId
               )?.delegations_balance || {}
             );
-            const delegation_id = delegation_ids[0]
-              .replace("HexifiedDelegationId{", "")
-              .replace("}", "");
-            let pool_address = pool_id
-              .replace("HexifiedPoolId{", "")
-              .replace("}", "");
 
             return (
               <tr
@@ -559,12 +553,12 @@ const Delegation = (props: {
                 <td className="py-2 px-4 border-b border-gray-200">
                   <div className="flex justify-between space-x-2">
                     <p>
-                      {delegation_id.slice(0, 9)}...
-                      {delegation_id.slice(-4)}
+                      {delegation_ids[index].slice(0, 9)}...
+                      {delegation_ids[index].slice(-4)}
                     </p>
                     <button
                       onClick={() =>
-                        navigator.clipboard.writeText(delegation_id)
+                        navigator.clipboard.writeText(delegation_ids[index])
                       }
                       className="flex items-center justify-center p-0 bg-transparent border-none shadow-none focus:outline-none"
                     >
@@ -573,8 +567,8 @@ const Delegation = (props: {
                   </div>
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {pool_address.slice(0, 8)}...
-                  {pool_address.slice(-4)}
+                  {pool_id.slice(0, 8)}...
+                  {pool_id.slice(-4)}
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {parseInt(amount.atoms) / 100000000000}
@@ -584,7 +578,7 @@ const Delegation = (props: {
                   <button
                     onClick={() => {
                       setShowDepositModal(true);
-                      setCurrentDelegationId(delegation_id);
+                      setCurrentDelegationId(delegation_ids[index]);
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
@@ -593,7 +587,7 @@ const Delegation = (props: {
                   <button
                     onClick={() => {
                       setShowWithdrawModal(true);
-                      setCurrentDelegationId(delegation_id);
+                      setCurrentDelegationId(delegation_ids[index]);
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >

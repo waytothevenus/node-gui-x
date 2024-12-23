@@ -156,7 +156,7 @@ const Staking = (props: {
       });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
-        if (result) {
+        if (result === props.currentWallet?.wallet_id) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmTransactionModal(false);
           setShowSuccessModal(true);

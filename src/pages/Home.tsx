@@ -270,12 +270,13 @@ function Home() {
   };
   const balanceEventListener = async () => {
     try {
-      const unsubscribe = await listen("Balances", (event) => {
+      const unsubscribe = await listen("Balance", (event) => {
         const newBalances = event.payload as {
           wallet_id: number;
           account_id: number;
           balance: BalanceType;
         };
+        console.log("current balance is :", newBalances);
         if (newBalances.balance) {
           setCurrentAccount((currentAccount) => {
             if (currentAccount) {
@@ -300,6 +301,8 @@ function Home() {
           account_id: number;
           staking_balance: Record<string, PoolInfoType>;
         };
+
+        console.log("Staking balance is: ", newStakingBalances);
 
         if (newStakingBalances) {
           setStakingBalances((currentStakingBalance) => {
@@ -333,7 +336,9 @@ function Home() {
           transaction_list: TransactionType;
         };
 
-        if (newTransactionList) {
+        console.log("transaction list is:", newTransactionList);
+
+        if (newTransactionList.transaction_list) {
           setCurrentAccount((currentAccount) => {
             if (
               currentAccount &&
@@ -364,6 +369,8 @@ function Home() {
             [pool_id: string, amount: AmountType]
           >;
         };
+
+        console.log("delegation balance: ", newDelegationBalance);
 
         if (newDelegationBalance) {
           setDelegationBalances((currentBalances) => {
@@ -935,7 +942,7 @@ function Home() {
                               : {}
                           ).map(([index, account]) => (
                             <option key={index} value={index}>
-                              {account.name ? account.name : "Account " + index}
+                              {account?.name ? account?.name : "Account " + index}
                             </option>
                           ))}
                         </select>
@@ -1046,8 +1053,9 @@ function Home() {
                   )}
                   {currentTab === "transactions" && (
                     <WalletActions
-                      isLoading = {loading}
-                      setIsLoading = {setLoading}
+                      netMode={netMode}
+                      isLoading={loading}
+                      setIsLoading={setLoading}
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
                       stakingBalances={stakingBalances}

@@ -301,6 +301,8 @@ function Home() {
           staking_balance: Record<string, PoolInfoType>;
         };
 
+        console.log("Staking balance is: ", newStakingBalances);
+
         if (newStakingBalances) {
           setStakingBalances((currentStakingBalance) => {
             const index = currentStakingBalance.findIndex(
@@ -333,7 +335,9 @@ function Home() {
           transaction_list: TransactionType;
         };
 
-        if (newTransactionList) {
+        console.log("transaction list is:", newTransactionList);
+
+        if (newTransactionList.transaction_list) {
           setCurrentAccount((currentAccount) => {
             if (
               currentAccount &&
@@ -364,6 +368,8 @@ function Home() {
             [pool_id: string, amount: AmountType]
           >;
         };
+
+        console.log("delegation balance: ", newDelegationBalance);
 
         if (newDelegationBalance) {
           setDelegationBalances((currentBalances) => {
@@ -1046,8 +1052,8 @@ function Home() {
                   )}
                   {currentTab === "transactions" && (
                     <WalletActions
-                      isLoading = {loading}
-                      setIsLoading = {setLoading}
+                      isLoading={loading}
+                      setIsLoading={setLoading}
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
                       stakingBalances={stakingBalances}

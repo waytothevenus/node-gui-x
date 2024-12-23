@@ -12,6 +12,8 @@ import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   currentAccount: AccountType | undefined;
   currentAccountId: number;
   delegationBalances: DelegationBalancesType[];
@@ -26,7 +28,6 @@ const Delegation = (props: {
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [currentDelegationId, setCurrentDelegationId] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
@@ -34,7 +35,7 @@ const Delegation = (props: {
   const handleDeposit = async () => {
     setShowDepositModal(false);
     setLoadingMessage("Depositing to delegation. Please wait.");
-    setIsLoading(true);
+    props.setIsLoading(true);
     try {
       await invoke("delegate_staking_wrapper", {
         request: {
@@ -54,15 +55,15 @@ const Delegation = (props: {
         }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
-    setIsLoading(false);
+    props.setIsLoading(false);
   };
   const handleWithdraw = async () => {
     setLoadingMessage("Withdrawing from delegation. Please wait.");
-    setIsLoading(true);
+    props.setIsLoading(true);
     setShowWithdrawModal(false);
     try {
       await invoke("send_delegation_to_address_wrapper", {
@@ -87,7 +88,7 @@ const Delegation = (props: {
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
-    setIsLoading(false);
+    props.setIsLoading(false);
   };
 
   const handleSelectAllAmount = () => {
@@ -100,7 +101,7 @@ const Delegation = (props: {
 
   const handleCreateDelegation = async () => {
     setLoadingMessage("Creating Delegation. Please wait");
-    setIsLoading(true);
+    props.setIsLoading(true);
     try {
       await invoke("create_delegation_wrapper", {
         request: {
@@ -117,19 +118,19 @@ const Delegation = (props: {
         if (transactionInfo) {
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
-          setIsLoading(false);
+          props.setIsLoading(false);
         }
         unsubscribe();
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
-      setIsLoading(false);
+      props.setIsLoading(false);
     }
   };
 
   const handleConfirmTransaction = async () => {
     setLoadingMessage("Confirming transaction. Please wait.");
-    setIsLoading(true);
+    props.setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
@@ -145,17 +146,17 @@ const Delegation = (props: {
           setShowSuccessModal(true);
         }
         unsubscribe();
-        setIsLoading(false);
+        props.setIsLoading(false);
       });
     } catch (error) {
-      setIsLoading(false);
+      props.setIsLoading(false);
       notify(new String(error).toString(), "error");
     }
   };
 
   return (
     <div className="container pt-0 p-4 shadow-1">
-      {isLoading && (
+      {props.isLoading && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">

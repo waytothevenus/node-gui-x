@@ -5,6 +5,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { encodeToHash, notify } from "../utils/util";
 import { AccountType, Data } from "../types/Types";
 const Send = (props: {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   currentAccount: AccountType | undefined;
   walletId: number;
   accountId: number;
@@ -14,7 +16,6 @@ const Send = (props: {
   const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,7 +32,6 @@ const Send = (props: {
       const unsubscribe = await listen("SendAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
-
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);
         }
@@ -44,7 +44,7 @@ const Send = (props: {
 
   const handleConfirmTransaction = async () => {
     setLoadingMessage("Confirming transaction. Please wait.");
-    setIsLoading(true);
+    props.setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
         request: {
@@ -60,11 +60,11 @@ const Send = (props: {
           setShowSuccessModal(true);
         }
         unsubscribe();
-        setIsLoading(false);
+        props.setIsLoading(false);
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
-      setIsLoading(false);
+      props.setIsLoading(false);
     }
   };
   return (
@@ -87,7 +87,7 @@ const Send = (props: {
           right: 36px; /* Adjust this value as needed */
         }
       `}</style>
-      {isLoading && (
+      {props.isLoading && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">

@@ -1046,6 +1046,8 @@ function Home() {
                   )}
                   {currentTab === "transactions" && (
                     <WalletActions
+                      isLoading = {loading}
+                      setIsLoading = {setLoading}
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
                       stakingBalances={stakingBalances}

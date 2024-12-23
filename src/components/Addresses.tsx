@@ -3,18 +3,18 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import AddressIcon from "../assets/account_icon.png";
 import { notify } from "../utils/util";
-import { useState } from "react";
 
 const Addresses = (props: {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   addresses: Record<string, string>;
   accountId: number;
   walletId: number;
   handleUpdateCurrentAccount: (index: string, address: string) => void;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const handleAddAddress = async () => {
     try {
-      setIsLoading(true);
+      props.setIsLoading(true);
       await invoke("new_address_wrapper", {
         request: { wallet_id: props.walletId, account_id: props.accountId },
       });
@@ -36,22 +36,22 @@ const Addresses = (props: {
             newAddress.address
           );
           notify("New address added", "success");
-        } 
+        }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (err: any) {
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(err).match(regex);
       if (errorMessage) {
         notify(errorMessage[1], "error");
       }
-      setIsLoading(false);
+      props.setIsLoading(false);
     }
   };
   return (
     <div className="pt-0">
-      {isLoading && (
+      {props.isLoading && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">

@@ -13,6 +13,8 @@ import {
 } from "../types/Types";
 
 const Staking = (props: {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   chainInfo: ChainInfoType | undefined;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
@@ -33,7 +35,6 @@ const Staking = (props: {
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
   const [transactionInfo, setTransactionInfo] = useState<Data>();
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
@@ -45,7 +46,7 @@ const Staking = (props: {
           ? "Stopping Staking. Please wait."
           : "Starting Staking, Please wait."
       );
-      setIsLoading(true);
+      props.setIsLoading(true);
       await invoke("toggle_stakig_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -69,17 +70,17 @@ const Staking = (props: {
         }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (error) {
       const errorMessage = new String(error);
       notify(errorMessage.toString(), "error");
     }
-    setIsLoading(false);
+    props.setIsLoading(false);
   };
   const handleDecommissionStaking = async () => {
     try {
       setLoadingMessage("Decommissioning Staking Pool. Please wait.");
-      setIsLoading(true);
+      props.setIsLoading(true);
       await invoke("decommission_pool_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -100,7 +101,7 @@ const Staking = (props: {
         }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (error) {
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
@@ -114,7 +115,7 @@ const Staking = (props: {
   const handleCreateStakingPool = async () => {
     try {
       setLoadingMessage("Creating Staking Pool. Please wait");
-      setIsLoading(true);
+      props.setIsLoading(true);
       await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -133,7 +134,7 @@ const Staking = (props: {
         }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (error) {
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
@@ -141,12 +142,12 @@ const Staking = (props: {
         notify(errorMessage[1], "error");
       }
     }
-    setIsLoading(false);
+    props.setIsLoading(false);
   };
   const handleConfirmTransaction = async () => {
     try {
       setLoadingMessage("Confirming transaction. Please wait.");
-      setIsLoading(true);
+      props.setIsLoading(true);
       await invoke("submit_transaction_wrapper", {
         request: {
           wallet_id: transactionInfo?.transaction_info.wallet_id,
@@ -162,10 +163,10 @@ const Staking = (props: {
         }
         unsubscribe();
       });
-      setIsLoading(false);
+      props.setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
-      setIsLoading(false);
+      props.setIsLoading(false);
     }
   };
 
@@ -184,7 +185,7 @@ const Staking = (props: {
           -moz-appearance: textfield;
         }
       `}</style>
-      {isLoading && (
+      {props.isLoading && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">

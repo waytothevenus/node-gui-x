@@ -17,6 +17,8 @@ import {
   WalletInfo,
 } from "../types/Types";
 const WalletActions = (props: {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   currentWallet: WalletInfo | undefined;
   currentAccount: AccountType | undefined;
   stakingBalances: StakingBalancesType[];
@@ -345,6 +347,8 @@ const WalletActions = (props: {
       )}
       {props.activeTab === "addresses" && (
         <Addresses
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
           addresses={
             props.currentAccount?.addresses
               ? props.currentAccount.addresses
@@ -359,6 +363,8 @@ const WalletActions = (props: {
       )}
       {props.activeTab === "send" && (
         <Send
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
           currentAccount={props.currentAccount}
           walletId={
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
@@ -368,6 +374,8 @@ const WalletActions = (props: {
       )}
       {props.activeTab === "staking" && (
         <Staking
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
           chainInfo={props.chainInfo}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
@@ -379,6 +387,8 @@ const WalletActions = (props: {
       )}
       {props.activeTab === "delegation" && (
         <Delegation
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
           currentAccount={props.currentAccount}
           currentAccountId={props.currentAccountId}
           delegationBalances={props.delegationBalances}

@@ -109,15 +109,6 @@ function Home() {
             setIsInitialized(true);
             setChainInfo(result);
             notify("Node initialized", "info");
-            try {
-              await invoke("listen_events");
-            } catch (err) {
-              console.error("Error starting P2P event receiver: ", err);
-              notify(
-                "Error occurred while starting P2P event listener",
-                "error"
-              );
-            }
           }
         }
       } catch (err) {
@@ -257,16 +248,18 @@ function Home() {
         if (errorMessage) {
           notify(errorMessage[1], "error");
         }
+        setLoading(false);
       });
       return unsubscribe;
     } catch (error) {
       notify("Error setting up  error listener", "error");
+      setLoading(false);
     }
   };
 
   const chainStateEventListener = async () => {
     try {
-      const unsubscribe = await listen("ChainState", (event) => {
+      const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
         setChainInfo(newChainInfo);
         return unsubscribe;
@@ -308,6 +301,8 @@ function Home() {
           staking_balance: Record<string, PoolInfoType>;
         };
 
+        console.log("Staking balance is: ", newStakingBalances);
+
         if (newStakingBalances) {
           setStakingBalances((currentStakingBalance) => {
             const index = currentStakingBalance.findIndex(
@@ -340,7 +335,9 @@ function Home() {
           transaction_list: TransactionType;
         };
 
-        if (newTransactionList) {
+        console.log("transaction list is:", newTransactionList);
+
+        if (newTransactionList.transaction_list) {
           setCurrentAccount((currentAccount) => {
             if (
               currentAccount &&
@@ -371,6 +368,8 @@ function Home() {
             [pool_id: string, amount: AmountType]
           >;
         };
+
+        console.log("delegation balance: ", newDelegationBalance);
 
         if (newDelegationBalance) {
           setDelegationBalances((currentBalances) => {
@@ -520,7 +519,7 @@ function Home() {
         filters: [
           {
             name: "Key file",
-            extensions: ["dat"],
+            extensions: ["*"],
           },
         ],
       });
@@ -541,8 +540,8 @@ function Home() {
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);
             notify("Wallet opened successfully", "success");
           }
-          setLoading(false);
 
+          setLoading(false);
           unsubscribe();
         });
       }
@@ -1053,6 +1052,8 @@ function Home() {
                   )}
                   {currentTab === "transactions" && (
                     <WalletActions
+                      isLoading={loading}
+                      setIsLoading={setLoading}
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
                       stakingBalances={stakingBalances}

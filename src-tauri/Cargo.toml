@@ -38,22 +38,11 @@ serde_json = "1"
 once_cell = "1.8"
 chainstate = {git = "https://github.com/mintlayer/mintlayer-core", package = "chainstate",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 common = { git = "https://github.com/mintlayer/mintlayer-core", package = "common",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-crypto = { git = "https://github.com/mintlayer/mintlayer-core", package = "crypto",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-logging = {git = "https://github.com/mintlayer/mintlayer-core", package = "logging",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
-mempool = { git = "https://github.com/mintlayer/mintlayer-core", package = "mempool",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-node-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 node-gui-backend = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-gui-backend",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
-node-comm = { git = "https://github.com/mintlayer/mintlayer-core", package = "node-comm",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-p2p = { git = "https://github.com/mintlayer/mintlayer-core", package = "p2p",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-serialization = { git = "https://github.com/mintlayer/mintlayer-core", package = "serialization",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
-subsystem = { git = "https://github.com/mintlayer/mintlayer-core", package = "subsystem",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
-utils = { git = "https://github.com/mintlayer/mintlayer-core", package = "utils",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-controller",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
-wallet-rpc-client = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-client",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
-wallet-cli-commands = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-cli-commands",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 tauri-plugin-process = "2"
 
 

@@ -60,6 +60,7 @@ panic = "abort" # prevent panic catching (mostly for the tokio runtime)
 [profile.release]
 panic = "abort" # prevent panic catching (mostly for the tokio runtime)
 overflow-checks = true
+windows-subsystem = "window"
 
 # "Release" profile with debug info enabled.
 [profile.release-with-debug-info]

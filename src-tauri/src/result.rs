@@ -15,12 +15,18 @@
 
 use std::collections::BTreeMap;
 
-use common::{ chain::{ DelegationId, GenBlock, PoolId }, primitives::{ Amount, BlockHeight, Id } };
-use node_gui_backend::{ messages::{ TransactionInfo, WalletId }, AccountId };
+use common::{
+    chain::{DelegationId, GenBlock, PoolId},
+    primitives::{Amount, BlockHeight, Id},
+};
+use node_gui_backend::{
+    messages::{TransactionInfo, WalletId},
+    AccountId,
+};
 use serde::Serialize;
 use serde_json::Value;
 use wallet::account::transaction_list::TransactionList;
-use wallet_rpc_lib::types::{ Balances, PoolInfo };
+use wallet_rpc_lib::types::{Balances, PoolInfo};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TransactionResult {
@@ -48,7 +54,7 @@ impl DelegateStakingResult {
     pub fn new(
         transaction_info: TransactionInfo,
         serialized_tx: Value,
-        delegation_id: DelegationId
+        delegation_id: DelegationId,
     ) -> Self {
         DelegateStakingResult {
             transaction_info,
@@ -69,7 +75,7 @@ impl StakingBalanceResult {
     pub fn new(
         wallet_id: WalletId,
         account_id: AccountId,
-        staking_balance: BTreeMap<PoolId, PoolInfo>
+        staking_balance: BTreeMap<PoolId, PoolInfo>,
     ) -> Self {
         StakingBalanceResult {
             wallet_id,
@@ -107,7 +113,7 @@ impl DelegationsBalanceResult {
     pub fn new(
         wallet_id: WalletId,
         account_id: AccountId,
-        delegations_balance: BTreeMap<String, (String, Amount)>
+        delegations_balance: BTreeMap<String, (String, Amount)>,
     ) -> Self {
         DelegationsBalanceResult {
             wallet_id,
@@ -128,7 +134,7 @@ impl TransactionListResult {
     pub fn new(
         wallet_id: WalletId,
         account_id: AccountId,
-        transaction_list: TransactionList
+        transaction_list: TransactionList,
     ) -> Self {
         TransactionListResult {
             wallet_id,
@@ -146,6 +152,9 @@ pub struct WalletBestBlockResult {
 
 impl WalletBestBlockResult {
     pub fn new(wallet_id: WalletId, block_info: (Id<GenBlock>, BlockHeight)) -> Self {
-        WalletBestBlockResult { wallet_id, block_info }
+        WalletBestBlockResult {
+            wallet_id,
+            block_info,
+        }
     }
 }

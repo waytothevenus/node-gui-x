@@ -54,7 +54,7 @@ const Send = (props: {
       });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
-        if (result) {
+        if (result === props.walletId) {
           notify("Transaction submitted successfully!", "success");
           setShowConfirmModal(false);
           setShowSuccessModal(true);

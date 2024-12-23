@@ -13,10 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::fmt::Debug;
 use common::chain::DelegationId;
-use node_gui_backend::{ messages::{ TransactionInfo, WalletId }, AccountId };
-use serde::{ Serialize, Deserialize };
+use node_gui_backend::{
+    messages::{TransactionInfo, WalletId},
+    AccountId,
+};
+use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OpenCreateWalletRequest {

@@ -17,6 +17,7 @@ import {
   WalletInfo,
 } from "../types/Types";
 const WalletActions = (props: {
+  netMode: string;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   currentWallet: WalletInfo | undefined;
@@ -287,7 +288,8 @@ const WalletActions = (props: {
           <span className="flex space-x-2">
             <div className="font-thin">My balance: </div>
             <div className="font-bold">
-              {props.currentAccount?.balance.coins.decimal} TML
+              {props.currentAccount?.balance.coins.decimal}{" "}
+              {props.netMode === "Hot" ? "ML" : "TML"}
             </div>
           </span>
         </div>

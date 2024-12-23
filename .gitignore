@@ -22,6 +22,9 @@ node_modules/
 #exclude env
 .env
 
+#package lock file
+yarn.lock
+
 # Test Python cache
 test/**/__pycache__
 

@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod request;
+pub mod result;
 use chainstate::ChainInfo;
 use common::address::Address;
-use common::chain::{ ChainConfig, DelegationId, PoolId };
-use common::primitives::Amount;
+use common::chain::ChainConfig;
 use common::time_getter::TimeGetter;
 use node_gui_backend::messages::{
     BackendEvent,
@@ -28,253 +29,53 @@ use node_gui_backend::messages::{
     SendDelegateToAddressRequest,
     SendRequest,
     StakeRequest,
-    TransactionInfo,
     WalletId,
 };
-use node_gui_backend::AccountId;
-use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, InitializedNode, WalletMode };
+use node_gui_backend::{ BackendSender, ImportOrCreate, InitNetwork, WalletMode };
 use once_cell::sync::OnceCell;
-use serde::{ Deserialize, Serialize };
-use serde_json::Value;
+use request::{
+    ConsoleRequest,
+    DecommissionStakingPoolRequest,
+    DelegationCreateRequest,
+    NewAccountRequest,
+    NewAddressRequest,
+    OpenCreateWalletRequest,
+    OpenWalletRequest,
+    SendAmountRequest,
+    SendDelegateRequest,
+    StakeAmountRequest,
+    StakingDelegateRequest,
+    SubmitTransactionRequest,
+    ToggleStakingRequest,
+    UpdateEncryptionRequest,
+};
+use result::{
+    BalanceResult,
+    DelegateStakingResult,
+    DelegationsBalanceResult,
+    StakingBalanceResult,
+    TransactionListResult,
+    TransactionResult,
+    WalletBestBlockResult,
+};
 use std::collections::BTreeMap;
-use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::async_runtime::RwLock;
 use tauri::{ AppHandle, Emitter };
 use tokio::sync::mpsc::UnboundedReceiver;
-use wallet::account::transaction_list::TransactionList;
-use wallet_rpc_lib::types::{ Balances, PoolInfo };
 use wallet_types::wallet_type::WalletType;
+
 struct AppState {
-    // initialized_node: RwLock<Option<InitializedNode>>,
     backend_sender: RwLock<Option<BackendSender>>,
-    // backend_receiver: RwLock<Option<UnboundedReceiver<BackendEvent>>>,
-    // low_priority_backend_receiver: RwLock<Option<UnboundedReceiver<BackendEvent>>>,
 }
 
 static GLOBAL_APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
-#[derive(Debug, Serialize, Deserialize)]
-struct OpenCreateWalletRequest {
-    mnemonic: String,
-    file_path: String,
-    import: bool,
-    wallet_type: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct OpenWalletRequest {
-    file_path: String,
-    wallet_type: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SendAmountRequest {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    amount: String,
-    address: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct StakeAmountRequest {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    pledge_amount: String,
-    mpt: String,
-    cost_per_block: String,
-    decommission_address: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct DecommissionStakingPoolRequest {
-    pub wallet_id: WalletId,
-    pub account_id: AccountId,
-    pub pool_id: String,
-    pub output_address: String,
-}
-#[derive(Debug, Serialize, Deserialize)]
-struct DelegationCreateRequest {
-    pub wallet_id: WalletId,
-    pub account_id: AccountId,
-    pub pool_id: String,
-    pub delegation_address: String,
-}
-#[derive(Debug, Serialize, Deserialize)]
-struct StakingDelegateRequest {
-    pub wallet_id: WalletId,
-    pub account_id: AccountId,
-    pub delegation_id: DelegationId,
-    pub delegation_amount: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct NewAddressRequest {
-    wallet_id: WalletId,
-    account_id: AccountId,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct UpdateEncryptionRequest {
-    wallet_id: WalletId,
-    action: String,
-    password: Option<String>,
-}
-#[derive(Debug, Serialize, Deserialize)]
-struct SendDelegateRequest {
-    pub wallet_id: WalletId,
-    pub account_id: AccountId,
-    pub address: String,
-    pub amount: String,
-    pub delegation_id: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct NewAccountRequest {
-    wallet_id: WalletId,
-    name: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ToggleStakingRequest {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    enabled: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ConsoleRequest {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    command: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct SubmitTransactionRequest {
-    tx: TransactionInfo,
-    wallet_id: WalletId,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct TransactionResult {
-    transaction_info: TransactionInfo,
-    serialized_tx: Value,
-}
-
-impl TransactionResult {
-    pub fn new(transaction_info: TransactionInfo, serialized_tx: Value) -> Self {
-        TransactionResult {
-            transaction_info,
-            serialized_tx,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct DelegateStakingResult {
-    transaction_info: TransactionInfo,
-    serialized_tx: Value,
-    delegation_id: DelegationId,
-}
-
-impl DelegateStakingResult {
-    pub fn new(
-        transaction_info: TransactionInfo,
-        serialized_tx: Value,
-        delegation_id: DelegationId
-    ) -> Self {
-        DelegateStakingResult {
-            transaction_info,
-            serialized_tx,
-            delegation_id,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct StakingBalanceResult {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    staking_balance: BTreeMap<PoolId, PoolInfo>,
-}
-
-impl StakingBalanceResult {
-    fn new(
-        wallet_id: WalletId,
-        account_id: AccountId,
-        staking_balance: BTreeMap<PoolId, PoolInfo>
-    ) -> Self {
-        StakingBalanceResult {
-            wallet_id,
-            account_id,
-            staking_balance,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct BalanceResult {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    balance: Balances,
-}
-
-impl BalanceResult {
-    fn new(wallet_id: WalletId, account_id: AccountId, balance: Balances) -> Self {
-        BalanceResult {
-            wallet_id,
-            account_id,
-            balance,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct DelegationsBalanceResult {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    delegations_balance: BTreeMap<String, (String, Amount)>,
-}
-
-impl DelegationsBalanceResult {
-    fn new(
-        wallet_id: WalletId,
-        account_id: AccountId,
-        delegations_balance: BTreeMap<String, (String, Amount)>
-    ) -> Self {
-        DelegationsBalanceResult {
-            wallet_id,
-            account_id,
-            delegations_balance,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct TransactionListResult {
-    wallet_id: WalletId,
-    account_id: AccountId,
-    transaction_list: TransactionList,
-}
-
-impl TransactionListResult {
-    fn new(wallet_id: WalletId, account_id: AccountId, transaction_list: TransactionList) -> Self {
-        TransactionListResult {
-            wallet_id,
-            account_id,
-            transaction_list,
-        }
-    }
-}
-
 impl Default for AppState {
     fn default() -> Self {
         AppState {
-            // initialized_node: RwLock::new(None),
-            // backend_receiver: RwLock::new(None),
             backend_sender: RwLock::new(None),
-            // low_priority_backend_receiver: RwLock::new(None),
         }
     }
 }
@@ -637,14 +438,14 @@ fn process_message(message: BackendEvent, chain_config: ChainConfig) {
             let chain_config_ref = chain_config.clone();
             let mut delegation_balances = BTreeMap::new();
             for (delegation_id, (pool_id, balance)) in delegations_balance {
-                let delegation_address = Address::new(&chain_config_ref, delegation_id)
-                    .map_err(|e| { e.to_string() })?
-                    .as_str()
-                    .to_string();
-                let pool_address = Address::new(&chain_config_ref, pool_id)
-                    .map_err(|e| e.to_string())?
-                    .as_str()
-                    .to_string();
+                let delegation_address = match Address::new(&chain_config_ref, delegation_id) {
+                    Ok(addr) => addr.as_str().to_string(),
+                    Err(e) => { e.to_string() }
+                };
+                let pool_address = match Address::new(&chain_config_ref, pool_id) {
+                    Ok(addr) => addr.as_str().to_string(),
+                    Err(e) => { e.to_string() }
+                };
                 delegation_balances.insert(delegation_address, (pool_address, balance));
             }
             let delegations_balance = DelegationsBalanceResult::new(
@@ -677,22 +478,12 @@ fn process_message(message: BackendEvent, chain_config: ChainConfig) {
             }
         }
 
-        BackendEvent::NewAddress(msg) => {
-            match msg {
-                Ok(address_info) => {
-                    if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                        app_handle.emit("NewAddress", address_info).unwrap();
-                    }
-                }
-                Err(e) => {
-                    let error_message = e.to_string();
-                    if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
-                        app_handle.emit("Error", error_message).unwrap();
-                    }
-                }
+        BackendEvent::WalletBestBlock(wallet_id, block_info) => {
+            if let Some(app_handle) = GLOBAL_APP_HANDLE.get() {
+                let wallet_best_block = WalletBestBlockResult::new(wallet_id, block_info);
+                app_handle.emit("WalletBestBlock", wallet_best_block).unwrap();
             }
         }
-        BackendEvent::WalletBestBlock(wallet_id, _) => todo!(),
     }
 }
 
@@ -705,29 +496,30 @@ async fn listen_backend_events(
     loop {
         // Acquire a read lock only when receiving messages
         tokio::select! {
+            biased;
                     msg_opt = backend_receiver.recv() =>{
-        match msg_opt {
-                    Some(msg_opt)=>{
-                        process_message(msg_opt, chain_config.clone());
-                    }
+                        match msg_opt {
+                                    Some(msg_opt)=>{
+                                        process_message(msg_opt, chain_config.clone());
+                                    }
 
-                    None => {
-                        println!("No message received from backend");
-                    }
-                    
-                }
+                                    None => {
+                                        println!("No message received from backend");
+                                    }
+                                    
+                                }
                     }
             
                     msg_opt = low_priority_backend_receiver.recv() =>{
-        match msg_opt {
+                        match msg_opt {
 
-                    Some(msg_opt)=>{
-                        process_message(msg_opt, chain_config.clone());
-                    }
-                    None => {
-                        println!("No message received from backend");
-                    }
-                }
+                                    Some(msg_opt)=>{
+                                        process_message(msg_opt, chain_config.clone());
+                                    }
+                                    None => {
+                                        println!("No message received from backend");
+                                    }
+                                }
                     }
                 }
     }
@@ -1022,7 +814,6 @@ async fn shutdown_wrapper(state: tauri::State<'_, AppState>) -> Result<(), Strin
     Ok(())
 }
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder
         ::default()

@@ -27,7 +27,12 @@ const WalletActions = (props: {
   activeTab: string;
   currentAccountId: number;
   chainInfo: ChainInfoType | undefined;
-  handleUpdateCurrentAccount: (index: string, address: string) => void;
+  handleUpdateCurrentAccount: (
+    wallet_id: number,
+    account_id: number,
+    index: string,
+    address: string
+  ) => void;
   handleUpdateCurrentWalletEncryptionState: (
     wallet_id: number,
     encrypted: string
@@ -288,7 +293,7 @@ const WalletActions = (props: {
           <span className="flex space-x-2">
             <div className="font-thin">My balance: </div>
             <div className="font-bold">
-              {props.currentAccount?.balance.coins.decimal}{" "}
+              {props.currentAccount?.balance?.coins?.decimal}{" "}
               {props.netMode === "Hot" ? "ML" : "TML"}
             </div>
           </span>

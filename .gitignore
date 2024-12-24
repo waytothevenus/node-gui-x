@@ -19,6 +19,8 @@ env/
 
 node_modules/
 
+dist/
+
 #exclude env
 .env
 

@@ -13,14 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<< HEAD
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-=======
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
->>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)
 fn main() {
     mintlayer_lib::run()
 }

@@ -21,12 +21,16 @@ use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use chainstate::ChainInfo;
+<<<<<<< HEAD
 use common::{
     address::Address,
     chain::ChainConfig,
     primitives::{BlockCount, BlockHeight},
     time_getter::TimeGetter,
 };
+=======
+use common::{address::Address, chain::ChainConfig, time_getter::TimeGetter};
+>>>>>>> 981c87b (fix(backend): apply patch result)
 use node_gui_backend::{
     error::BackendError,
     messages::{
@@ -80,12 +84,19 @@ pub async fn initialize_node(
 
     let mut app_state = state.lock().expect("Failed to acquire the lock on the state");
     app_state.backend_sender = Some(backend_controls.backend_sender);
+<<<<<<< HEAD
     app_state.chain_config = Some(backend_controls.initialized_node.chain_config.clone());
 
     // TODO: reconsider if the task should be joined
     tokio::spawn(listen_backend_events(
         app_state.app_handle.clone(),
         backend_controls.initialized_node.chain_config.clone(),
+=======
+
+    tokio::spawn(listen_backend_events(
+        app_state.app_handle.clone(),
+        backend_controls.initialized_node.chain_config,
+>>>>>>> 981c87b (fix(backend): apply patch result)
         backend_controls.backend_receiver,
         backend_controls.low_priority_backend_receiver,
     ));
@@ -93,7 +104,11 @@ pub async fn initialize_node(
     Ok(backend_controls.initialized_node.chain_info)
 }
 
+<<<<<<< HEAD
 async fn listen_backend_events(
+=======
+pub async fn listen_backend_events(
+>>>>>>> 981c87b (fix(backend): apply patch result)
     app_handle: AppHandle,
     chain_config: Arc<ChainConfig>,
     mut backend_receiver: UnboundedReceiver<BackendEvent>,
@@ -117,6 +132,7 @@ async fn listen_backend_events(
     }
 }
 
+<<<<<<< HEAD
 #[tauri::command]
 pub async fn get_stake_pool_maturity_distance(
     state: tauri::State<'_, Mutex<AppState>>,
@@ -138,6 +154,15 @@ where
     match r {
         Ok(data) => {
             app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
+=======
+fn emit_event_or_error<T>(app_handle: &AppHandle, event_name: &str, r: Result<T, BackendError>)
+where
+    T: serde::Serialize + Clone,
+{
+    match r {
+        Ok(data) => {
+            app_handle.emit(event_name, data).expect("Failed to emit backend event");
+>>>>>>> 981c87b (fix(backend): apply patch result)
         }
         Err(e) => {
             app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
@@ -186,6 +211,7 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
         BackendEvent::ToggleStaking(msg) => {
             emit_event_or_error(app_handle, "ToggleStaking", msg);
         }
+<<<<<<< HEAD
         BackendEvent::ConsoleResponse(_, _, result) => match result {
             Ok(console_result) => {
                 app_handle
@@ -198,6 +224,11 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
                     .expect("Failed to emit backend event");
             }
         },
+=======
+        BackendEvent::ConsoleResponse(_, _, result) => {
+            emit_event_or_error(app_handle, "ConsoleResponse", result)
+        }
+>>>>>>> 981c87b (fix(backend): apply patch result)
         BackendEvent::Broadcast(msg) => {
             emit_event_or_error(app_handle, "Broadcast", msg);
         }
@@ -571,6 +602,10 @@ pub async fn handle_console_command_wrapper(
     request: ConsoleRequest,
 ) -> Result<(), String> {
     let state = state.lock().expect("Failed to acquire the lock on the state");
+<<<<<<< HEAD
+=======
+
+>>>>>>> 981c87b (fix(backend): apply patch result)
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::ConsoleCommand {
             wallet_id: request.wallet_id,

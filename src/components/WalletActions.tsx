@@ -132,6 +132,7 @@ const WalletActions = (props: {
     try {
       props.setIsLoading(true);
       props.setLoadingMessage("Closing wallet. Please wait.");
+<<<<<<< HEAD
 
       const unsubscribe = await listen("CloseWallet", (event) => {
         const closeWalletResult = event.payload as number;
@@ -145,6 +146,20 @@ const WalletActions = (props: {
       await invoke("close_wallet_wrapper", {
         walletId: wallet_id,
       });
+=======
+      await invoke("close_wallet_wrapper", {
+        walletId: wallet_id,
+      });
+      const unsubscribe = await listen("CloseWallet", (event) => {
+        const closeWalletResult = event.payload as number;
+        console.log("Close wallet result: ", closeWalletResult);
+        if (closeWalletResult !== undefined) {
+          props.handleRemoveWallet(closeWalletResult);
+          notify("Wallet closed successfully.", "success");
+        }
+        unsubscribe();
+      });
+>>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
     } catch (error) {
       props.setIsLoading(false);
       notify(new String(error).toString(), "error");
@@ -437,7 +452,76 @@ const WalletActions = (props: {
           )}
         </div>
       )}
+<<<<<<< HEAD
     </>
+=======
+      {props.activeTab === "addresses" && (
+        <Addresses
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
+          addresses={
+            props.currentAccount?.addresses
+              ? props.currentAccount.addresses
+              : {}
+          }
+          walletId={
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          }
+          accountId={props.currentAccountId}
+          handleUpdateCurrentAccount={props.handleUpdateCurrentAccount}
+        />
+      )}
+      {props.activeTab === "send" && (
+        <Send
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
+          currentAccount={props.currentAccount}
+          walletId={
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
+          }
+          accountId={props.currentAccountId}
+        />
+      )}
+      {props.activeTab === "staking" && (
+        <Staking
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
+          chainInfo={props.chainInfo}
+          currentAccount={props.currentAccount}
+          currentWallet={props.currentWallet}
+          stakingBalances={props.stakingBalances}
+          currentAccountId={props.currentAccountId}
+          currentWalletId={props.currentWallet?.wallet_id}
+          handleUpdateStakingState={props.handleUpdateStakingState}
+        />
+      )}
+      {props.activeTab === "delegation" && (
+        <Delegation
+          isLoading={props.isLoading}
+          setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
+          currentAccount={props.currentAccount}
+          currentAccountId={props.currentAccountId}
+          delegationBalances={props.delegationBalances}
+          currentWallet={props.currentWallet}
+        />
+      )}
+      {props.activeTab === "console" && (
+        <Console
+          currentAccount={props.currentAccount}
+          currentWallet={props.currentWallet}
+          currentAccountId={props.currentAccountId}
+        />
+      )}
+    </div>
+>>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
   );
 };
 export default WalletActions;

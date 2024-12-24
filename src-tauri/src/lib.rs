@@ -13,16 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+<<<<<<< HEAD
 use std::sync::{Arc, Mutex};
 
 use common::chain::ChainConfig;
 <<<<<<< HEAD
+=======
+use std::sync::Mutex;
+
+>>>>>>> 981c87b (fix(backend): apply patch result)
 use node_gui_backend::BackendSender;
 use tauri::Manager;
 
 mod commands;
 mod request;
 mod result;
+<<<<<<< HEAD
 
 struct AppState {
     backend_sender: Option<BackendSender>,
@@ -52,10 +58,12 @@ use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 use wallet_types::wallet_type::WalletType;
+=======
+>>>>>>> 981c87b (fix(backend): apply patch result)
 
-#[derive(Default)]
 struct AppState {
     backend_sender: Option<BackendSender>,
+<<<<<<< HEAD
     app_handle: Option<AppHandle>,
 }
 
@@ -734,10 +742,21 @@ async fn shutdown_wrapper(state: tauri::State<'_, Mutex<AppState>>) -> Result<()
     }
     Ok(())
 >>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)
+=======
+    app_handle: tauri::AppHandle,
+>>>>>>> 981c87b (fix(backend): apply patch result)
 }
 
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            let r = app.manage(Mutex::new(AppState {
+                backend_sender: None,
+                app_handle: app.handle().clone(),
+            }));
+            assert!(r);
+            Ok(())
+        })
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
             app.manage(Mutex::new(AppState {
@@ -775,35 +794,30 @@ pub fn run() {
         .run(|_app_handle, _event| {});
 =======
         .plugin(tauri_plugin_shell::init())
-        .manage(Mutex::new(AppState::default())) // Wrap AppState in Mutex
         .invoke_handler(tauri::generate_handler![
-            initialize_node,
-            add_create_wallet_wrapper,
-            add_open_wallet_wrapper,
-            send_amount_wrapper,
-            new_address_wrapper,
-            update_encryption_wrapper,
-            close_wallet_wrapper,
-            stake_amount_wrapper,
-            decommission_pool_wrapper,
-            create_delegation_wrapper,
-            delegate_staking_wrapper,
-            send_delegation_to_address_wrapper,
-            new_account_wrapper,
-            toggle_stakig_wrapper,
-            handle_console_command_wrapper,
-            submit_transaction_wrapper,
-            shutdown_wrapper
+            commands::initialize_node,
+            commands::add_create_wallet_wrapper,
+            commands::add_open_wallet_wrapper,
+            commands::send_amount_wrapper,
+            commands::new_address_wrapper,
+            commands::update_encryption_wrapper,
+            commands::close_wallet_wrapper,
+            commands::stake_amount_wrapper,
+            commands::decommission_pool_wrapper,
+            commands::create_delegation_wrapper,
+            commands::delegate_staking_wrapper,
+            commands::send_delegation_to_address_wrapper,
+            commands::new_account_wrapper,
+            commands::toggle_staking_wrapper,
+            commands::handle_console_command_wrapper,
+            commands::submit_transaction_wrapper,
+            commands::shutdown_wrapper
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|app_handle, event| {
-            if let tauri::RunEvent::Ready = event {
-                {
-                    let state = app_handle.state::<Mutex<AppState>>();
-                    let mut state = state.lock().expect("Failed to lock AppState");
-                    state.app_handle = Some(app_handle.clone());
-                }
+        .run(|_app_handle, event| {
+            if let tauri::RunEvent::Exit = event {
+                // TODO: backend event task should be joined here to make sure it's properly finished
             }
         });
 >>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -e
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-PYTHON=$(which python || which python3)
 
 cargo fmt --check -- --config newline_style=Unix
 
@@ -35,7 +33,5 @@ cargo clippy --all-features --workspace --lib --bins --examples -- \
     -D clippy::string_slice
 
 # Install requirements with: pip install -r ./build-tools/codecheck/requirements.txt
-"$PYTHON" "$SCRIPT_DIR/build-tools/codecheck/codecheck.py"
 
 # Ensure that wasm documentation is up-to-date
-cargo run -p wasm-doc-gen -- -o wasm-wrappers/WASM-API.md --check

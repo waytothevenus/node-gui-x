@@ -195,7 +195,6 @@ function Home() {
 
   useEffect(() => {
     if (currentAccount) {
-      console.log("current account is: ", currentAccount);
       setCurrentWallet((prevWallet) => {
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
@@ -207,10 +206,8 @@ function Home() {
               [currentAccountId]: currentAccount,
             },
           } as WalletInfo;
-          console.log("Updated current wallet is :", updatedWallet);
           return updatedWallet;
         } else {
-          console.log("No need to update current wallet", prevWallet);
           return prevWallet;
         }
       });
@@ -283,7 +280,6 @@ function Home() {
           account_id: number;
           balance: BalanceType;
         };
-        console.log("current balance is :", newBalances);
         if (newBalances.balance) {
           setCurrentAccount((currentAccount) => {
             if (currentAccount) {
@@ -308,8 +304,6 @@ function Home() {
           account_id: number;
           staking_balance: Record<string, PoolInfoType>;
         };
-
-        console.log("Staking balance is: ", newStakingBalances);
 
         if (newStakingBalances) {
           setStakingBalances((currentStakingBalance) => {
@@ -343,8 +337,6 @@ function Home() {
           transaction_list: TransactionType;
         };
 
-        console.log("transaction list is:", newTransactionList);
-
         if (newTransactionList.transaction_list) {
           setCurrentAccount((currentAccount) => {
             if (
@@ -376,8 +368,6 @@ function Home() {
             [pool_id: string, amount: AmountType]
           >;
         };
-
-        console.log("delegation balance: ", newDelegationBalance);
 
         if (newDelegationBalance) {
           setDelegationBalances((currentBalances) => {
@@ -436,7 +426,6 @@ function Home() {
 
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
-            console.log("new account info is: ", walletInfo);
             if (walletInfo) {
               setWalletsInfo([...walletsInfo, walletInfo]);
               setLoading(false);
@@ -591,8 +580,6 @@ function Home() {
         delegations_balance: currentAccount?.delegations_balance,
         transaction_list: currentAccount?.transaction_list,
       } as AccountType;
-
-      console.log("Updated account due to new address is: ", updatedAccount);
       setCurrentAccount(updatedAccount);
     }
   };
@@ -635,7 +622,7 @@ function Home() {
     });
   };
 
-  const addAccount = (accountId: string, accountInfo: AccountType) => {
+  const addAccount = (accountId: number, accountInfo: AccountType) => {
     setCurrentWallet(
       (prevWallet) =>
         ({
@@ -659,17 +646,13 @@ function Home() {
         },
       });
       const unsubscribe = await listen("NewAccount", (event) => {
-        const newAccount: {
-          wallet_id: string;
-          account_id: string;
-          account_info: AccountType;
-        } = event.payload as {
-          wallet_id: string;
-          account_id: string;
-          account_info: AccountType;
-        };
-        if (newAccount) {
-          addAccount(newAccount.account_id, newAccount.account_info);
+        const [wallet_id, account_id, account_info] = event.payload as [
+          wallet_id: number,
+          account_id: number,
+          account_info: AccountType
+        ];
+        if (account_info && wallet_id === currentWalletId) {
+          addAccount(account_id, account_info);
           notify("Account created successfully!", "success");
         }
         unsubscribe();
@@ -939,21 +922,6 @@ function Home() {
                         </button>
                         <select
                           onChange={(e) => {
-                            console.log(
-                              "currentAcountId is :",
-                              e.target.value,
-                              Object.entries(
-                                (currentWallet
-                                  ? currentWallet
-                                  : walletsInfo[currentWalletId]
-                                )?.accounts
-                                  ? (currentWallet
-                                      ? currentWallet
-                                      : walletsInfo[currentWalletId]
-                                    ).accounts
-                                  : {}
-                              )
-                            );
                             setCurrentAccountId(parseInt(e.target.value));
                             setCurrentAccount(
                               Object.values(

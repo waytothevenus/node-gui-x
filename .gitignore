@@ -19,6 +19,10 @@ env/
 
 node_modules/
 
+dist/
+
+*.lock
+
 #exclude env
 .env
 

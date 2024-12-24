@@ -42,18 +42,10 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 use wallet_types::wallet_type::WalletType;
 
+#[derive(Default)]
 struct AppState {
     backend_sender: Option<BackendSender>,
     app_handle: Option<AppHandle>,
-}
-
-impl Default for AppState {
-    fn default() -> Self {
-        AppState {
-            backend_sender: None,
-            app_handle: None,
-        }
-    }
 }
 
 #[tauri::command]
@@ -83,7 +75,7 @@ async fn initialize_node(
             .map_err(|e| e.to_string())?;
 
     // Now you can modify the state
-    let mut app_state = state.lock().unwrap();
+    let mut app_state = state.lock().expect("Failed to acquire the lock on the state");
     app_state.backend_sender = Some(backend_controls.backend_sender);
     let node = Some(backend_controls.initialized_node);
     let backend_receiver = backend_controls.backend_receiver;
@@ -112,11 +104,11 @@ where
     // Assuming T can be serialized to JSON
     match msg {
         Ok(data) => {
-            app_handle.emit(event_name, data).unwrap();
+            app_handle.emit(event_name, data).expect("Failed to emit backend event");
         }
         Err(e) => {
             let error_message = e.to_string();
-            app_handle.emit("Error", error_message).unwrap();
+            app_handle.emit("Error", error_message).expect("Failed to emit backend event");
         }
     }
 }
@@ -124,22 +116,26 @@ where
 fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: ChainConfig) {
     match message {
         BackendEvent::P2p(msg) => {
-            app_handle.emit("P2p", msg).unwrap();
+            app_handle.emit("P2p", msg).expect("Failed to emit backend event");
         }
         BackendEvent::ChainInfo(msg) => {
-            app_handle.emit("ChainInfo", msg).unwrap();
+            app_handle.emit("ChainInfo", msg).expect("Failed to emit backend event");
         }
         BackendEvent::Balance(wallet_id, account_id, balance) => {
             let balance = BalanceResult::new(wallet_id, account_id, balance);
-            app_handle.emit("Balance", balance).unwrap();
+            app_handle.emit("Balance", balance).expect("Failed to emit backend event");
         }
         BackendEvent::StakingBalance(wallet_id, account_id, staking_balance) => {
             let staking_balance = StakingBalanceResult::new(wallet_id, account_id, staking_balance);
-            app_handle.emit("StakingBalance", staking_balance).unwrap();
+            app_handle
+                .emit("StakingBalance", staking_balance)
+                .expect("Failed to emit backend event");
         }
         BackendEvent::WalletBestBlock(wallet_id, block_info) => {
             let wallet_best_block = WalletBestBlockResult::new(wallet_id, block_info);
-            app_handle.emit("WalletBestBlock", wallet_best_block).unwrap();
+            app_handle
+                .emit("WalletBestBlock", wallet_best_block)
+                .expect("Failed to emit backend event");
         }
 
         BackendEvent::ImportWallet(msg) => {
@@ -155,7 +151,7 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
             handle_event(app_handle, "UpdateEncryption", msg);
         }
         BackendEvent::CloseWallet(msg) => {
-            app_handle.emit("CloseWallet", msg).unwrap();
+            app_handle.emit("CloseWallet", msg).expect("Failed to emit backend event");
         }
         BackendEvent::NewAccount(msg) => {
             handle_event(app_handle, "NewAccount", msg);
@@ -181,11 +177,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     Err(e) => e.to_string().into(),
                 };
                 let transaction_result = TransactionResult::new(transaction_info, serialized_info);
-                app_handle.emit("SendAmount", transaction_result).unwrap();
+                app_handle
+                    .emit("SendAmount", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -197,11 +195,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     Err(e) => e.to_string().into(),
                 };
                 let transaction_result = TransactionResult::new(transaction_info, serialized_info);
-                app_handle.emit("StakeAmount", transaction_result).unwrap();
+                app_handle
+                    .emit("StakeAmount", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -213,11 +213,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     Err(e) => e.to_string().into(),
                 };
                 let transaction_result = TransactionResult::new(transaction_info, serialized_info);
-                app_handle.emit("DecommissionPool", transaction_result).unwrap();
+                app_handle
+                    .emit("DecommissionPool", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -229,11 +231,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     Err(e) => e.to_string().into(),
                 };
                 let transaction_result = TransactionResult::new(transaction_info, serialized_info);
-                app_handle.emit("CreateDelegation", transaction_result).unwrap();
+                app_handle
+                    .emit("CreateDelegation", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -249,11 +253,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     serialized_info,
                     transaction_info.1,
                 );
-                app_handle.emit("DelegateStaking", transaction_result).unwrap();
+                app_handle
+                    .emit("DelegateStaking", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -265,11 +271,13 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
                     Err(e) => e.to_string().into(),
                 };
                 let transaction_result = TransactionResult::new(transaction_info, serialized_info);
-                app_handle.emit("SendDelegationToAddress", transaction_result).unwrap();
+                app_handle
+                    .emit("SendDelegationToAddress", transaction_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
 
@@ -289,17 +297,21 @@ fn process_message(app_handle: AppHandle, message: BackendEvent, chain_config: C
             }
             let delegations_balance =
                 DelegationsBalanceResult::new(wallet_id, account_id, delegation_balances);
-            app_handle.emit("DelegationBalance", delegations_balance).unwrap();
+            app_handle
+                .emit("DelegationBalance", delegations_balance)
+                .expect("Failed to emit backend event");
         }
         BackendEvent::TransactionList(wallet_id, account_id, msg) => match msg {
             Ok(transaction_list) => {
                 let transaction_list_result =
                     TransactionListResult::new(wallet_id, account_id, transaction_list);
-                app_handle.emit("TransactionList", transaction_list_result).unwrap();
+                app_handle
+                    .emit("TransactionList", transaction_list_result)
+                    .expect("Failed to emit backend event");
             }
             Err(e) => {
                 let error_message = e.to_string();
-                app_handle.emit("Error", error_message).unwrap();
+                app_handle.emit("Error", error_message).expect("Failed to emit backend event");
             }
         },
     }
@@ -349,31 +361,30 @@ async fn add_create_wallet_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: OpenCreateWalletRequest,
 ) -> Result<(), String> {
-    let mnemonic = wallet_controller::mnemonic::Mnemonic::parse(request.mnemonic).map_err(|e| {
-        let error_message = e.to_string();
-        error_message
-    })?;
+    let mnemonic = wallet_controller::mnemonic::Mnemonic::parse(request.mnemonic)
+        .map_err(|e| e.to_string())?;
 
     let file_path = PathBuf::from(request.file_path);
 
     let wallet_type = match request.wallet_type.as_str() {
         "Hot" => WalletType::Hot,
         "Cold" => WalletType::Cold,
-        &_ => todo!(),
+        _ => WalletType::Cold,
     };
 
     let import = match request.import {
         true => ImportOrCreate::Import,
         false => ImportOrCreate::Create,
     };
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::RecoverWallet {
-            file_path: file_path,
-            wallet_type: wallet_type,
-            mnemonic: mnemonic,
-            import: import,
+            file_path,
+            wallet_type,
+            mnemonic,
+            import,
         });
     } else {
         return Err("Backend sender is not initialized".into());
@@ -391,9 +402,10 @@ async fn add_open_wallet_wrapper(
     let wallet_type = match request.wallet_type.as_str() {
         "Hot" => WalletType::Hot,
         "Cold" => WalletType::Cold,
-        &_ => todo!(),
+        &_ => WalletType::Cold,
     };
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::OpenWallet {
             file_path,
@@ -410,7 +422,8 @@ async fn send_amount_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SendAmountRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         let request = SendRequest {
@@ -432,7 +445,8 @@ async fn new_address_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: NewAddressRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::NewAddress(
@@ -450,7 +464,8 @@ async fn update_encryption_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: UpdateEncryptionRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let update_encryption_action = match request.action.to_lowercase().as_str() {
         "set_password" => {
@@ -469,7 +484,7 @@ async fn update_encryption_wrapper(
             }
         }
         "lock" => EncryptionAction::Lock,
-        &_ => todo!(), // Invalid action
+        &_ => EncryptionAction::Lock, // Invalid action
     };
 
     if let Some(backend_sender) = &state.backend_sender {
@@ -488,9 +503,9 @@ async fn close_wallet_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     wallet_id: WalletId,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
-    let wallet_id = WalletId::from(wallet_id);
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::CloseWallet(wallet_id));
     } else {
@@ -504,7 +519,8 @@ async fn stake_amount_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: StakeAmountRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let stake_request = StakeRequest {
         wallet_id: request.wallet_id,
@@ -528,7 +544,8 @@ async fn decommission_pool_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: DecommissionStakingPoolRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let decommission_request = DecommissionPoolRequest {
         wallet_id: request.wallet_id,
@@ -549,7 +566,8 @@ async fn create_delegation_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: DelegationCreateRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let delegation_request = CreateDelegationRequest {
         wallet_id: request.wallet_id,
@@ -571,7 +589,8 @@ async fn delegate_staking_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: StakingDelegateRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let delegation_request = DelegateStakingRequest {
         wallet_id: request.wallet_id,
@@ -593,7 +612,8 @@ async fn send_delegation_to_address_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SendDelegateRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     let send_delegation_request = SendDelegateToAddressRequest {
         wallet_id: request.wallet_id,
@@ -618,7 +638,8 @@ async fn new_account_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: NewAccountRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::NewAccount {
@@ -636,7 +657,8 @@ async fn toggle_stakig_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: ToggleStakingRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::ToggleStaking(
@@ -655,7 +677,8 @@ async fn handle_console_command_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: ConsoleRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::ConsoleCommand {
@@ -674,7 +697,8 @@ async fn submit_transaction_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SubmitTransactionRequest,
 ) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::SubmitTx {
@@ -689,7 +713,8 @@ async fn submit_transaction_wrapper(
 
 #[tauri::command]
 async fn shutdown_wrapper(state: tauri::State<'_, Mutex<AppState>>) -> Result<(), String> {
-    let state: std::sync::MutexGuard<'_, AppState> = state.lock().unwrap();
+    let state: std::sync::MutexGuard<'_, AppState> =
+        state.lock().expect("Failed to acquire the lock on the state");
 
     if let Some(backend_sender) = &state.backend_sender {
         backend_sender.send(BackendRequest::Shutdown);
@@ -727,13 +752,13 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|app_handle, event| match event {
-            tauri::RunEvent::Ready => {
-                // Access the state only after it has been managed
-                let state = app_handle.state::<Mutex<AppState>>();
-                let mut state = state.lock().expect("Failed to lock AppState");
-                state.app_handle = Some(app_handle.clone());
+        .run(|app_handle, event| {
+            if let tauri::RunEvent::Ready = event {
+                {
+                    let state = app_handle.state::<Mutex<AppState>>();
+                    let mut state = state.lock().expect("Failed to lock AppState");
+                    state.app_handle = Some(app_handle.clone());
+                }
             }
-            _ => {}
         });
 }

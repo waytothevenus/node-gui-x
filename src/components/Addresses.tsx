@@ -10,7 +10,12 @@ const Addresses = (props: {
   addresses: Record<string, string>;
   accountId: number;
   walletId: number;
-  handleUpdateCurrentAccount: (index: string, address: string) => void;
+  handleUpdateCurrentAccount: (
+    wallet_id: number,
+    account_id: number,
+    index: string,
+    address: string
+  ) => void;
 }) => {
   const handleAddAddress = async () => {
     try {
@@ -20,18 +25,20 @@ const Addresses = (props: {
       });
       const unsubscribe = await listen("NewAddress", (event) => {
         const newAddress: {
-          wallet_id: string;
-          account_id: string;
+          wallet_id: number;
+          account_id: number;
           index: number;
           address: string;
         } = event.payload as {
-          wallet_id: string;
-          account_id: string;
+          wallet_id: number;
+          account_id: number;
           index: number;
           address: string;
         };
         if (newAddress) {
           props.handleUpdateCurrentAccount(
+            newAddress.wallet_id,
+            newAddress.account_id,
             newAddress.index.toString(),
             newAddress.address
           );

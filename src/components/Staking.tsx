@@ -49,6 +49,17 @@ const Staking = (props: {
           : "Starting Staking, Please wait."
       );
       props.setIsLoading(true);
+<<<<<<< HEAD
+=======
+      await invoke("toggle_staking_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
+>>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
       const unsubscribe = await listen("ToggleStaking", (event) => {
         if (Array.isArray(event.payload)) {
           const [wallet_id, account_id, enabled] = event.payload;
@@ -506,8 +517,12 @@ const Staking = (props: {
       </table>
       <p className="text-lg text-start py-8">Create Staking Pool</p>
       <p className="text-start">
+<<<<<<< HEAD
         Maturity period: {props.maturityPeriod} blocks (a block takes on average 
         120 seconds)
+=======
+        Maturity period: 2000 blocks (a block takes on average 120 seconds)
+>>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
       </p>
       <div className="container pt-4">
         <p className="text-start">Pledge amount for the new staking pool</p>

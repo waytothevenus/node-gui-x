@@ -23,8 +23,6 @@ import DelegationIcon from "../assets/delegation_icon.png";
 import ConsoleIcon from "../assets/console_icon.png";
 import WalletIcon from "../assets/wallet_icon.png";
 import AccountIcon from "../assets/account_icon.png";
-import MintlayerIcon from "../assets/mintlayer_icon.png";
-
 import { notify } from "../utils/util";
 import SummaryTab from "../components/Summary";
 import NetworkingTab from "../components/Networking";
@@ -608,6 +606,7 @@ function Home() {
     } catch (error) {
       console.error(error);
       setMnemonic("Error generating mnemonic. Please try again");
+      setMnemonic("Error generating mnemonic. Please try again");
     }
   };
 
@@ -616,6 +615,7 @@ function Home() {
     try {
       const path = await save({
         defaultPath: "key.dat",
+        filters: [{ name: "Key files", extensions: [] }],
         filters: [{ name: "Key files", extensions: [] }],
       });
 
@@ -638,6 +638,7 @@ function Home() {
             },
           });
         } catch (invokeError) {
+          notify("Error in creating wallet!", "error");
           notify("Error in creating wallet!", "error");
           console.error(
             "Error during invoke:",
@@ -664,6 +665,7 @@ function Home() {
       const path = await save({
         defaultPath: "key.dat",
         filters: [{ name: "Key files", extensions: [] }],
+        filters: [{ name: "Key files", extensions: [] }],
       });
 
       if (path) {
@@ -689,6 +691,7 @@ function Home() {
             },
           });
         } catch (invokeError) {
+          notify("Error in recovering wallet!", "error");
           notify("Error in recovering wallet!", "error");
           console.error(
             "Error during invoke:",
@@ -718,6 +721,7 @@ function Home() {
         filters: [
           {
             name: "Key file",
+            extensions: [],
             extensions: [],
           },
         ],
@@ -1064,10 +1068,10 @@ function Home() {
                       </div>
                       <div className="relative pl-4 flex items-center justify-center space-x-2">
                         <button
-                          className="bg-transparent border-noe shadow-none outine-none hover: outline-none hover:border-none focused: border-none"
+                          className="bg-transparent border-noe shadow-none outline-none hover:border-none focused: border-none"
                           onClick={() => setShowNewAccountModal(true)}
                         >
-                          <img src={AccountIcom} alt="wallet_ico" />
+                          <img src={AccountIcon} alt="wallet_ico" />
                         </button>
                         <select
                           onChange={(e) => {
@@ -1211,6 +1215,8 @@ function Home() {
                       netMode={netMode}
                       isLoading={loading}
                       setIsLoading={setLoading}
+                      loadingMessage={loadingMessage}
+                      setLoadingMessage={setLoadingMessage}
                       currentWallet={currentWallet}
                       currentAccount={currentAccount}
                       stakingBalances={stakingBalances}

@@ -1,20 +1,12 @@
 [package]
 name = "node-gui-x"
-<<<<<<< HEAD
-description = "Mintlayer Node GUI X"
-=======
 description = "Bitcoin bridging blockchain node"
->>>>>>> e47b354 (fix(backend): complete formatting and linting)
 homepage = "https://mintlayer.org"
 repository = "https://github.com/mintlayer/node-gui-x"
 readme = "README.md"
 license = "MIT"
 version = "1.0.0"
-<<<<<<< HEAD
-authors = []
-=======
 authors = ["you"]
->>>>>>> e47b354 (fix(backend): complete formatting and linting)
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -30,8 +22,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.3", features = [] }
 
 [dependencies]
-<<<<<<< HEAD
-=======
 anyhow = "1.0"
 tauri = { version = "2.1.1", features = [] }
 tauri-plugin-fs = "2.2.0"
@@ -46,7 +36,6 @@ tauri-plugin-notification = "2.2.0"
 tauri-plugin-shell = "2.2.0"
 tokio = { version = "1.27", default-features = false }
 thiserror = "1.0"
->>>>>>> e47b354 (fix(backend): complete formatting and linting)
 parity-scale-codec = "3.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -64,7 +53,6 @@ wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", packa
 wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 tauri-plugin-process = "2"
-gtk = { version = "0.9.5", package = "gtk4", features = ["v4_12"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
@@ -80,7 +68,6 @@ panic = "abort" # prevent panic catching (mostly for the tokio runtime)
 [profile.release]
 panic = "abort" # prevent panic catching (mostly for the tokio runtime)
 overflow-checks = true
-windows-subsystem = "window"
 
 # "Release" profile with debug info enabled.
 [profile.release-with-debug-info]

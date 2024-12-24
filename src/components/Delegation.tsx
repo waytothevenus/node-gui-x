@@ -608,8 +608,12 @@ const Delegation = (props: {
       <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />{" "}
       <h2 className="mt-8 mb-8 text-lg text-start">Create New Delegation</h2>
       <p className="text-start">
+<<<<<<< HEAD
         Maturity period: {props.maturityPeriod} blocks (a block takes on average
         120 seconds)
+=======
+        Maturity period: 2000 blocks (a block takes on average 120 seconds)
+>>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
       </p>
       <div className="container pt-8 text-start">
         <p className="pb-2">Pool address for new delegation</p>

@@ -178,9 +178,11 @@ function Home() {
 
   useEffect(() => {
     if (currentWallet) {
-      const firstAccount = Object.values(currentWallet.accounts || {})[0];
-      if (!_.isEqual(firstAccount, currentAccount)) {
-        setCurrentAccount(firstAccount);
+      const updatedAccount = Object.values(currentWallet.accounts || {})[
+        currentAccountId
+      ];
+      if (!_.isEqual(updatedAccount, currentAccount)) {
+        setCurrentAccount(updatedAccount);
       }
 
       setWalletsInfo((prevWallets) => {
@@ -193,19 +195,24 @@ function Home() {
 
   useEffect(() => {
     if (currentAccount) {
+      console.log("current account is: ", currentAccount);
       setCurrentWallet((prevWallet) => {
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
         ) {
-          return {
+          const updatedWallet = {
             ...prevWallet,
             accounts: {
               ...prevWallet?.accounts,
               [currentAccountId]: currentAccount,
             },
           } as WalletInfo;
+          console.log("Updated current wallet is :", updatedWallet);
+          return updatedWallet;
+        } else {
+          console.log("No need to update current wallet", prevWallet);
+          return prevWallet;
         }
-        return prevWallet;
       });
     }
   }, [currentAccount, currentAccountId]);
@@ -429,6 +436,7 @@ function Home() {
 
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
+            console.log("new account info is: ", walletInfo);
             if (walletInfo) {
               setWalletsInfo([...walletsInfo, walletInfo]);
               setLoading(false);
@@ -562,22 +570,31 @@ function Home() {
   };
 
   const handleUpdateCurrentAccountAddresses = (
+    wallet_id: number,
+    account_id: number,
     index: string,
     address: string
   ) => {
-    const updatedAccount: AccountType = {
-      addresses: {
-        ...currentAccount?.addresses,
-        [index]: address,
-      },
-      name: currentAccount?.name,
-      staking_enabled: currentAccount?.staking_enabled,
-      balance: currentAccount?.balance,
-      staking_balance: currentAccount?.staking_balance,
-      delegations_balance: currentAccount?.delegations_balance,
-      transaction_list: currentAccount?.transaction_list,
-    } as AccountType;
-    setCurrentAccount(updatedAccount);
+    if (
+      wallet_id === currentWallet?.wallet_id &&
+      account_id === currentAccountId
+    ) {
+      const updatedAccount: AccountType = {
+        addresses: {
+          ...currentAccount?.addresses,
+          [index]: address,
+        },
+        name: currentAccount?.name,
+        staking_enabled: currentAccount?.staking_enabled,
+        balance: currentAccount?.balance,
+        staking_balance: currentAccount?.staking_balance,
+        delegations_balance: currentAccount?.delegations_balance,
+        transaction_list: currentAccount?.transaction_list,
+      } as AccountType;
+
+      console.log("Updated account due to new address is: ", updatedAccount);
+      setCurrentAccount(updatedAccount);
+    }
   };
 
   const handleUpdateCurrentWalletEncryptionState = (
@@ -922,6 +939,21 @@ function Home() {
                         </button>
                         <select
                           onChange={(e) => {
+                            console.log(
+                              "currentAcountId is :",
+                              e.target.value,
+                              Object.entries(
+                                (currentWallet
+                                  ? currentWallet
+                                  : walletsInfo[currentWalletId]
+                                )?.accounts
+                                  ? (currentWallet
+                                      ? currentWallet
+                                      : walletsInfo[currentWalletId]
+                                    ).accounts
+                                  : {}
+                              )
+                            );
                             setCurrentAccountId(parseInt(e.target.value));
                             setCurrentAccount(
                               Object.values(
@@ -935,14 +967,20 @@ function Home() {
                           className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
                         >
                           {Object.entries(
-                            (currentWallet ? currentWallet : walletsInfo[0])
-                              ?.accounts
-                              ? (currentWallet ? currentWallet : walletsInfo[0])
-                                  .accounts
+                            (currentWallet
+                              ? currentWallet
+                              : walletsInfo[currentWalletId]
+                            )?.accounts
+                              ? (currentWallet
+                                  ? currentWallet
+                                  : walletsInfo[currentWalletId]
+                                ).accounts
                               : {}
                           ).map(([index, account]) => (
                             <option key={index} value={index}>
-                              {account?.name ? account?.name : "Account " + index}
+                              {account?.name
+                                ? account?.name
+                                : "Account " + index}
                             </option>
                           ))}
                         </select>

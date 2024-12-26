@@ -28,7 +28,9 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0
+          sudo apt-get install -y webkit2gtk-4.1-dev
+          sudo apt-get install -g libsoup-3.0.dev
+          sudo export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
       - name: install app dependencies and build it
         run: yarn && yarn build
         working-directory: ${{env.working-directory}}

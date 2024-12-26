@@ -48,7 +48,6 @@ wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", packa
 wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 tauri-plugin-process = "2"
-gtk = { version = "0.9.5", package = "gtk4", features = ["v4_12"] }
 
 
 [features]

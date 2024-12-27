@@ -1,5 +1,6 @@
 import { AiOutlineCopy } from "react-icons/ai";
 import { TransactionType } from "../types/Types";
+import { DECIMAL } from "../utils/util";
 
 const Transactions = (props: { transactions: TransactionType | undefined }) => {
   return (
@@ -98,7 +99,8 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                     const { amount } = transactionInfo.tx_type.Received;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {amount.atoms}
+                        {parseInt(new String(amount.atoms).toString()) /
+                          DECIMAL}
                       </td>
                     );
                   }
@@ -107,7 +109,8 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                     const { amount } = transactionInfo.tx_type.Sent;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {amount.atoms}
+                        {parseInt(new String(amount.atoms).toString()) /
+                          DECIMAL}
                       </td>
                     );
                   }

@@ -20,7 +20,6 @@ use std::{
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use chainstate::ChainInfo;
 use common::{address::Address, chain::ChainConfig, time_getter::TimeGetter};
 use node_gui_backend::{
     error::BackendError,
@@ -33,7 +32,7 @@ use node_gui_backend::{
 use node_gui_backend::{ImportOrCreate, InitNetwork, WalletMode};
 use wallet_types::wallet_type::WalletType;
 
-use crate::AppState;
+use crate::{result::InitializationResult, AppState};
 
 use super::request::{
     ConsoleRequest, DecommissionStakingPoolRequest, DelegationCreateRequest, NewAccountRequest,
@@ -52,7 +51,7 @@ pub async fn initialize_node(
     state: State<'_, Mutex<AppState>>,
     network: &str,
     mode: &str,
-) -> Result<ChainInfo, String> {
+) -> Result<InitializationResult, String> {
     let net_type = match network {
         "Mainnet" => InitNetwork::Mainnet,
         "Testnet" => InitNetwork::Testnet,
@@ -78,12 +77,18 @@ pub async fn initialize_node(
 
     tokio::spawn(listen_backend_events(
         app_state.app_handle.clone(),
-        backend_controls.initialized_node.chain_config,
+        backend_controls.initialized_node.chain_config.clone(),
         backend_controls.backend_receiver,
         backend_controls.low_priority_backend_receiver,
     ));
 
-    Ok(backend_controls.initialized_node.chain_info)
+    Ok(InitializationResult::new(
+        backend_controls.initialized_node.chain_info,
+        backend_controls
+            .initialized_node
+            .chain_config
+            .empty_consensus_reward_maturity_block_count(),
+    ))
 }
 
 pub async fn listen_backend_events(
@@ -166,6 +171,7 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
             emit_event_or_error(app_handle, "ToggleStaking", msg);
         }
         BackendEvent::ConsoleResponse(_, _, result) => {
+            println!("ConsoleRespose is: {:?}", result);
             emit_event_or_error(app_handle, "ConsoleResponse", result)
         }
         BackendEvent::Broadcast(msg) => {

@@ -417,7 +417,7 @@ const Staking = (props: {
           }
           onClick={handleToggleStaking}
         >
-          {isStakingStarted ? "STOP STAKING" : "BEGIN STAKING"}
+          {isStakingStarted ? "STOP STAKING" : "START STAKING"}
         </button>
       </div>
       <p className="text-lg text-start py-8">Staking Pool Summary</p>

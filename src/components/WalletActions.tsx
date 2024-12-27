@@ -11,8 +11,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { notify } from "../utils/util";
 import {
   AccountType,
-  ChainInfoType,
   DelegationBalancesType,
+  InitNodeType,
   StakingBalancesType,
   WalletInfo,
 } from "../types/Types";
@@ -28,11 +28,7 @@ const WalletActions = (props: {
   delegationBalances: DelegationBalancesType[];
   activeTab: string;
   currentAccountId: number;
-  chainInfo: ChainInfoType | undefined;
-<<<<<<< HEAD
-  maturityPeriod: number;
-=======
->>>>>>> bacbf3c (fix(frontend): fix issue in adding addres)
+  chainInfo: InitNodeType | undefined;
   handleUpdateCurrentAccount: (
     wallet_id: number,
     account_id: number,
@@ -67,9 +63,7 @@ const WalletActions = (props: {
   }, [props.currentWallet]);
 
   useEffect(() => {
-    if (props.currentAccount) {
-      setCurrentAccount(props.currentAccount);
-    }
+    console.log("props.currentaccount is: ", props.currentAccount);
   }, [props.currentAccount]);
 
   const handleConfirmPasswordChange = (confirmPassword: string) => {
@@ -97,15 +91,15 @@ const WalletActions = (props: {
       await invoke("update_encryption_wrapper", { request });
 
       const unsubscribe = await listen("UpdateEncryption", (event) => {
-        const [wallet_id, encryptionState] = event.payload as [
-          wallet_id: number,
-          encryptionState: string
-        ];
-        if (encryptionState) {
-          setWalletState(encryptionState);
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        if (encryptionResult) {
+          setWalletState(encryptionResult.encryptionState);
           props.handleUpdateCurrentWalletEncryptionState(
-            wallet_id,
-            encryptionState
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
+            encryptionResult.encryptionState
           );
           setShowEncryptWalletModal(false);
           setShowUnlockModal(false);
@@ -127,15 +121,124 @@ const WalletActions = (props: {
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
+    setShowEncryptWalletModal(false);
+    setPassword("");
+    setConfirmPassword("");
   };
+
+  const handleUpdateWalletEncryption = async () => {
+    if (walletState === "EnabledUnlocked") {
+      try {
+        await invoke("update_encryption_wrapper", {
+          request: {
+            wallet_id: props.currentWallet?.wallet_id
+              ? props.currentWallet.wallet_id
+              : 0,
+            action: "remove_password",
+          },
+        });
+        const unsubscribe = await listen("UpdateEncryption", (event) => {
+          const encryptionResult = event.payload as {
+            wallet_id: string;
+            encryptionState: string;
+          };
+          if (encryptionResult) {
+            setWalletState(encryptionResult.encryptionState);
+            props.handleUpdateCurrentWalletEncryptionState(
+              props.currentWallet?.wallet_id
+                ? props.currentWallet.wallet_id
+                : 0,
+              encryptionResult.encryptionState
+            );
+            setShowEncryptWalletModal(false);
+            notify("Wallet encryption disabled successfully.", "success");
+          }
+          unsubscribe();
+        });
+      } catch (error) {
+        notify(new String(error).toString(), "error");
+      }
+    } else {
+      setShowEncryptWalletModal(true);
+    }
+  };
+
+  const handleLockWallet = async () => {
+    try {
+      await invoke("update_encryption_wrapper", {
+        request: {
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
+          action: "lock",
+        },
+      });
+
+      const unsubscribe = await listen("UpdateEncryption", (event) => {
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        console.log("UpdatedEncryption Status: ", encryptionResult);
+        if (encryptionResult) {
+          setWalletState(encryptionResult.encryptionState);
+          props.handleUpdateCurrentWalletEncryptionState(
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
+            encryptionResult.encryptionState
+          );
+          setShowUnlockModal(false);
+          notify("Wallet locked successfully.", "success");
+        }
+        unsubscribe();
+      });
+    } catch (err) {
+      notify(new String(err).toString(), "error");
+    }
+  };
+
+  const handleUnlock = async () => {
+    try {
+      await invoke("update_encryption_wrapper", {
+        request: {
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet.wallet_id
+            : 0,
+          action: "unlock",
+          password: unLockPassword,
+        },
+      });
+      const unsubscribe = await listen("UpdateEncryption", (event) => {
+        const encryptionResult = event.payload as {
+          wallet_id: string;
+          encryptionState: string;
+        };
+        if (encryptionResult) {
+          setWalletState(encryptionResult.encryptionState);
+          props.handleUpdateCurrentWalletEncryptionState(
+            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
+            encryptionResult.encryptionState
+          );
+          setShowUnlockModal(false);
+          notify("Wallet unlocked successfully.", "success");
+        }
+        unsubscribe();
+      });
+    } catch (err) {
+      notify(new String(err).toString(), "error");
+    }
+    setShowUnlockModal(false);
+    setUnLockPassword("");
+  };
+
   const handleCloseWallet = async (wallet_id: number) => {
     try {
       props.setIsLoading(true);
       props.setLoadingMessage("Closing wallet. Please wait.");
-<<<<<<< HEAD
 
       const unsubscribe = await listen("CloseWallet", (event) => {
+        console.log("Received CloseWallet event");
         const closeWalletResult = event.payload as number;
+        console.log("Close wallet result: ", closeWalletResult);
         if (closeWalletResult !== undefined) {
           props.handleRemoveWallet(closeWalletResult);
           notify("Wallet closed successfully.", "success");
@@ -146,21 +249,8 @@ const WalletActions = (props: {
       await invoke("close_wallet_wrapper", {
         walletId: wallet_id,
       });
-=======
-      await invoke("close_wallet_wrapper", {
-        walletId: wallet_id,
-      });
-      const unsubscribe = await listen("CloseWallet", (event) => {
-        const closeWalletResult = event.payload as number;
-        console.log("Close wallet result: ", closeWalletResult);
-        if (closeWalletResult !== undefined) {
-          props.handleRemoveWallet(closeWalletResult);
-          notify("Wallet closed successfully.", "success");
-        }
-        unsubscribe();
-      });
->>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
     } catch (error) {
+      props.setIsLoading(false);
       props.setIsLoading(false);
       notify(new String(error).toString(), "error");
     }
@@ -278,183 +368,64 @@ const WalletActions = (props: {
             <div className="font-thin">My balance: </div>
             <div className="font-bold">
               {props.currentAccount?.balance?.coins?.decimal}{" "}
-              {props.netMode === "Hot" ? "ML" : "TML"}
->>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)
+              {props.netMode === "Mainnet" ? "ML" : "TML"}
             </div>
-          )}
-          {showUnlockModal && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="absolute inset-0 bg-black opacity-50"></div>
-              <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
-                {/* Close Button */}
-                <button
-                  className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
-                  onClick={() => setShowUnlockModal(false)}
-                >
-                  <IoCloseSharp />
-                </button>
-                <h2 className="text-lg font-bold mb-4">Unlock</h2>
-                <input
-                  placeholder="Enter a password"
-                  type="password"
-                  className="w-full rounded-lg"
-                  value={unLockPassword}
-                  onChange={(e) => setUnLockPassword(e.target.value)}
-                />
-
-                <button
-                  className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
-                  onClick={() =>
-                    handleWalletAction("unlock", { password: unLockPassword })
-                  }
-                >
-                  Unlock
-                </button>
-              </div>
-            </div>
-          )}
-          <div className="row flex items-center justify-between pl-8 pr-8 pb-0">
-            <div>
-              <span className="flex space-x-2">
-                <div className="font-thin">My balance: </div>
-                <div className="font-bold">
-                  {currentAccount?.balance?.coins?.decimal}{" "}
-                  {props.netMode === "Mainnet" ? "ML" : "TML"}
-                </div>
-              </span>
-            </div>
-            <div className="space-x-2">
-              {walletState === "EnabledLocked" && (
-                <button
-                  className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
-                  onClick={() => {
-                    setShowUnlockModal(true);
-                  }}
-                >
-                  UnLock
-                </button>
-              )}
-              {walletState === "EnabledUnlocked" && (
-                <button
-                  className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
-                  onClick={() => handleWalletAction("lock", {})}
-                >
-                  Lock
-                </button>
-              )}
-              {walletState !== "EnabledLocked" && (
-                <button
-                  className={`py-1 px-2 ${
-                    !props.currentWallet
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-[#69EE96] hover:text-[#69EE96] hover:bg-black"
-                  } rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black`}
-                  onClick={() => {
-                    walletState === "EnabledUnlocked"
-                      ? handleWalletAction("remove_password", {})
-                      : setShowEncryptWalletModal(true);
-                  }}
-                >
-                  {walletState === "EnabledUnlocked"
-                    ? "Disable Wallet Encryption"
-                    : "Encrypt Wallet"}
-                </button>
-              )}
-              <button
-                className={`py-1 px-4 ${
-                  !props.currentWallet
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-white hover:outline-none hover:bg-[#E02424] hover:text-white hover:border-[#E02424]"
-                } mt-8 mb-8 border text-[#E02424] border-[#E02424]  rounded-lg transition-all duration-200 `}
-                onClick={() =>
-                  handleCloseWallet(
-                    props.currentWallet?.wallet_id
-                      ? props.currentWallet.wallet_id
-                      : 0
-                  )
-                }
-              >
-                Close Wallet
-              </button>
-            </div>
-          </div>
-          {props.activeTab === "transactions" && (
-            <Transactions transactions={currentAccount?.transaction_list} />
-          )}
-          {props.activeTab === "addresses" && (
-            <Addresses
-              isLoading={props.isLoading}
-              setIsLoading={props.setIsLoading}
-              loadingMessage={props.loadingMessage}
-              setLoadingMessage={props.setLoadingMessage}
-              addresses={
-                currentAccount?.addresses ? currentAccount.addresses : {}
-              }
-              walletId={
-                props.currentWallet?.wallet_id
-                  ? props.currentWallet.wallet_id
-                  : 0
-              }
-              accountId={props.currentAccountId}
-              handleUpdateCurrentAccount={props.handleUpdateCurrentAccount}
-            />
-          )}
-          {props.activeTab === "send" && (
-            <Send
-              isLoading={props.isLoading}
-              setIsLoading={props.setIsLoading}
-              loadingMessage={props.loadingMessage}
-              setLoadingMessage={props.setLoadingMessage}
-              currentAccount={currentAccount}
-              walletId={
-                props.currentWallet?.wallet_id
-                  ? props.currentWallet.wallet_id
-                  : 0
-              }
-              accountId={props.currentAccountId}
-            />
-          )}
-          {props.activeTab === "staking" && (
-            <Staking
-              isLoading={props.isLoading}
-              setIsLoading={props.setIsLoading}
-              loadingMessage={props.loadingMessage}
-              setLoadingMessage={props.setLoadingMessage}
-              chainInfo={props.chainInfo}
-              maturityPeriod={props.maturityPeriod}
-              currentAccount={currentAccount}
-              currentWallet={props.currentWallet}
-              stakingBalances={props.stakingBalances}
-              currentAccountId={props.currentAccountId}
-              currentWalletId={props.currentWallet?.wallet_id}
-              handleUpdateStakingState={props.handleUpdateStakingState}
-            />
-          )}
-          {props.activeTab === "delegation" && (
-            <Delegation
-              isLoading={props.isLoading}
-              setIsLoading={props.setIsLoading}
-              loadingMessage={props.loadingMessage}
-              setLoadingMessage={props.setLoadingMessage}
-              currentAccount={currentAccount}
-              currentAccountId={props.currentAccountId}
-              delegationBalances={props.delegationBalances}
-              currentWallet={props.currentWallet}
-              maturityPeriod={props.maturityPeriod}
-            />
-          )}
-          {props.activeTab === "console" && (
-            <Console
-              currentAccount={currentAccount}
-              currentWallet={props.currentWallet}
-              currentAccountId={props.currentAccountId}
-            />
-          )}
+          </span>
         </div>
+        <div className="space-x-2">
+          {walletState === "EnabledLocked" && (
+            <button
+              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
+              onClick={() => {
+                setShowUnlockModal(true);
+              }}
+            >
+              UnLock
+            </button>
+          )}
+          {walletState === "EnabledUnlocked" && (
+            <button
+              className="py-1 px-2 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
+              onClick={handleLockWallet}
+            >
+              Lock
+            </button>
+          )}
+          {walletState !== "EnabledLocked" && (
+            <button
+              className={`py-1 px-2 ${
+                !props.currentWallet
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#69EE96] hover:text-[#69EE96] hover:bg-black"
+              } rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black`}
+              onClick={handleUpdateWalletEncryption}
+            >
+              {walletState === "EnabledUnlocked"
+                ? "Disable Wallet Encryption"
+                : "Encrypt Wallet"}
+            </button>
+          )}
+          <button
+            className={`py-1 px-4 ${
+              !props.currentWallet
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-white hover:outline-none hover:bg-[#E02424] hover:text-white hover:border-[#E02424]"
+            } mt-8 mb-8 border text-[#E02424] border-[#E02424]  rounded-lg transition-all duration-200 `}
+            onClick={() =>
+              handleCloseWallet(
+                props.currentWallet?.wallet_id
+                  ? props.currentWallet.wallet_id
+                  : 0
+              )
+            }
+          >
+            Close Wallet
+          </button>
+        </div>
+      </div>
+      {props.activeTab === "transactions" && (
+        <Transactions transactions={props.currentAccount?.transaction_list} />
       )}
-<<<<<<< HEAD
-    </>
-=======
       {props.activeTab === "addresses" && (
         <Addresses
           isLoading={props.isLoading}
@@ -492,7 +463,7 @@ const WalletActions = (props: {
           setIsLoading={props.setIsLoading}
           loadingMessage={props.loadingMessage}
           setLoadingMessage={props.setLoadingMessage}
-          chainInfo={props.chainInfo}
+          chainInfo={props.chainInfo?.chain_info}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
           stakingBalances={props.stakingBalances}
@@ -511,6 +482,11 @@ const WalletActions = (props: {
           currentAccountId={props.currentAccountId}
           delegationBalances={props.delegationBalances}
           currentWallet={props.currentWallet}
+          empty_consensus_reward_maturity_block_count={
+            props.chainInfo?.empty_consensus_reward_maturity_block_count
+              ? props.chainInfo?.empty_consensus_reward_maturity_block_count
+              : 0
+          }
         />
       )}
       {props.activeTab === "console" && (

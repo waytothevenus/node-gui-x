@@ -49,17 +49,6 @@ const Staking = (props: {
           : "Starting Staking, Please wait."
       );
       props.setIsLoading(true);
-<<<<<<< HEAD
-=======
-      await invoke("toggle_staking_wrapper", {
-        request: {
-          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0,
-          enabled: !isStakingStarted,
-        },
-      });
-
->>>>>>> 0284165 (fix(frontend): fix issue related to loading messages)
       const unsubscribe = await listen("ToggleStaking", (event) => {
         if (Array.isArray(event.payload)) {
           const [wallet_id, account_id, enabled] = event.payload;
@@ -75,6 +64,14 @@ const Staking = (props: {
         }
         unsubscribe();
       });
+      await invoke("toggle_staking_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
       await invoke("toggle_staking_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -113,6 +110,14 @@ const Staking = (props: {
           output_address: receiveAddress,
         },
       });
+      await invoke("decommission_pool_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          pool_id: currentPoolId,
+          output_address: receiveAddress,
+        },
+      });
       props.setIsLoading(false);
     } catch (error) {
       const regex = /Wallet error: (.+)/;
@@ -128,6 +133,14 @@ const Staking = (props: {
     try {
       props.setLoadingMessage("Creating Staking Pool. Please wait");
       props.setIsLoading(true);
+      const unsubscribe = await listen("StakeAmount", (event) => {
+        const transactionResult = event.payload as Data;
+        if (transactionResult) {
+          setTransactionInfo(transactionResult);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
@@ -168,6 +181,12 @@ const Staking = (props: {
           setShowSuccessModal(true);
         }
         unsubscribe();
+      });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
       });
       await invoke("submit_transaction_wrapper", {
         request: {

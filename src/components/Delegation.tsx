@@ -14,6 +14,8 @@ import { IoCloseSharp } from "react-icons/io5";
 const Delegation = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   currentAccountId: number;
   delegationBalances: DelegationBalancesType[];
@@ -28,13 +30,12 @@ const Delegation = (props: {
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [currentDelegationId, setCurrentDelegationId] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleDeposit = async () => {
     setShowDepositModal(false);
-    setLoadingMessage("Depositing to delegation. Please wait.");
+    props.setLoadingMessage("Depositing to delegation. Please wait.");
     props.setIsLoading(true);
     try {
       await invoke("delegate_staking_wrapper", {
@@ -62,7 +63,7 @@ const Delegation = (props: {
     props.setIsLoading(false);
   };
   const handleWithdraw = async () => {
-    setLoadingMessage("Withdrawing from delegation. Please wait.");
+    props.setLoadingMessage("Withdrawing from delegation. Please wait.");
     props.setIsLoading(true);
     setShowWithdrawModal(false);
     try {
@@ -100,7 +101,7 @@ const Delegation = (props: {
   };
 
   const handleCreateDelegation = async () => {
-    setLoadingMessage("Creating Delegation. Please wait");
+    props.setLoadingMessage("Creating Delegation. Please wait");
     props.setIsLoading(true);
     try {
       await invoke("create_delegation_wrapper", {
@@ -129,7 +130,7 @@ const Delegation = (props: {
   };
 
   const handleConfirmTransaction = async () => {
-    setLoadingMessage("Confirming transaction. Please wait.");
+    props.setLoadingMessage("Confirming transaction. Please wait.");
     props.setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
@@ -156,14 +157,6 @@ const Delegation = (props: {
 
   return (
     <div className="container pt-0 p-4 shadow-1">
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">{loadingMessage}</div>
-          </div>
-        </div>
-      )}
       {showConfirmTransactionModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -330,7 +323,7 @@ const Delegation = (props: {
                     {`
                       ${
                         "nonce:" +
-                        "AccountNoce(" +
+                        "AccountNonce(" +
                         transactionInfo.serialized_tx.V1.inputs
                           .find((output) => "Account" in output)
                           ?.Account.nonce?.toString() +
@@ -591,7 +584,7 @@ const Delegation = (props: {
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
-                    WITHRAW
+                    WITHDRAW
                   </button>
                 </td>
               </tr>
@@ -602,7 +595,7 @@ const Delegation = (props: {
       <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />{" "}
       <h2 className="mt-8 mb-8 text-lg text-start">Create New Delegation</h2>
       <p className="text-start">
-        Maturity period: 2000 blocks (a block takes on averate 120 seconds)
+        Maturity period: 2000 blocks (a block takes on average 120 seconds)
       </p>
       <div className="container pt-8 text-start">
         <p className="pb-2">Pool address for new delegation</p>

@@ -15,6 +15,8 @@ import {
 const Staking = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   chainInfo: ChainInfoType | undefined;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
@@ -35,19 +37,18 @@ const Staking = (props: {
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
   const [transactionInfo, setTransactionInfo] = useState<Data>();
-  const [loadingMessage, setLoadingMessage] = useState("");
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleToggleStaking = async () => {
     try {
-      setLoadingMessage(
+      props.setLoadingMessage(
         isStakingStarted
           ? "Stopping Staking. Please wait."
           : "Starting Staking, Please wait."
       );
       props.setIsLoading(true);
-      await invoke("toggle_stakig_wrapper", {
+      await invoke("toggle_staking_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
           account_id: props.currentAccountId ? props.currentAccountId : 0,
@@ -79,7 +80,7 @@ const Staking = (props: {
   };
   const handleDecommissionStaking = async () => {
     try {
-      setLoadingMessage("Decommissioning Staking Pool. Please wait.");
+      props.setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       props.setIsLoading(true);
       await invoke("decommission_pool_wrapper", {
         request: {
@@ -114,7 +115,7 @@ const Staking = (props: {
 
   const handleCreateStakingPool = async () => {
     try {
-      setLoadingMessage("Creating Staking Pool. Please wait");
+      props.setLoadingMessage("Creating Staking Pool. Please wait");
       props.setIsLoading(true);
       await invoke("stake_amount_wrapper", {
         request: {
@@ -146,7 +147,7 @@ const Staking = (props: {
   };
   const handleConfirmTransaction = async () => {
     try {
-      setLoadingMessage("Confirming transaction. Please wait.");
+      props.setLoadingMessage("Confirming transaction. Please wait.");
       props.setIsLoading(true);
       await invoke("submit_transaction_wrapper", {
         request: {
@@ -185,14 +186,6 @@ const Staking = (props: {
           -moz-appearance: textfield;
         }
       `}</style>
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">{loadingMessage}</div>
-          </div>
-        </div>
-      )}
       {showDecommissionModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -357,7 +350,7 @@ const Staking = (props: {
                         )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
                     ) / DECIMAL}
-                    {", "}OutpugTimeLock::ForBlockCount(
+                    {", "}OutputTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
@@ -513,7 +506,7 @@ const Staking = (props: {
       </table>
       <p className="text-lg text-start py-8">Create Staking Pool</p>
       <p className="text-start">
-        Maturity period: 2000 blocks (a block takes on averagte 120 seconds)
+        Maturity period: 2000 blocks (a block takes on average 120 seconds)
       </p>
       <div className="container pt-4">
         <p className="text-start">Pledge amount for the new staking pool</p>
@@ -537,7 +530,7 @@ const Staking = (props: {
       </div>
       <div className="container pt-4">
         <p className="text-start">
-          Margin ratio per thousad. The decimal must be in the range [0.0001,
+          Margin ratio per thousand. The decimal must be in the range [0.0001,
           1.000] or [0.1%, 100%]
         </p>
         <input

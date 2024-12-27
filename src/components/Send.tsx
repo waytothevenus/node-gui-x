@@ -7,6 +7,8 @@ import { AccountType, Data } from "../types/Types";
 const Send = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   walletId: number;
   accountId: number;
@@ -16,7 +18,6 @@ const Send = (props: {
   const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -43,7 +44,7 @@ const Send = (props: {
   };
 
   const handleConfirmTransaction = async () => {
-    setLoadingMessage("Confirming transaction. Please wait.");
+    props.setLoadingMessage("Confirming transaction. Please wait.");
     props.setIsLoading(true);
     try {
       await invoke("submit_transaction_wrapper", {
@@ -87,14 +88,6 @@ const Send = (props: {
           right: 36px; /* Adjust this value as needed */
         }
       `}</style>
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">{loadingMessage}</div>
-          </div>
-        </div>
-      )}
 
       {showConfirmModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">

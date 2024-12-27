@@ -417,6 +417,11 @@ const WalletActions = (props: {
           currentAccountId={props.currentAccountId}
           delegationBalances={props.delegationBalances}
           currentWallet={props.currentWallet}
+          empty_consensus_reward_maturity_block_count={
+            props.chainInfo?.empty_consensus_reward_maturity_block_count
+              ? props.chainInfo?.empty_consensus_reward_maturity_block_count
+              : 0
+          }
         />
       )}
       {props.activeTab === "console" && (

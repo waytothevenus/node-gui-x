@@ -113,15 +113,18 @@ export type ToggleStakingResultType = {
 };
 
 export type ChainInfoType = {
-  best_block_height: number;
-  best_block_id: string;
-  best_block_timestamp: {
-    timestamp: number;
+  chain_info: {
+    best_block_height: number;
+    best_block_id: string;
+    best_block_timestamp: {
+      timestamp: number;
+    };
+    median_time: {
+      timestamp: number;
+    };
+    is_initial_block_download: boolean;
   };
-  median_time: {
-    timestamp: number;
-  };
-  is_initial_block_download: boolean;
+  empty_consensus_reward_maturity_block_count: number;
 };
 
 export type PeerDisconnected = {

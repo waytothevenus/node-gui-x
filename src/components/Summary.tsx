@@ -24,8 +24,8 @@ const SummaryTab = (props: {
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
               Best Block ID
             </td>
-            <td className="py-2 px-4 font-semibold text-gray-600">
-              {props.chainInfo?.best_block_id}
+            <td className="py-2 px-4 font-semibold text-gray-600 w-10">
+              {props.chainInfo?.chain_info.best_block_id}
             </td>
           </tr>
           <tr key="bestblockheight" className="border-b">
@@ -33,17 +33,17 @@ const SummaryTab = (props: {
               Best Block Height
             </td>
             <td className="py-2 px-4 font-semibold text-gray-600">
-              {props.chainInfo?.best_block_height}
+              {props.chainInfo?.chain_info.best_block_height}
             </td>
           </tr>
           <tr key="bestblocktimestamp" className="border-b">
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
-              Best Block Timestamp (UTC)
+              Best Block Timestamp (GMT)
             </td>
             <td className="py-2 px-4 font-semibold text-gray-600">
               {new Date(
-                (props.chainInfo?.best_block_timestamp.timestamp
-                  ? props.chainInfo.best_block_timestamp.timestamp
+                (props.chainInfo?.chain_info.best_block_timestamp.timestamp
+                  ? props.chainInfo.chain_info.best_block_timestamp.timestamp
                   : 0) * 1000
               ).toUTCString()}
             </td>

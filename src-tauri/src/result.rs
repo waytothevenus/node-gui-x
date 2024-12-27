@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RBB S.r.l
+// Copyright (c) 2024 RBB S.r.l
 // opensource@mintlayer.org
 // SPDX-License-Identifier: MIT
 // Licensed under the MIT License;
@@ -11,15 +11,16 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// limitations under the License.
 
 use std::collections::BTreeMap;
 
 use common::{
-    chain::{DelegationId, GenBlock, PoolId},
+    chain::{ChainConfig, DelegationId, GenBlock, PoolId},
     primitives::{Amount, BlockHeight, Id},
 };
 use node_gui_backend::{
+    error::BackendError,
     messages::{TransactionInfo, WalletId},
     AccountId,
 };
@@ -35,11 +36,15 @@ pub struct TransactionResult {
 }
 
 impl TransactionResult {
-    pub fn new(transaction_info: TransactionInfo, serialized_tx: Value) -> Self {
-        TransactionResult {
+    pub fn from_transaction_info(
+        chain_config: &ChainConfig,
+        transaction_info: TransactionInfo,
+    ) -> Result<Self, BackendError> {
+        let serialized_tx = transaction_info.tx.to_json(chain_config)?;
+        Ok(Self {
             transaction_info,
             serialized_tx,
-        }
+        })
     }
 }
 

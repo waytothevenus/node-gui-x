@@ -18,6 +18,7 @@ const Delegation = (props: {
   setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   currentAccountId: number;
+  empty_consensus_reward_maturity_block_count: number;
   delegationBalances: DelegationBalancesType[];
   currentWallet: WalletInfo | undefined;
 }) => {
@@ -559,10 +560,18 @@ const Delegation = (props: {
                     </button>
                   </div>
                 </td>
-                <td className="py-2 px-4 border-b border-gray-200">
-                  {pool_id.slice(0, 8)}...
-                  {pool_id.slice(-4)}
-                </td>
+                <div className="flex justify-between space-x-2">
+                  <p>
+                    {pool_id.slice(0, 8)}...
+                    {pool_id.slice(-4)}
+                  </p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(pool_id)}
+                    className="flex items-center justify-center p-0 bg-transparent border-none shadow-none focus:outline-none"
+                  >
+                    <AiOutlineCopy />
+                  </button>
+                </div>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {parseInt(amount.atoms) / 100000000000}
                 </td>
@@ -595,7 +604,8 @@ const Delegation = (props: {
       <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />{" "}
       <h2 className="mt-8 mb-8 text-lg text-start">Create New Delegation</h2>
       <p className="text-start">
-        Maturity period: 2000 blocks (a block takes on average 120 seconds)
+        Maturity period: {props.empty_consensus_reward_maturity_block_count}{" "}
+        blocks (a block takes on average 120 seconds)
       </p>
       <div className="container pt-8 text-start">
         <p className="pb-2">Pool address for new delegation</p>

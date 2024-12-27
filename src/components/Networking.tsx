@@ -11,7 +11,9 @@ const NetworkingTab = (props: {
       <table className="min-w-full border border-gray-200">
         <thead className="bg-gray-100 ">
           <tr>
-            <th className="py-3 px-4 text-center text-gray-600 font-semibold"></th>
+            <th className="py-3 px-4 text-center text-gray-600 font-semibold">
+              PEER ID
+            </th>
             <th className="py-3 px-4 text-center text-gray-600 font-semibold">
               #SOCKET
             </th>

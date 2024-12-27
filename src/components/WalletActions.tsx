@@ -20,6 +20,8 @@ const WalletActions = (props: {
   netMode: string;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   currentWallet: WalletInfo | undefined;
   currentAccount: AccountType | undefined;
   stakingBalances: StakingBalancesType[];
@@ -206,13 +208,16 @@ const WalletActions = (props: {
 
   const handleCloseWallet = async (wallet_id: number) => {
     try {
+      props.setIsLoading(true);
+      props.setLoadingMessage("Closing wallet. Please wait.");
       await invoke("close_wallet_wrapper", {
         walletId: wallet_id,
       });
       const unsubscribe = await listen("CloseWallet", (event) => {
-        const closeWalletResult = event.payload as { wallet_id: number };
-        if (closeWalletResult) {
-          props.handleRemoveWallet(closeWalletResult.wallet_id);
+        const closeWalletResult = event.payload as number;
+        console.log("Close wallet result: ", closeWalletResult);
+        if (closeWalletResult !== undefined) {
+          props.handleRemoveWallet(closeWalletResult);
           notify("Wallet closed successfully.", "success");
         }
         unsubscribe();
@@ -356,6 +361,8 @@ const WalletActions = (props: {
         <Addresses
           isLoading={props.isLoading}
           setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
           addresses={
             props.currentAccount?.addresses
               ? props.currentAccount.addresses
@@ -372,6 +379,8 @@ const WalletActions = (props: {
         <Send
           isLoading={props.isLoading}
           setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
           currentAccount={props.currentAccount}
           walletId={
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0
@@ -383,6 +392,8 @@ const WalletActions = (props: {
         <Staking
           isLoading={props.isLoading}
           setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
           chainInfo={props.chainInfo}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
@@ -396,6 +407,8 @@ const WalletActions = (props: {
         <Delegation
           isLoading={props.isLoading}
           setIsLoading={props.setIsLoading}
+          loadingMessage={props.loadingMessage}
+          setLoadingMessage={props.setLoadingMessage}
           currentAccount={props.currentAccount}
           currentAccountId={props.currentAccountId}
           delegationBalances={props.delegationBalances}

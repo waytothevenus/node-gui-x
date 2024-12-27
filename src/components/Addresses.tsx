@@ -7,6 +7,8 @@ import { notify } from "../utils/util";
 const Addresses = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   addresses: Record<string, string>;
   accountId: number;
   walletId: number;
@@ -58,14 +60,6 @@ const Addresses = (props: {
   };
   return (
     <div className="pt-0">
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">Adding new address. Please wait.</div>
-          </div>
-        </div>
-      )}
       <table className="w-full border border-gray-200 rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>

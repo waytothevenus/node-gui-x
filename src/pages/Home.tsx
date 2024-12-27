@@ -32,6 +32,7 @@ import {
   BalanceType,
   ChainInfoType,
   DelegationBalancesType,
+  InitNodeType,
   P2p,
   PeerConnected,
   PoolInfoType,
@@ -62,60 +63,9 @@ function Home() {
     return [];
   });
   const [currentWallet, setCurrentWallet] = useState<WalletInfo | undefined>(
-    () => {
-      const saved = localStorage.getItem("currentWallet");
-      if (saved && saved !== "undefined") {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing currentWallet from localStorage", e);
-          return undefined;
-        }
-      }
-      return undefined;
-    }
+    walletsInfo?.[0]
   );
-  const [currentAccount, setCurrentAccount] = useState<AccountType | undefined>(
-    () => {
-      const saved = localStorage.getItem("currentAccount");
-      if (saved && saved !== "undefined") {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing currentWallet from localStorage", e);
-          return undefined;
-        }
-      }
-      return undefined;
-    }
-  );
-  const [currentAccountId, setCurrentAccountId] = useState<number>(() => {
-    const saved = localStorage.getItem("currentAccountId");
-    if (saved && saved !== "undefined") {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing currentWallet from localStorage", e);
-        return 0;
-      }
-    }
-    return 0;
-  });
-  const [currentWalletId, setCurrentWalletId] = useState<number>(() => {
-    const saved = localStorage.getItem("currentWalletId");
-    if (saved && saved !== "undefined") {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing currentWallet from localStorage", e);
-        return 0;
-      }
-    }
-    return 0;
-  });
-  const [chainInfo, setChainInfo] = useState<ChainInfoType | undefined>(
-    initChainInfo as ChainInfoType
-  );
+  const [chainInfo, setChainInfo] = useState<InitNodeType | undefined>();
   const [p2pInfo, setP2pInfo] = useState<PeerConnected["PeerConnected"][]>([]);
   const [currentTab, setCurrentTab] = useState("summary");
   const [activeTab, setActiveTab] = useState("transactions");
@@ -174,18 +124,43 @@ function Home() {
   const unsubscribeTransactionListListenerRef = useRef<UnlistenFn | undefined>(
     undefined
   );
-  const setupErrorListener = async () => {
-    if (!errorListenerInitialized.current) {
-      unsubscribeErrorListenerRef.current = await errorListener();
-      errorListenerInitialized.current = true;
-    }
-  };
-  const setupBalanceEventListener = async () => {
-    if (!balanceEventListenerInitialized.current) {
-      unsubscribeBalanceListenerRef.current = await balanceEventListener();
-      balanceEventListenerInitialized.current = true;
-    }
-  };
+
+  useEffect(() => {
+    const init_node = async () => {
+      try {
+        if (netMode !== "" && walletMode !== "") {
+          const result: InitNodeType = await invoke("initialize_node", {
+            network: netMode,
+            mode: walletMode,
+          });
+          if (result) {
+            setIsInitialized(true);
+            setChainInfo(result);
+            notify("Node initialized", "info");
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing node: ", err);
+        notify("Error occurred while initializing node", "error");
+      }
+    };
+    !isInitialized && init_node();
+    chainStateEventListener();
+    p2pEventListener();
+
+    const setupErrorListener = async () => {
+      if (!errorListenerInitialized.current) {
+        unsubscribeErrorListenerRef.current = await errorListener();
+        errorListenerInitialized.current = true;
+      }
+    };
+
+    const setupBalanceEventListener = async () => {
+      if (!balanceEventListenerInitialized.current) {
+        unsubscribeBalanceListenerRef.current = await balanceEventListener();
+        balanceEventListenerInitialized.current = true;
+      }
+    };
 
   const setupStakingBalanceEventListener = async () => {
     if (!stakingBalanceListenerInitialized.current) {
@@ -262,9 +237,10 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    if (!currentWallet && walletsInfo.length > 0) {
+    console.log("updated walletsInfo is: ", walletsInfo);
+    if (!currentWallet) {
       setCurrentWallet(walletsInfo[0]);
-    } else if (currentWalletId >= 0 && currentWalletId < walletsInfo.length) {
+    } else {
       setCurrentWallet(walletsInfo[currentWalletId]);
     }
     localStorage.setItem("walletsInfo", JSON.stringify(walletsInfo));
@@ -275,7 +251,8 @@ function Home() {
       const updatedAccount = Object.values(currentWallet.accounts || {})[
         currentAccountId
       ];
-      if (!_.isEqual(updatedAccount, currentAccount)) {
+      if (!_.isEqual(updatedAccount, currentAccount) && updatedAccount) {
+        console.log("Current account updated", updatedAccount);
         setCurrentAccount(updatedAccount);
       }
 
@@ -380,8 +357,8 @@ function Home() {
             prevP2pInfo.filter((peer) => peer.id !== peerId)
           );
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up p2p event listener", "error");
     }
@@ -396,8 +373,8 @@ function Home() {
           notify(errorMessage[1], "error");
         }
         setLoading(false);
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up  error listener", "error");
       setLoading(false);
@@ -408,9 +385,17 @@ function Home() {
     try {
       const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
-        setChainInfo(newChainInfo);
+        setChainInfo((currentChainInfo) => {
+          if (currentChainInfo) {
+            return {
+              chain_info: newChainInfo,
+              empty_consensus_reward_maturity_block_count:
+                currentChainInfo?.empty_consensus_reward_maturity_block_count,
+            } as InitNodeType;
+          }
+        });
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up chain state listener", "error");
     }
@@ -424,19 +409,42 @@ function Home() {
           account_id: number;
           balance: BalanceType;
         };
-        if (newBalances.balance) {
-          setCurrentAccount((currentAccount) => {
-            if (currentAccount) {
-              return {
-                ...currentAccount,
-                balance: newBalances.balance,
-              };
+
+        if (newBalances && newBalances.wallet_id && newBalances.account_id) {
+          setWalletsInfo((currentWalletsInfo) => {
+            if (!currentWalletsInfo) {
+              return [];
             }
+
+            return currentWalletsInfo.map((wallet) => {
+              if (wallet.wallet_id === newBalances.wallet_id) {
+                const accounts = { ...wallet.accounts };
+                const account = accounts[newBalances.account_id];
+                if (
+                  account &&
+                  !_.isEqual(account.balance, newBalances.balance)
+                ) {
+                  accounts[newBalances.account_id] = {
+                    ...account,
+                    balance: newBalances.balance,
+                  };
+
+                  console.log("Updated wallet:", wallet);
+                }
+
+                return {
+                  ...wallet,
+                  accounts: accounts,
+                };
+              }
+              return wallet;
+            });
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
+      notify("Error setting up balance listener", "error");
       notify("Error setting up balance listener", "error");
     }
   };
@@ -466,8 +474,8 @@ function Home() {
             }
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up  staking balance listener", "error");
     }
@@ -525,41 +533,21 @@ function Home() {
         };
 
         if (newTransactionList.transaction_list) {
-          setWalletsInfo((currentWalletsInfo) => {
-            if (currentWalletsInfo) {
-              const accounts = {
-                ...currentWalletsInfo[newTransactionList.wallet_id]?.accounts,
+          setCurrentAccount((currentAccount) => {
+            if (
+              currentAccount &&
+              newTransactionList.wallet_id === currentWalletId &&
+              newTransactionList.account_id === currentAccountId
+            ) {
+              return {
+                ...currentAccount,
+                transaction_list: newTransactionList.transaction_list,
               };
-              const account = accounts[newTransactionList.account_id];
-              if (
-                account &&
-                !_.isEqual(
-                  account.transaction_list,
-                  newTransactionList.transaction_list
-                )
-              ) {
-                return currentWalletsInfo.map((wallet, index) => {
-                  if (index === newTransactionList.wallet_id) {
-                    return {
-                      ...wallet,
-                      accounts: {
-                        ...accounts,
-                        [newTransactionList.account_id]: {
-                          ...account,
-                          transaction_list: newTransactionList.transaction_list,
-                        },
-                      },
-                    };
-                  }
-                  return wallet;
-                });
-              }
             }
-            return currentWalletsInfo;
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       console.error("Error setting up transaction list listener:", error);
     }
@@ -592,8 +580,8 @@ function Home() {
             }
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       console.error("Error setting up delegation balance listener:", error);
     }
@@ -620,6 +608,8 @@ function Home() {
       });
 
       if (path) {
+        setLoading(true);
+
         try {
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
@@ -628,6 +618,14 @@ function Home() {
               notify("Wallet created successfully!", "success");
             }
             unsubscribe();
+          });
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: true,
+              wallet_type: walletMode,
+            },
           });
           await invoke("add_create_wallet_wrapper", {
             request: {
@@ -690,6 +688,14 @@ function Home() {
               wallet_type: walletMode,
             },
           });
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: false,
+              wallet_type: walletMode,
+            },
+          });
         } catch (invokeError) {
           notify("Error in recovering wallet!", "error");
           notify("Error in recovering wallet!", "error");
@@ -728,6 +734,7 @@ function Home() {
       });
 
       if (filePath) {
+        setLoading(true);
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -737,6 +744,12 @@ function Home() {
           }
 
           unsubscribe();
+        });
+        await invoke("add_open_wallet_wrapper", {
+          request: {
+            file_path: filePath,
+            wallet_type: walletMode,
+          },
         });
         await invoke("add_open_wallet_wrapper", {
           request: {
@@ -783,7 +796,9 @@ function Home() {
         delegations_balance: currentAccount?.delegations_balance,
         transaction_list: currentAccount?.transaction_list,
       } as AccountType;
-      setCurrentAccount(updatedAccount);
+      if (updatedAccount) {
+        setCurrentAccount(updatedAccount);
+      }
     }
   };
 
@@ -861,18 +876,6 @@ function Home() {
           name: accountName,
           wallet_id: currentWalletId,
         },
-      });
-      const unsubscribe = await listen("NewAccount", (event) => {
-        const [wallet_id, account_id, account_info] = event.payload as [
-          wallet_id: number,
-          account_id: number,
-          account_info: AccountType
-        ];
-        if (account_info && wallet_id === currentWalletId) {
-          addAccount(account_id, account_info);
-          notify("Account created successfully!", "success");
-        }
-        unsubscribe();
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
@@ -1205,7 +1208,10 @@ function Home() {
                     </button>
                   </div>
                   {currentTab === "summary" && (
-                    <SummaryTab network={netMode} chainInfo={chainInfo} />
+                    <SummaryTab
+                      network={netMode}
+                      chainInfo={chainInfo?.chain_info}
+                    />
                   )}
                   {currentTab === "network" && (
                     <NetworkingTab peerInfo={p2pInfo} />

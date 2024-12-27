@@ -20,17 +20,7 @@ use std::{
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use chainstate::ChainInfo;
-<<<<<<< HEAD
-use common::{
-    address::Address,
-    chain::ChainConfig,
-    primitives::{BlockCount, BlockHeight},
-    time_getter::TimeGetter,
-};
-=======
 use common::{address::Address, chain::ChainConfig, time_getter::TimeGetter};
->>>>>>> 981c87b (fix(backend): apply patch result)
 use node_gui_backend::{
     error::BackendError,
     messages::{
@@ -42,7 +32,7 @@ use node_gui_backend::{
 use node_gui_backend::{ImportOrCreate, InitNetwork, WalletMode};
 use wallet_types::wallet_type::WalletType;
 
-use crate::AppState;
+use crate::{result::InitializationResult, AppState};
 
 use super::request::{
     ConsoleRequest, DecommissionStakingPoolRequest, DelegationCreateRequest, NewAccountRequest,
@@ -61,7 +51,7 @@ pub async fn initialize_node(
     state: State<'_, Mutex<AppState>>,
     network: &str,
     mode: &str,
-) -> Result<ChainInfo, String> {
+) -> Result<InitializationResult, String> {
     let net_type = match network {
         "Mainnet" => InitNetwork::Mainnet,
         "Testnet" => InitNetwork::Testnet,
@@ -95,13 +85,20 @@ pub async fn initialize_node(
 
     tokio::spawn(listen_backend_events(
         app_state.app_handle.clone(),
-        backend_controls.initialized_node.chain_config,
->>>>>>> 981c87b (fix(backend): apply patch result)
+        backend_controls.initialized_node.chain_config.clone(),
         backend_controls.backend_receiver,
         backend_controls.low_priority_backend_receiver,
     ));
 
-    Ok(backend_controls.initialized_node.chain_info)
+    Ok(InitializationResult::new(
+        backend_controls.initialized_node.chain_info.clone(),
+        backend_controls
+            .initialized_node
+            .chain_config
+            .staking_pool_spend_maturity_block_count(
+                backend_controls.initialized_node.chain_info.best_block_height,
+            ),
+    ))
 }
 
 <<<<<<< HEAD
@@ -157,12 +154,15 @@ where
 =======
 fn emit_event_or_error<T>(app_handle: &AppHandle, event_name: &str, r: Result<T, BackendError>)
 where
-    T: serde::Serialize + Clone,
+    T: serde::Serialize + Clone + std::fmt::Debug,
 {
     match r {
         Ok(data) => {
-            app_handle.emit(event_name, data).expect("Failed to emit backend event");
->>>>>>> 981c87b (fix(backend): apply patch result)
+            app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
+            println!(
+                "Event emitted, event name: {}, data: {:?}",
+                event_name, data
+            );
         }
         Err(e) => {
             app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
@@ -203,6 +203,7 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
             emit_event_or_error(app_handle, "UpdateEncryption", msg);
         }
         BackendEvent::CloseWallet(msg) => {
+            println!("CloseWallet event emitted, {:?}", msg);
             emit_event_or_error(app_handle, "CloseWallet", Ok(msg));
         }
         BackendEvent::NewAccount(msg) => {
@@ -211,24 +212,21 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
         BackendEvent::ToggleStaking(msg) => {
             emit_event_or_error(app_handle, "ToggleStaking", msg);
         }
-<<<<<<< HEAD
         BackendEvent::ConsoleResponse(_, _, result) => match result {
             Ok(console_result) => {
+                println!("ConsoleResponse is {:?}", console_result);
                 app_handle
                     .emit("ConsoleResponse", console_result)
                     .expect("Failed to emit backend event");
             }
             Err(e) => {
+                println!("ConsoleResponse is {:?}", e.to_string());
+
                 app_handle
                     .emit("ConsoleResponse", e.to_string())
                     .expect("Failed to emit backend event");
             }
         },
-=======
-        BackendEvent::ConsoleResponse(_, _, result) => {
-            emit_event_or_error(app_handle, "ConsoleResponse", result)
-        }
->>>>>>> 981c87b (fix(backend): apply patch result)
         BackendEvent::Broadcast(msg) => {
             emit_event_or_error(app_handle, "Broadcast", msg);
         }
@@ -602,10 +600,6 @@ pub async fn handle_console_command_wrapper(
     request: ConsoleRequest,
 ) -> Result<(), String> {
     let state = state.lock().expect("Failed to acquire the lock on the state");
-<<<<<<< HEAD
-=======
-
->>>>>>> 981c87b (fix(backend): apply patch result)
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::ConsoleCommand {
             wallet_id: request.wallet_id,

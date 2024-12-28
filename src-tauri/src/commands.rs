@@ -83,11 +83,13 @@ pub async fn initialize_node(
     ));
 
     Ok(InitializationResult::new(
-        backend_controls.initialized_node.chain_info,
+        backend_controls.initialized_node.chain_info.clone(),
         backend_controls
             .initialized_node
             .chain_config
-            .empty_consensus_reward_maturity_block_count(),
+            .staking_pool_spend_maturity_block_count(
+                backend_controls.initialized_node.chain_info.best_block_height,
+            ),
     ))
 }
 
@@ -170,10 +172,21 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
         BackendEvent::ToggleStaking(msg) => {
             emit_event_or_error(app_handle, "ToggleStaking", msg);
         }
-        BackendEvent::ConsoleResponse(_, _, result) => {
-            println!("ConsoleRespose is: {:?}", result);
-            emit_event_or_error(app_handle, "ConsoleResponse", result)
-        }
+        BackendEvent::ConsoleResponse(_, _, result) => match result {
+            Ok(console_result) => {
+                println!("ConsoleResponse is {:?}", console_result);
+                app_handle
+                    .emit("ConsoleResponse", console_result)
+                    .expect("Failed to emit backend event");
+            }
+            Err(e) => {
+                println!("ConsoleResponse is {:?}", e.to_string());
+
+                app_handle
+                    .emit("ConsoleResponse", e.to_string())
+                    .expect("Failed to emit backend event");
+            }
+        },
         BackendEvent::Broadcast(msg) => {
             emit_event_or_error(app_handle, "Broadcast", msg);
         }
@@ -547,7 +560,6 @@ pub async fn handle_console_command_wrapper(
     request: ConsoleRequest,
 ) -> Result<(), String> {
     let state = state.lock().expect("Failed to acquire the lock on the state");
-
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::ConsoleCommand {
             wallet_id: request.wallet_id,

@@ -46,6 +46,7 @@ const Console = (props: {
       const unsubscribe = await listen("ConsoleResponse", (event) => {
         setCommandHistory((history) => [...history, command]);
         const consoleResult = event.payload as ConsoleCommand;
+        console.log("console response is: ", event.payload);
         if (typeof consoleResult === "string") {
           setText((text) => text + "\n" + consoleResult);
         } else if ("ClearScreen" in consoleResult) {
@@ -66,8 +67,9 @@ const Console = (props: {
           setText((text) => text + "\n" + JSON.stringify(consoleResult));
         }
         setCommand("");
-        unsubscribe();
       });
+
+      unsubscribe();
     } catch (error) {
       notify(new String(error).toString(), "error");
     }

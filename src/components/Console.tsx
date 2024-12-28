@@ -34,6 +34,7 @@ const Console = (props: {
 
   const handleSendCommand = async () => {
     try {
+      console.log("handleSendCommand is called");
       await invoke("handle_console_command_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -46,6 +47,7 @@ const Console = (props: {
       const unsubscribe = await listen("ConsoleResponse", (event) => {
         setCommandHistory((history) => [...history, command]);
         const consoleResult = event.payload as ConsoleCommand;
+        console.log("Console command result is: ", event.payload);
         if (typeof consoleResult === "string") {
           setText((text) => text + "\n" + consoleResult);
         } else if ("ClearScreen" in consoleResult) {

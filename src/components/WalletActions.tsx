@@ -56,6 +56,10 @@ const WalletActions = (props: {
     setWalletState(props.currentWallet?.encryption);
   }, [props.currentWallet]);
 
+  useEffect(() => {
+    console.log("props.currentaccount is: ", props.currentAccount);
+  }, [props.currentAccount]);
+
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);
 
@@ -299,7 +303,7 @@ const WalletActions = (props: {
             <div className="font-thin">My balance: </div>
             <div className="font-bold">
               {props.currentAccount?.balance?.coins?.decimal}{" "}
-              {props.netMode === "Hot" ? "ML" : "TML"}
+              {props.netMode === "Mainnet" ? "ML" : "TML"}
             </div>
           </span>
         </div>

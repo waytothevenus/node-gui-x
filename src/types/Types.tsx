@@ -1,6 +1,6 @@
 export type RpcAmountOutType = {
-  atoms: number;
-  decimal: number;
+  atoms: string;
+  decimal: string;
 };
 
 export type RpcAddressType = {

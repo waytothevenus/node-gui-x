@@ -68,8 +68,9 @@ const Console = (props: {
           setText((text) => text + "\n" + JSON.stringify(consoleResult));
         }
         setCommand("");
-        unsubscribe();
       });
+
+      unsubscribe();
     } catch (error) {
       notify(new String(error).toString(), "error");
     }

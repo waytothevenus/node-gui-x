@@ -171,8 +171,11 @@ function Home() {
   }, [netMode, walletMode]);
 
   useEffect(() => {
+    console.log("updated walletsInfo is: ", walletsInfo);
     if (!currentWallet) {
       setCurrentWallet(walletsInfo[0]);
+    } else {
+      setCurrentWallet(walletsInfo[currentWalletId]);
     }
   }, [walletsInfo]);
 
@@ -181,7 +184,8 @@ function Home() {
       const updatedAccount = Object.values(currentWallet.accounts || {})[
         currentAccountId
       ];
-      if (!_.isEqual(updatedAccount, currentAccount)) {
+      if (!_.isEqual(updatedAccount, currentAccount) && updatedAccount) {
+        console.log("Current account updated", updatedAccount);
         setCurrentAccount(updatedAccount);
       }
 
@@ -237,8 +241,8 @@ function Home() {
             prevP2pInfo.filter((peer) => peer.id !== peerId)
           );
         }
-        return unsubscribe;
       });
+      return unsubscribe;
     } catch (error) {
       notify("Error setting up p2p event listener", "error");
     }
@@ -266,8 +270,8 @@ function Home() {
       const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
         setChainInfo(newChainInfo);
-        return unsubscribe;
       });
+      return unsubscribe;
     } catch (error) {
       notify("Error setting up chain state listener", "error");
     }
@@ -280,20 +284,44 @@ function Home() {
           account_id: number;
           balance: BalanceType;
         };
-        if (newBalances.balance) {
-          setCurrentAccount((currentAccount) => {
-            if (currentAccount) {
-              return {
-                ...currentAccount,
-                balance: newBalances.balance,
-              };
+
+        if (newBalances && newBalances.wallet_id && newBalances.account_id) {
+          setWalletsInfo((currentWalletsInfo) => {
+            if (!currentWalletsInfo) {
+              return [];
             }
+
+            return currentWalletsInfo.map((wallet) => {
+              if (wallet.wallet_id === newBalances.wallet_id) {
+                const accounts = { ...wallet.accounts };
+                const account = accounts[newBalances.account_id];
+
+                if (
+                  account &&
+                  !_.isEqual(account.balance, newBalances.balance)
+                ) {
+                  accounts[newBalances.account_id] = {
+                    ...account,
+                    balance: newBalances.balance,
+                  };
+
+                  console.log("Updated wallet:", wallet);
+                }
+
+                return {
+                  ...wallet,
+                  accounts: accounts,
+                };
+              }
+              return wallet; // Return the wallet unchanged if no match
+            });
           });
         }
       });
-      return unsubscribe;
+
+      return unsubscribe; // Return unsubscribe function to caller
     } catch (error) {
-      notify("Error setting up  balance listener", "error");
+      notify("Error setting up balance listener", "error");
     }
   };
   const stakingBalanceEventListener = async () => {
@@ -580,7 +608,9 @@ function Home() {
         delegations_balance: currentAccount?.delegations_balance,
         transaction_list: currentAccount?.transaction_list,
       } as AccountType;
-      setCurrentAccount(updatedAccount);
+      if (updatedAccount) {
+        setCurrentAccount(updatedAccount);
+      }
     }
   };
 

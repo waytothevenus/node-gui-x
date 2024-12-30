@@ -40,23 +40,33 @@ const Console = (props: {
         const consoleResult = event.payload as ConsoleCommand;
         console.log("console response is: ", event.payload);
         if (typeof consoleResult === "string") {
-          setText((text) => text + "\n" + consoleResult);
+          setText((text) => text + "\n" + command + "\n" + consoleResult);
         } else if ("ClearScreen" in consoleResult) {
           setText("");
         } else if ("PrintHistory" in consoleResult) {
-          setText((text) => text + "\n" + commandHistory.join("\n"));
+          setText(
+            (text) => text + "\n" + command + "\n" + commandHistory.join("\n")
+          );
         } else if ("ClearHistory" in consoleResult) {
           setCommandHistory([]);
         } else if ("Exit" in consoleResult) {
           handleExit();
         } else if ("SetStatus" in consoleResult) {
           setText(
-            (text) => text + "\n" + consoleResult.SetStatus.print_message
+            (text) =>
+              text +
+              "\n" +
+              command +
+              "\n" +
+              consoleResult.SetStatus.print_message
           );
         } else if ("Print" in consoleResult) {
-          setText((text) => text + "\n" + consoleResult.Print);
+          setText((text) => text + "\n" + command + "\n" + consoleResult.Print);
         } else {
-          setText((text) => text + "\n" + JSON.stringify(consoleResult));
+          setText(
+            (text) =>
+              text + "\n" + command + "\n" + JSON.stringify(consoleResult)
+          );
         }
         setCommand("");
         unsubscribe();

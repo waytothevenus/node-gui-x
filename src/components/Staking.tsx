@@ -48,14 +48,6 @@ const Staking = (props: {
           : "Starting Staking, Please wait."
       );
       props.setIsLoading(true);
-      await invoke("toggle_staking_wrapper", {
-        request: {
-          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0,
-          enabled: !isStakingStarted,
-        },
-      });
-
       const unsubscribe = await listen("ToggleStaking", (event) => {
         if (Array.isArray(event.payload)) {
           const [wallet_id, account_id, enabled] = event.payload;
@@ -71,6 +63,14 @@ const Staking = (props: {
         }
         unsubscribe();
       });
+      await invoke("toggle_staking_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
       props.setIsLoading(false);
     } catch (error) {
       const errorMessage = new String(error);
@@ -82,14 +82,6 @@ const Staking = (props: {
     try {
       props.setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       props.setIsLoading(true);
-      await invoke("decommission_pool_wrapper", {
-        request: {
-          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0,
-          pool_id: currentPoolId,
-          output_address: receiveAddress,
-        },
-      });
       const unsubscribe = await listen("DecommissionPool", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
@@ -98,9 +90,16 @@ const Staking = (props: {
             setTransactionInfo(transactionResult);
             setShowConfirmTransactionModal(true);
           }
-          unsubscribe();
         }
         unsubscribe();
+      });
+      await invoke("decommission_pool_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          pool_id: currentPoolId,
+          output_address: receiveAddress,
+        },
       });
       props.setIsLoading(false);
     } catch (error) {
@@ -117,6 +116,14 @@ const Staking = (props: {
     try {
       props.setLoadingMessage("Creating Staking Pool. Please wait");
       props.setIsLoading(true);
+      const unsubscribe = await listen("StakeAmount", (event) => {
+        const transactionResult = event.payload as Data;
+        if (transactionResult) {
+          setTransactionInfo(transactionResult);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -126,14 +133,6 @@ const Staking = (props: {
           cost_per_block: costPerBlock.toString(),
           decommission_address: decommissionAddress,
         },
-      });
-      const unsubscribe = await listen("StakeAmount", (event) => {
-        const transactionResult = event.payload as Data;
-        if (transactionResult) {
-          setTransactionInfo(transactionResult);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
       });
       props.setIsLoading(false);
     } catch (error) {
@@ -149,12 +148,6 @@ const Staking = (props: {
     try {
       props.setLoadingMessage("Confirming transaction. Please wait.");
       props.setIsLoading(true);
-      await invoke("submit_transaction_wrapper", {
-        request: {
-          wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info,
-        },
-      });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
         if (result === props.currentWallet?.wallet_id) {
@@ -163,6 +156,12 @@ const Staking = (props: {
           setShowSuccessModal(true);
         }
         unsubscribe();
+      });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
       });
       props.setIsLoading(false);
     } catch (error) {

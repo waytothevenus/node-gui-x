@@ -39,6 +39,14 @@ const Delegation = (props: {
     props.setLoadingMessage("Depositing to delegation. Please wait.");
     props.setIsLoading(true);
     try {
+      const unsubscribe = await listen("DelegateStaking", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("delegate_staking_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -49,14 +57,7 @@ const Delegation = (props: {
           delegation_amount: depositAmount.toString(),
         },
       });
-      const unsubscribe = await listen("DelegateStaking", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
-      });
+
       props.setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
@@ -68,6 +69,14 @@ const Delegation = (props: {
     props.setIsLoading(true);
     setShowWithdrawModal(false);
     try {
+      const unsubscribe = await listen("SendDelegationToAddress", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("send_delegation_to_address_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -79,14 +88,6 @@ const Delegation = (props: {
           delegation_id: currentDelegationId,
         },
       });
-      const unsubscribe = await listen("SendDelegationToAddress", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
-      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -95,9 +96,11 @@ const Delegation = (props: {
 
   const handleSelectAllAmount = () => {
     setWithdrawAmount(
-      props.currentAccount?.staking_balance[poolAddress].balance.decimal
-        ? props.currentAccount?.staking_balance[poolAddress].balance.decimal
-        : 0
+      parseInt(
+        props.currentAccount?.staking_balance[poolAddress].balance.decimal
+          ? props.currentAccount?.staking_balance[poolAddress].balance.decimal
+          : "0"
+      )
     );
   };
 
@@ -105,6 +108,15 @@ const Delegation = (props: {
     props.setLoadingMessage("Creating Delegation. Please wait");
     props.setIsLoading(true);
     try {
+      const unsubscribe = await listen("CreateDelegation", (event) => {
+        const transactionInfo = event.payload as Data;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+          props.setIsLoading(false);
+        }
+        unsubscribe();
+      });
       await invoke("create_delegation_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -114,15 +126,6 @@ const Delegation = (props: {
           pool_id: poolAddress,
           delegation_address: delegationAddress,
         },
-      });
-      const unsubscribe = await listen("CreateDelegation", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-          props.setIsLoading(false);
-        }
-        unsubscribe();
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
@@ -134,12 +137,6 @@ const Delegation = (props: {
     props.setLoadingMessage("Confirming transaction. Please wait.");
     props.setIsLoading(true);
     try {
-      await invoke("submit_transaction_wrapper", {
-        request: {
-          wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info,
-        },
-      });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
         if (result === props.currentWallet?.wallet_id) {
@@ -149,6 +146,13 @@ const Delegation = (props: {
         unsubscribe();
         setShowConfirmTransactionModal(false);
       });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
+      });
+
       props.setIsLoading(false);
     } catch (error) {
       props.setIsLoading(false);

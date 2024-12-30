@@ -84,15 +84,17 @@ const WalletActions = (props: {
         },
       });
       const unsubscribe = await listen("UpdateEncryption", (event) => {
-        const encryptionResult = event.payload as {
-          wallet_id: string;
-          encryptionState: string;
-        };
-        if (encryptionResult) {
-          setWalletState(encryptionResult.encryptionState);
+        const [wallet_id, encryptionState] = event.payload as [
+          wallet_id: number,
+          encryptionState: string
+        ];
+
+        console.log("UpdateEncryptioResult: ", wallet_id, encryptionState);
+        if (encryptionState) {
+          setWalletState(encryptionState);
           props.handleUpdateCurrentWalletEncryptionState(
             props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
-            encryptionResult.encryptionState
+            encryptionState
           );
           setShowEncryptWalletModal(false);
           notify("Wallet encrypted successfully.", "success");
@@ -119,17 +121,15 @@ const WalletActions = (props: {
           },
         });
         const unsubscribe = await listen("UpdateEncryption", (event) => {
-          const encryptionResult = event.payload as {
-            wallet_id: string;
-            encryptionState: string;
-          };
-          if (encryptionResult) {
-            setWalletState(encryptionResult.encryptionState);
+          const [wallet_id, encryptionState] = event.payload as [
+            wallet_id: number,
+            encryptionState: string
+          ];
+          if (encryptionState) {
+            setWalletState(encryptionState);
             props.handleUpdateCurrentWalletEncryptionState(
-              props.currentWallet?.wallet_id
-                ? props.currentWallet.wallet_id
-                : 0,
-              encryptionResult.encryptionState
+              wallet_id,
+              encryptionState
             );
             setShowEncryptWalletModal(false);
             notify("Wallet encryption disabled successfully.", "success");
@@ -156,16 +156,16 @@ const WalletActions = (props: {
       });
 
       const unsubscribe = await listen("UpdateEncryption", (event) => {
-        const encryptionResult = event.payload as {
-          wallet_id: string;
-          encryptionState: string;
-        };
-        console.log("UpdatedEncryption Status: ", encryptionResult);
-        if (encryptionResult) {
-          setWalletState(encryptionResult.encryptionState);
+        const [wallet_id, encryptionState] = event.payload as [
+          wallet_id: number,
+          encryptionState: string
+        ];
+        console.log("UpdatedEncryption Status: ", encryptionState);
+        if (encryptionState) {
+          setWalletState(encryptionState);
           props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
-            encryptionResult.encryptionState
+            wallet_id,
+            encryptionState
           );
           setShowUnlockModal(false);
           notify("Wallet locked successfully.", "success");
@@ -189,15 +189,15 @@ const WalletActions = (props: {
         },
       });
       const unsubscribe = await listen("UpdateEncryption", (event) => {
-        const encryptionResult = event.payload as {
-          wallet_id: string;
-          encryptionState: string;
-        };
-        if (encryptionResult) {
-          setWalletState(encryptionResult.encryptionState);
+        const [wallet_id, encryptionState] = event.payload as [
+          wallet_id: number,
+          encryptionState: string
+        ];
+        if (encryptionState) {
+          setWalletState(encryptionState);
           props.handleUpdateCurrentWalletEncryptionState(
-            props.currentWallet?.wallet_id ? props.currentWallet.wallet_id : 0,
-            encryptionResult.encryptionState
+            wallet_id,
+            encryptionState
           );
           setShowUnlockModal(false);
           notify("Wallet unlocked successfully.", "success");
@@ -210,7 +210,6 @@ const WalletActions = (props: {
     setShowUnlockModal(false);
     setUnLockPassword("");
   };
-
   const handleCloseWallet = async (wallet_id: number) => {
     try {
       props.setIsLoading(true);

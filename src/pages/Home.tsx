@@ -372,7 +372,10 @@ function Home() {
           transaction_list: TransactionType;
         };
 
-        if (newTransactionList.transaction_list) {
+        if (
+          newTransactionList.transaction_list &&
+          currentAccount !== undefined
+        ) {
           setCurrentAccount((currentAccount) => {
             if (
               currentAccount &&

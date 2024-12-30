@@ -93,7 +93,7 @@ const Addresses = (props: {
       </table>
       <button
         onClick={handleAddAddress}
-        className=" bottom-8 mb-4 py-1 px-2 w-40 text-[#000000] rounded-lg bg-[#69EE96] text-center items-center flex justify-center translation shadow-none border-none "
+        className="mt-3 bottom-8 mb-4 py-1 px-2 w-40 text-[#000000] rounded-lg bg-[#69EE96] text-center items-center flex justify-center translation shadow-none border-none "
       >
         <img src={AddressIcon} alt="address_icon" className="pr-2" />
         New Address

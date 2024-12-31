@@ -56,10 +56,6 @@ const WalletActions = (props: {
     setWalletState(props.currentWallet?.encryption);
   }, [props.currentWallet]);
 
-  useEffect(() => {
-    console.log("props.currentaccount is: ", props.currentAccount);
-  }, [props.currentAccount]);
-
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);
 
@@ -90,7 +86,6 @@ const WalletActions = (props: {
           wallet_id: number,
           encryptionState: string
         ];
-        console.log("UpdateEncryption Result: ", wallet_id, encryptionState);
         if (encryptionState) {
           setWalletState(encryptionState);
           props.handleUpdateCurrentWalletEncryptionState(
@@ -124,9 +119,7 @@ const WalletActions = (props: {
       props.setLoadingMessage("Closing wallet. Please wait.");
 
       const unsubscribe = await listen("CloseWallet", (event) => {
-        console.log("Received CloseWallet event");
         const closeWalletResult = event.payload as number;
-        console.log("Close wallet result: ", closeWalletResult);
         if (closeWalletResult !== undefined) {
           props.handleRemoveWallet(closeWalletResult);
           notify("Wallet closed successfully.", "success");

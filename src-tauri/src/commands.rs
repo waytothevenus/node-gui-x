@@ -123,8 +123,13 @@ where
 {
     match r {
         Ok(data) => {
+            println!(
+                "Event emitted, event name: {}, data:{:?}",
+                event_name,
+                data.clone()
+            );
             app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
-                  }
+        }
         Err(e) => {
             app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
         }

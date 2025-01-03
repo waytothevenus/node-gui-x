@@ -240,7 +240,7 @@ function Home() {
             prevP2pInfo.filter((peer) => peer.id !== peerId)
           );
         }
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       notify("Error setting up p2p event listener", "error");
@@ -256,7 +256,7 @@ function Home() {
           notify(errorMessage[1], "error");
         }
         setLoading(false);
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       notify("Error setting up  error listener", "error");
@@ -277,7 +277,7 @@ function Home() {
             } as InitNodeType;
           }
         });
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       notify("Error setting up chain state listener", "error");
@@ -321,7 +321,7 @@ function Home() {
             });
           });
         }
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       notify("Error setting up balance listener", "error");
@@ -353,7 +353,7 @@ function Home() {
             }
           });
         }
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       notify("Error setting up  staking balance listener", "error");
@@ -385,7 +385,7 @@ function Home() {
             }
           });
         }
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       console.error("Error setting up transaction list listener:", error);
@@ -419,7 +419,7 @@ function Home() {
             }
           });
         }
-        unsubscribe();
+        return unsubscribe();
       });
     } catch (error) {
       console.error("Error setting up delegation balance listener:", error);

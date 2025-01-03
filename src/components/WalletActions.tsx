@@ -63,10 +63,10 @@ const WalletActions = (props: {
   }, [props.currentWallet]);
 
   useEffect(() => {
-    if (currentAccount) {
-      setCurrentAccount(currentAccount);
+    if (props.currentAccount) {
+      setCurrentAccount(props.currentAccount);
     }
-  }, [currentAccount]);
+  }, [props.currentAccount]);
 
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);

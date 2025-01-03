@@ -200,7 +200,6 @@ function Home() {
   }, [netMode, walletMode]);
 
   useEffect(() => {
-    console.log("updated walletsInfo is: ", walletsInfo);
     if (!currentWallet) {
       setCurrentWallet(walletsInfo[0]);
     } else {
@@ -215,7 +214,6 @@ function Home() {
         currentAccountId
       ];
       if (!_.isEqual(updatedAccount, currentAccount) && updatedAccount) {
-        console.log("Current account updated", updatedAccount);
         setCurrentAccount(updatedAccount);
       }
 
@@ -391,8 +389,6 @@ function Home() {
                     ...account,
                     balance: newBalances.balance,
                   };
-
-                  console.log("Updated wallet:", wallet);
                 }
 
                 return {

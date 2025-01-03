@@ -1,7 +1,7 @@
-import { useEffect, useState, MouseEvent, useRef } from "react";
+import { useEffect, useState, MouseEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { exit } from "@tauri-apps/plugin-process";
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import { save, open } from "@tauri-apps/plugin-dialog";
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
@@ -79,24 +79,6 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
-  const errorListenerInitialized = useRef(false);
-  const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
-  const balanceEventListenerInitialized = useRef(false);
-  const unsubscribeBalanceListenerRef = useRef<UnlistenFn | undefined>(
-    undefined
-  );
-  const stakingBalanceListenerInitialized = useRef(false);
-  const unsubscribeStakingBalanceListenerRef = useRef<UnlistenFn | undefined>(
-    undefined
-  );
-  const delegationBalanceListenerInitialized = useRef(false);
-  const unsubscribeDelegationBalanceListenerRef = useRef<
-    UnlistenFn | undefined
-  >(undefined);
-  const transactionListEventListenerInitialized = useRef(false);
-  const unsubscribeTransactionListListenerRef = useRef<UnlistenFn | undefined>(
-    undefined
-  );
 
   useEffect(() => {
     const init_node = async () => {
@@ -120,55 +102,11 @@ function Home() {
     !isInitialized && init_node();
     chainStateEventListener();
     p2pEventListener();
-
-    const setupErrorListener = async () => {
-      if (!errorListenerInitialized.current) {
-        unsubscribeErrorListenerRef.current = await errorListener();
-        errorListenerInitialized.current = true;
-      }
-    };
-
-    const setupBalanceEventListener = async () => {
-      if (!balanceEventListenerInitialized.current) {
-        unsubscribeBalanceListenerRef.current = await balanceEventListener();
-        balanceEventListenerInitialized.current = true;
-      }
-    };
-
-    const setupStakingBalanceEventListener = async () => {
-      if (!stakingBalanceListenerInitialized.current) {
-        unsubscribeStakingBalanceListenerRef.current =
-          await stakingBalanceEventListener();
-        stakingBalanceListenerInitialized.current = true;
-      }
-    };
-
-    const setupDelegationBalanceEventListener = async () => {
-      if (!delegationBalanceListenerInitialized.current) {
-        unsubscribeDelegationBalanceListenerRef.current =
-          await delegationBalanceEventListener();
-        delegationBalanceListenerInitialized.current = true;
-      }
-    };
-
-    const setupTransactionListEventListener = async () => {
-      if (!transactionListEventListenerInitialized.current) {
-        unsubscribeTransactionListListenerRef.current =
-          await transactionListEventListener();
-        transactionListEventListenerInitialized.current = true;
-      }
-    };
-
-    setupErrorListener();
-    setupBalanceEventListener();
-    setupStakingBalanceEventListener();
-    setupDelegationBalanceEventListener();
-    setupTransactionListEventListener();
-    return () => {
-      if (unsubscribeErrorListenerRef.current) {
-        unsubscribeErrorListenerRef.current();
-      }
-    };
+    balanceEventListener();
+    stakingBalanceEventListener();
+    delegationBalanceEventListener();
+    errorListener();
+    transactionListEventListener();
   }, [netMode, walletMode]);
 
   useEffect(() => {
@@ -240,7 +178,7 @@ function Home() {
             prevP2pInfo.filter((peer) => peer.id !== peerId)
           );
         }
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       notify("Error setting up p2p event listener", "error");
@@ -256,7 +194,7 @@ function Home() {
           notify(errorMessage[1], "error");
         }
         setLoading(false);
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       notify("Error setting up  error listener", "error");
@@ -277,7 +215,7 @@ function Home() {
             } as InitNodeType;
           }
         });
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       notify("Error setting up chain state listener", "error");
@@ -321,7 +259,7 @@ function Home() {
             });
           });
         }
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       notify("Error setting up balance listener", "error");
@@ -353,7 +291,7 @@ function Home() {
             }
           });
         }
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       notify("Error setting up  staking balance listener", "error");
@@ -385,7 +323,7 @@ function Home() {
             }
           });
         }
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       console.error("Error setting up transaction list listener:", error);
@@ -419,7 +357,7 @@ function Home() {
             }
           });
         }
-        return unsubscribe();
+        unsubscribe();
       });
     } catch (error) {
       console.error("Error setting up delegation balance listener:", error);

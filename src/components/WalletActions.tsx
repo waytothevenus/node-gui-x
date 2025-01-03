@@ -44,8 +44,12 @@ const WalletActions = (props: {
 }) => {
   const [showEncryptWalletModal, setShowEncryptWalletModal] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+
   const [walletState, setWalletState] = useState(
     props.currentWallet?.encryption
+  );
+  const [currentAccount, setCurrentAccount] = useState<AccountType | undefined>(
+    undefined
   );
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,8 +57,16 @@ const WalletActions = (props: {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setWalletState(props.currentWallet?.encryption);
+    if (props.currentWallet) {
+      setWalletState(props.currentWallet?.encryption);
+    }
   }, [props.currentWallet]);
+
+  useEffect(() => {
+    if (currentAccount) {
+      setCurrentAccount(currentAccount);
+    }
+  }, [currentAccount]);
 
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);
@@ -72,7 +84,6 @@ const WalletActions = (props: {
     try {
       const walletId = props.currentWallet?.wallet_id || 0;
 
-      // Prepare the request based on the action
       const request = {
         wallet_id: walletId,
         action: action,
@@ -213,7 +224,7 @@ const WalletActions = (props: {
               <span className="flex space-x-2">
                 <div className="font-thin">My balance: </div>
                 <div className="font-bold">
-                  {props.currentAccount?.balance?.coins?.decimal}{" "}
+                  {currentAccount?.balance?.coins?.decimal}{" "}
                   {props.netMode === "Mainnet" ? "ML" : "TML"}
                 </div>
               </span>
@@ -274,9 +285,7 @@ const WalletActions = (props: {
             </div>
           </div>
           {props.activeTab === "transactions" && (
-            <Transactions
-              transactions={props.currentAccount?.transaction_list}
-            />
+            <Transactions transactions={currentAccount?.transaction_list} />
           )}
           {props.activeTab === "addresses" && (
             <Addresses
@@ -285,9 +294,7 @@ const WalletActions = (props: {
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
               addresses={
-                props.currentAccount?.addresses
-                  ? props.currentAccount.addresses
-                  : {}
+                currentAccount?.addresses ? currentAccount.addresses : {}
               }
               walletId={
                 props.currentWallet?.wallet_id
@@ -304,7 +311,7 @@ const WalletActions = (props: {
               setIsLoading={props.setIsLoading}
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
-              currentAccount={props.currentAccount}
+              currentAccount={currentAccount}
               walletId={
                 props.currentWallet?.wallet_id
                   ? props.currentWallet.wallet_id
@@ -320,7 +327,7 @@ const WalletActions = (props: {
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
               chainInfo={props.chainInfo?.chain_info}
-              currentAccount={props.currentAccount}
+              currentAccount={currentAccount}
               currentWallet={props.currentWallet}
               stakingBalances={props.stakingBalances}
               currentAccountId={props.currentAccountId}
@@ -334,7 +341,7 @@ const WalletActions = (props: {
               setIsLoading={props.setIsLoading}
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
-              currentAccount={props.currentAccount}
+              currentAccount={currentAccount}
               currentAccountId={props.currentAccountId}
               delegationBalances={props.delegationBalances}
               currentWallet={props.currentWallet}
@@ -347,7 +354,7 @@ const WalletActions = (props: {
           )}
           {props.activeTab === "console" && (
             <Console
-              currentAccount={props.currentAccount}
+              currentAccount={currentAccount}
               currentWallet={props.currentWallet}
               currentAccountId={props.currentAccountId}
             />

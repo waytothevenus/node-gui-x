@@ -211,8 +211,11 @@ function Home() {
   useEffect(() => {
     if (currentWallet) {
       const updatedAccount = Object.values(currentWallet.accounts || {})[
-        currentAccountId
+        currentAccountId > Object.values(currentWallet.accounts || {}).length
+          ? 0
+          : currentAccountId
       ];
+
       if (!_.isEqual(updatedAccount, currentAccount) && updatedAccount) {
         setCurrentAccount(updatedAccount);
       }

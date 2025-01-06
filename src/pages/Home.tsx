@@ -501,7 +501,13 @@ function Home() {
                 ...currentWalletsInfo[newTransactionList.wallet_id].accounts,
               };
               const account = accounts[newTransactionList.account_id];
-              if (account) {
+              if (
+                account &&
+                !_.isEqual(
+                  account.transaction_list,
+                  newTransactionList.transaction_list
+                )
+              ) {
                 return currentWalletsInfo.map((wallet, index) => {
                   if (index === newTransactionList.wallet_id) {
                     return {

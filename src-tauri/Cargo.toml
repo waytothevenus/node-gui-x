@@ -1,12 +1,12 @@
 [package]
 name = "node-gui-x"
-description = "Bitcoin bridging blockchain node"
+description = "Mintlayer Node GUI X"
 homepage = "https://mintlayer.org"
 repository = "https://github.com/mintlayer/node-gui-x"
 readme = "README.md"
 license = "MIT"
 version = "1.0.0"
-authors = ["you"]
+authors = []
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -22,23 +22,15 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.3", features = [] }
 
 [dependencies]
-anyhow = "1.0"
-tauri = { version = "2.1.1", features = [] }
-tauri-plugin-fs = "2.2.0"
-tauri-plugin-cli = "2.2.0"
-tauri-plugin-clipboard-manager = "2.2.0"
-tauri-plugin-dialog = "2.2.0"
-tauri-plugin-http = "2.2.0"
-tauri-plugin-updater = "2.2.0"
-tauri-plugin-os = "2.2.0"
-tauri-plugin-single-instance = "2.2.0"
-tauri-plugin-notification = "2.2.0"
-tauri-plugin-shell = "2.2.0"
-tokio = { version = "1.27", default-features = false }
-thiserror = "1.0"
 parity-scale-codec = "3.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tokio = { version = "1.27", default-features = false }
+
+tauri = { version = "2.1.1", features = [] }
+tauri-plugin-dialog = "2.2.0"
+tauri-plugin-fs = "2.2.0"
+
 tokio = { version = "1.27", default-features = false }
 
 tauri = { version = "2.1.1", features = [] }

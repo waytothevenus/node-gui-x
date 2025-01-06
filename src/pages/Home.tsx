@@ -495,17 +495,31 @@ function Home() {
         };
 
         if (newTransactionList.transaction_list) {
-          setCurrentAccount((currentAccount) => {
-            if (
-              currentAccount &&
-              newTransactionList.wallet_id === currentWalletId &&
-              newTransactionList.account_id === currentAccountId
-            ) {
-              return {
-                ...currentAccount,
-                transaction_list: newTransactionList.transaction_list,
+          setWalletsInfo((currentWalletsInfo) => {
+            if (currentWalletsInfo) {
+              const accounts = {
+                ...currentWalletsInfo[newTransactionList.wallet_id].accounts,
               };
+              const account = accounts[newTransactionList.account_id];
+              if (account) {
+                return currentWalletsInfo.map((wallet, index) => {
+                  if (index === newTransactionList.wallet_id) {
+                    return {
+                      ...wallet,
+                      accounts: {
+                        ...accounts,
+                        [newTransactionList.account_id]: {
+                          ...account,
+                          transaction_list: newTransactionList.transaction_list,
+                        },
+                      },
+                    };
+                  }
+                  return wallet;
+                });
+              }
             }
+            return currentWalletsInfo;
           });
         }
       });

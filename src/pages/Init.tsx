@@ -32,6 +32,7 @@ const Init = () => {
             mode: walletMode,
           });
           if (result) {
+            console.log("initialization result: ", result);
             setIsInitialized(true);
             notify("Node initialized", "info");
             navigate("/home", {

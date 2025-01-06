@@ -15,12 +15,11 @@
 
 use std::collections::BTreeMap;
 
-use chainstate::ChainInfo;
 use common::{
 <<<<<<< HEAD
 <<<<<<< HEAD
     chain::{ChainConfig, DelegationId, GenBlock, PoolId},
-    primitives::{Amount, BlockCount, BlockHeight, Id},
+    primitives::{Amount, BlockHeight, Id},
 };
 use node_gui_backend::{
     error::BackendError,
@@ -44,24 +43,6 @@ use serde::Serialize;
 use serde_json::Value;
 use wallet::account::transaction_list::TransactionList;
 use wallet_rpc_lib::types::{Balances, PoolInfo};
-
-#[derive(Debug, Clone, Serialize)]
-pub struct InitializationResult {
-    chain_info: ChainInfo,
-    empty_consensus_reward_maturity_block_count: BlockCount,
-}
-
-impl InitializationResult {
-    pub fn new(
-        chain_info: ChainInfo,
-        empty_consensus_reward_maturity_block_count: BlockCount,
-    ) -> Self {
-        InitializationResult {
-            chain_info,
-            empty_consensus_reward_maturity_block_count,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TransactionResult {

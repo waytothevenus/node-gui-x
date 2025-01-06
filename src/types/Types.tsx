@@ -124,10 +124,6 @@ export type ChainInfoType = {
   is_initial_block_download: boolean;
 };
 
-export type InitNodeType = {
-  chain_info: ChainInfoType;
-  empty_consensus_reward_maturity_block_count: number;
-};
 
 
 export type PeerDisconnected = {

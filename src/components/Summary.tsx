@@ -20,7 +20,7 @@ const SummaryTab = (props: {
               {props.network}
             </td>
           </tr>
-          <tr key="bestblockid" className="border-b">
+          <tr key="best_block_id" className="border-b">
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 ">
               Best Block ID
             </td>
@@ -28,7 +28,7 @@ const SummaryTab = (props: {
               {props.chainInfo?.best_block_id}
             </td>
           </tr>
-          <tr key="bestblockheight" className="border-b">
+          <tr key="best_block_height" className="border-b">
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Best Block Height
             </td>
@@ -36,7 +36,7 @@ const SummaryTab = (props: {
               {props.chainInfo?.best_block_height}
             </td>
           </tr>
-          <tr key="bestblocktimestamp" className="border-b">
+          <tr key="best_block_timestamp" className="border-b">
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Best Block Timestamp (GMT)
             </td>

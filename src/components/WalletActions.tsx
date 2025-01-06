@@ -58,11 +58,19 @@ const WalletActions = (props: {
 
   useEffect(() => {
     if (props.currentWallet) {
-      console.log("Current Account in wallet action: ", props.currentAccount);
       setWalletState(props.currentWallet?.encryption);
-      setCurrentAccount(props.currentAccount);
     }
   }, [props.currentWallet]);
+
+  useEffect(() => {
+    if (props.currentAccount) {
+      console.log(
+        "Current Account in wallet action page, ",
+        props.currentAccount
+      );
+      setCurrentAccount(props.currentAccount);
+    }
+  }, [props.currentAccount]);
 
   const handleConfirmPasswordChange = (confirmPassword: string) => {
     setConfirmPassword(confirmPassword);

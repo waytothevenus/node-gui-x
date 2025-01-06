@@ -64,10 +64,6 @@ const WalletActions = (props: {
 
   useEffect(() => {
     if (props.currentAccount) {
-      console.log(
-        "Current Account in wallet action page, ",
-        props.currentAccount
-      );
       setCurrentAccount(props.currentAccount);
     }
   }, [props.currentAccount]);

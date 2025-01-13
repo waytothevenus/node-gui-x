@@ -55,7 +55,9 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                   </div>
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {transactionInfo?.timestamp?.timestamp}
+                  {new Date(
+                    transactionInfo?.timestamp?.timestamp * 1000
+                  ).toLocaleString()}
                 </td>
                 {(() => {
                   if ("Redeposit" in transactionInfo.tx_type) {

@@ -273,6 +273,8 @@ function Home() {
         }
         return updatedWallets;
       });
+    } else {
+      setCurrentTab("summary");
     }
 
     localStorage.setItem("currentWallet", JSON.stringify(currentWallet));

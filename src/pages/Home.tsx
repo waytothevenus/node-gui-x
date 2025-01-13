@@ -472,7 +472,7 @@ function Home() {
           setWalletsInfo((currentWalletsInfo) => {
             if (currentWalletsInfo) {
               const accounts = {
-                ...currentWalletsInfo[newTransactionList.wallet_id].accounts,
+                ...currentWalletsInfo[newTransactionList.wallet_id]?.accounts,
               };
               const account = accounts[newTransactionList.account_id];
               if (

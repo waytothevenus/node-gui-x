@@ -150,10 +150,10 @@ export type P2p = PeerConnected | PeerDisconnected;
 
 export type Transaction = {
   V1: {
-    version: number | null; // Assuming version can be a number or null
-    flags: number; // Assuming flags is a number
-    inputs: Input[]; // Array of Input objects
-    outputs: Output[]; // Array of Output objects
+    version: number | null; 
+    flags: number; 
+    inputs: Input[]; 
+    outputs: Output[];
   };
 };
 
@@ -170,9 +170,9 @@ export type Account = {
 export type Utxo = {
   Utxo: {
     id: {
-      Transaction: string; // Transaction ID as a string
+      Transaction: string; 
     };
-    index: number; // Index as a number
+    index: number; 
   };
 };
 
@@ -287,7 +287,6 @@ type PrintHistory = string;
 type ClearHistory = string;
 type Exit = string;
 
-// Define the ConsoleCommand type as a union of all possible command types
 export type ConsoleCommand =
   | Print
   | ClearScreen

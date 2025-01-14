@@ -134,6 +134,8 @@ function Home() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [maturityPeriod, setMaturityPeriod] = useState(0);
+
   const [showMnemonicModal, setShowMnemonicModal] = useState(false);
   const [showRecoverWalletModal, setShowRecoverWalletModal] = useState(false);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
@@ -320,6 +322,24 @@ function Home() {
       JSON.stringify(delegationBalances)
     );
   }, [delegationBalances]);
+
+  useEffect(() => {
+    const fetchMaturityPeriod = async () => {
+      if (chainInfo) {
+        try {
+          const response = await invoke("get_stake_pool_maturity_distance", {
+            bestBlockHeight: chainInfo.best_block_height,
+          });
+          if (response) {
+            setMaturityPeriod(response as number);
+          }
+        } catch (error) {
+          notify("Error fetching maturity period", "error");
+        }
+      }
+    };
+    fetchMaturityPeriod();
+  }, [chainInfo]);
 
   const contextMenu = Menu.new({
     items: [],
@@ -1156,6 +1176,7 @@ function Home() {
                     currentAccountId={currentAccountId}
                     chainInfo={chainInfo}
                     activeTab={activeTab}
+                    maturityPeriod={maturityPeriod}
                     handleUpdateCurrentAccount={
                       handleUpdateCurrentAccountAddresses
                     }

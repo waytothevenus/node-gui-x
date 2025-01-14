@@ -51,6 +51,7 @@ function Home() {
   const initChainInfo = location.state.initChainInfo as ChainInfoType;
   const netMode = location.state.netMode as string;
   const walletMode = location.state.walletMode as string;
+  const toastId = useRef<Id | null>(null);
   const [walletsInfo, setWalletsInfo] = useState<WalletInfo[]>(() => {
     const saved = localStorage.getItem("walletsInfo");
     if (saved && saved !== "undefined") {
@@ -147,12 +148,19 @@ function Home() {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [showProgressBar, setShowProgressBar] = useState(false);
+  const [progress, setProgress] = useState(0);
   const errorListenerInitialized = useRef(false);
   const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
   const balanceEventListenerInitialized = useRef(false);
   const unsubscribeBalanceListenerRef = useRef<UnlistenFn | undefined>(
     undefined
   );
+
+  const unsubscribeWalletBestBlockListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const walletBestBlockEventListenerInitialized = useRef(false);
   const stakingBalanceListenerInitialized = useRef(false);
   const unsubscribeStakingBalanceListenerRef = useRef<UnlistenFn | undefined>(
     undefined
@@ -215,6 +223,14 @@ function Home() {
       chainInfoEventListenerInitialized.current = true;
     }
   };
+
+  const setupWalletBestBlockEventListener = async () => {
+    if (!walletBestBlockEventListenerInitialized.current) {
+      unsubscribeWalletBestBlockListenerRef.current =
+        await walletBestBlockEventListener();
+      walletBestBlockEventListenerInitialized.current = true;
+    }
+  };
   const setupP2pEventListener = async () => {
     if (!P2pEventListenerInitialized.current) {
       unsubscribeP2pEventListenerRef.current = await p2pEventListener();
@@ -242,6 +258,7 @@ function Home() {
     setupTransactionListEventListener();
     setupChainInfoEventListener();
     setupP2pEventListener();
+    setupWalletBestBlockEventListener();
 
     return () => {
       if (unsubscribeErrorListenerRef.current) {
@@ -640,8 +657,6 @@ function Home() {
       });
 
       if (path) {
-        setLoading(true);
-
         try {
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
@@ -766,7 +781,6 @@ function Home() {
       });
 
       if (filePath) {
-        setLoading(true);
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -1215,6 +1229,19 @@ function Home() {
                       <img src={ConsoleIcon} className="pr-2" />
                       Console
                     </button>
+                    {showProgressBar && chainInfo && (
+                      <div className="w-full bg-neutral-200 dark:bg-neutral-600">
+                        <div
+                          className={`bg-primary p-0.5 text-center text-xs font-medium leading-none text-primary-100 width: ${
+                            progress / chainInfo?.best_block_height
+                          }`}
+                        >
+                          {progress.toString() +
+                            " / " +
+                            chainInfo.best_block_height.toString()}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

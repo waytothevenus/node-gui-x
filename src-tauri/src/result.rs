@@ -16,11 +16,18 @@
 use std::collections::BTreeMap;
 
 use common::{
+<<<<<<< HEAD
     chain::{ChainConfig, DelegationId, GenBlock, PoolId},
     primitives::{Amount, BlockHeight, Id},
 };
 use node_gui_backend::{
     error::BackendError,
+=======
+    chain::{DelegationId, GenBlock, PoolId},
+    primitives::{Amount, BlockHeight, Id},
+};
+use node_gui_backend::{
+>>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)
     messages::{TransactionInfo, WalletId},
     AccountId,
 };

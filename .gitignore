@@ -21,7 +21,11 @@ node_modules/
 
 dist/
 
+<<<<<<< HEAD
 **/gen/schemas/
+=======
+*.lock
+>>>>>>> fc7b17b (fix(backend): change cargo dependency)
 
 #exclude env
 .env

@@ -1,16 +1,15 @@
 name: "publish"
 on:
-  workflow_dispatch:
   push:
     branches:
       - dev
+
 jobs:
   publish-tauri:
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
+<<<<<<< HEAD
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin"
@@ -20,13 +19,28 @@ jobs:
             args: ""
           - platform: "windows-latest"
             args: ""
+=======
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    env:
+      working-directory: ./node-gui-x
+
+>>>>>>> 14cc718 (fix(CI/CD): modify publish pipeline)
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+      - uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: install webkit2gtk (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
+<<<<<<< HEAD
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
         working-directory: node-gui-x # Set working directory to node-gui-x
 
@@ -50,13 +64,23 @@ jobs:
       - name: install frontend dependencies
         run: yarn install # change this to npm or pnpm depending on which one you use.
 
+=======
+          sudo apt-get install -y webkit2gtk-4.0
+      - name: install app dependencies and build it
+        run: yarn && yarn build
+        working-directory: ${{env.working-directory}}
+>>>>>>> 14cc718 (fix(CI/CD): modify publish pipeline)
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+<<<<<<< HEAD
           tagName: app-v__VERSION__ # the action automatically replaces __VERSION__ with the app version.
+=======
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+>>>>>>> 14cc718 (fix(CI/CD): modify publish pipeline)
           releaseName: "App v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
+          projectPath: ${{env.working-directory}}

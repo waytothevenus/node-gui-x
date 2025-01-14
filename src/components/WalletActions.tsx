@@ -29,7 +29,10 @@ const WalletActions = (props: {
   activeTab: string;
   currentAccountId: number;
   chainInfo: ChainInfoType | undefined;
+<<<<<<< HEAD
   maturityPeriod: number;
+=======
+>>>>>>> bacbf3c (fix(frontend): fix issue in adding addres)
   handleUpdateCurrentAccount: (
     wallet_id: number,
     account_id: number,
@@ -149,6 +152,7 @@ const WalletActions = (props: {
   };
 
   return (
+<<<<<<< HEAD
     <>
       {props.currentWallet && (
         <div className="bg-white border border-gray-200 overflow-y-auto mt-8 p-8 m-8 rounded-lg shadow">
@@ -187,6 +191,80 @@ const WalletActions = (props: {
                   Encrypt Wallet
                 </button>
               </div>
+=======
+    <div className="bg-white border border-gray-200 shadowoverflow-y-auto mt-8 p-8 m-8 rounded-lg shadow">
+      {showEncryptWalletModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
+            <button
+              className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
+              onClick={() => setShowEncryptWalletModal(false)}
+            >
+              <IoCloseSharp />
+            </button>
+            <h2 className="text-lg font-bold mb-4">Encrypt Wallet</h2>
+            <input
+              placeholder="Enter password"
+              type="password"
+              className="w-full rounded-lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <input
+              placeholder="Repeat password"
+              type="password"
+              className="w-full rounded-lg"
+              value={confirmPassword}
+              onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+            />
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            <button
+              className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
+              onClick={() => handleEncryptWallet()}
+            >
+              Encrypt Wallet
+            </button>
+          </div>
+        </div>
+      )}
+      {showUnlockModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="bg-white rounded-lg shadow-lg z-10 p-4 max-w-lg mx-auto relative space-y-4">
+            {/* Close Button */}
+            <button
+              className="absolute top-2 right-2 bg-transparent border-none shadow-none focus:outline-none "
+              onClick={() => setShowUnlockModal(false)}
+            >
+              <IoCloseSharp />
+            </button>
+            <h2 className="text-lg font-bold mb-4">Unlock</h2>
+            <input
+              placeholder="Enter a password"
+              type="password"
+              className="w-full rounded-lg"
+              value={unLockPassword}
+              onChange={(e) => setUnLockPassword(e.target.value)}
+            />
+
+            <button
+              className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
+              onClick={handleUnlock}
+            >
+              Unlock
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="row flex items-center justify-between pl-8 pr-8 pb-0">
+        <div>
+          <span className="flex space-x-2">
+            <div className="font-thin">My balance: </div>
+            <div className="font-bold">
+              {props.currentAccount?.balance?.coins?.decimal}{" "}
+              {props.netMode === "Hot" ? "ML" : "TML"}
+>>>>>>> 262d742 (fix(backend): migrate from RwLock to Mutex)
             </div>
           )}
           {showUnlockModal && (

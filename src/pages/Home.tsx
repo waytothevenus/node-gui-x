@@ -12,6 +12,7 @@ import { PiShareNetworkBold } from "react-icons/pi";
 import { ToastContainer } from "react-toastify";
 import _ from "lodash";
 import "react-toastify/dist/ReactToastify.css";
+import { toast, Id } from "react-toastify";
 
 import { IoCloseSharp } from "react-icons/io5";
 import TransactionIcon from "../assets/transaction_icon.png";
@@ -49,6 +50,7 @@ function Home() {
   const initChainInfo = location.state.initChainInfo as ChainInfoType;
   const netMode = location.state.netMode as string;
   const walletMode = location.state.walletMode as string;
+  const toastId = useRef<Id | null>(null);
   const [walletsInfo, setWalletsInfo] = useState<WalletInfo[]>(() => {
     const saved = localStorage.getItem("walletsInfo");
     if (saved && saved !== "undefined") {
@@ -141,12 +143,19 @@ function Home() {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [showProgressBar, setShowProgressBar] = useState(false);
+  const [progress, setProgress] = useState(0);
   const errorListenerInitialized = useRef(false);
   const unsubscribeErrorListenerRef = useRef<UnlistenFn | undefined>(undefined);
   const balanceEventListenerInitialized = useRef(false);
   const unsubscribeBalanceListenerRef = useRef<UnlistenFn | undefined>(
     undefined
   );
+
+  const unsubscribeWalletBestBlockListenerRef = useRef<UnlistenFn | undefined>(
+    undefined
+  );
+  const walletBestBlockEventListenerInitialized = useRef(false);
   const stakingBalanceListenerInitialized = useRef(false);
   const unsubscribeStakingBalanceListenerRef = useRef<UnlistenFn | undefined>(
     undefined
@@ -209,6 +218,14 @@ function Home() {
       chainInfoEventListenerInitialized.current = true;
     }
   };
+
+  const setupWalletBestBlockEventListener = async () => {
+    if (!walletBestBlockEventListenerInitialized.current) {
+      unsubscribeWalletBestBlockListenerRef.current =
+        await walletBestBlockEventListener();
+      walletBestBlockEventListenerInitialized.current = true;
+    }
+  };
   const setupP2pEventListener = async () => {
     if (!P2pEventListenerInitialized.current) {
       unsubscribeP2pEventListenerRef.current = await p2pEventListener();
@@ -236,6 +253,7 @@ function Home() {
     setupTransactionListEventListener();
     setupChainInfoEventListener();
     setupP2pEventListener();
+    setupWalletBestBlockEventListener();
 
     return () => {
       if (unsubscribeErrorListenerRef.current) {
@@ -256,15 +274,10 @@ function Home() {
 
   useEffect(() => {
     if (currentWallet) {
-      const accounts = Object.values(currentWallet.accounts || {});
-      const updatedAccount =
-        accounts[
-          currentAccountId >= 0 && currentAccountId < accounts.length
-            ? currentAccountId
-            : 0
-        ];
-
-      if (!_.isEqual(updatedAccount, currentAccount) && updatedAccount) {
+      const updatedAccount = Object.values(currentWallet.accounts || {})[
+        currentAccountId
+      ];
+      if (!_.isEqual(updatedAccount, currentAccount)) {
         setCurrentAccount(updatedAccount);
       }
 
@@ -292,6 +305,7 @@ function Home() {
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
         ) {
+          const updatedWallet = {
           const updatedWallet = {
             ...prevWallet,
             accounts: {
@@ -406,39 +420,20 @@ function Home() {
   const balanceEventListener = async () => {
     try {
       const unsubscribe = await listen("Balance", (event) => {
+      const unsubscribe = await listen("Balance", (event) => {
         const newBalances = event.payload as {
           wallet_id: number;
           account_id: number;
           balance: BalanceType;
         };
-
-        if (newBalances && newBalances.wallet_id && newBalances.account_id) {
-          setWalletsInfo((currentWalletsInfo) => {
-            if (!currentWalletsInfo) {
-              return [];
+        if (newBalances.balance) {
+          setCurrentAccount((currentAccount) => {
+            if (currentAccount) {
+              return {
+                ...currentAccount,
+                balance: newBalances.balance,
+              };
             }
-
-            return currentWalletsInfo.map((wallet) => {
-              if (wallet.wallet_id === newBalances.wallet_id) {
-                const accounts = { ...wallet.accounts };
-                const account = accounts[newBalances.account_id];
-                if (
-                  account &&
-                  !_.isEqual(account.balance, newBalances.balance)
-                ) {
-                  accounts[newBalances.account_id] = {
-                    ...account,
-                    balance: newBalances.balance,
-                  };
-                }
-
-                return {
-                  ...wallet,
-                  accounts: accounts,
-                };
-              }
-              return wallet;
-            });
           });
         }
       });
@@ -477,6 +472,49 @@ function Home() {
       return unsubscribe;
     } catch (error) {
       notify("Error setting up  staking balance listener", "error");
+    }
+  };
+
+  const walletBestBlockEventListener = async () => {
+    try {
+      const unsubscribe = await listen("WalletBestBlock", (event) => {
+        console.log("WalletBestBlockInfo: ", event.payload);
+        const newWalletBestBlock = event.payload as {
+          wallet_id: number;
+          block_info: [account_id: number, best_block: number];
+        };
+
+        if (
+          chainInfo &&
+          newWalletBestBlock.block_info[1] < chainInfo.best_block_height
+        ) {
+          setShowProgressBar(true);
+          setProgress(newWalletBestBlock.block_info[1]);
+
+          const progressPercentage =
+            (newWalletBestBlock.block_info[1] / chainInfo.best_block_height) *
+            100;
+
+          if (toastId.current === null) {
+            toastId.current = toast(
+              `Wallet syncing: ${progressPercentage.toFixed(2)}%`
+            );
+          } else {
+            toast.update(toastId.current, {
+              render: `Wallet syncing: ${progressPercentage.toFixed(2)}%`,
+            });
+          }
+        } else {
+          setShowProgressBar(false);
+          if (toastId.current !== null) {
+            toast.done(toastId.current);
+            toastId.current = null;
+          }
+        }
+      });
+      return unsubscribe;
+    } catch (error) {
+      notify("Error setting up wallet best block listener", "error");
     }
   };
   const transactionListEventListener = async () => {
@@ -575,7 +613,6 @@ function Home() {
 
   const handleCreateNewWallet = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setLoadingMessage("Creating wallet. Please wait.");
     try {
       const path = await save({
         defaultPath: "key.dat",
@@ -583,17 +620,13 @@ function Home() {
       });
 
       if (path) {
-        setLoading(true);
-
         try {
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
             if (walletInfo) {
               setWalletsInfo([...walletsInfo, walletInfo]);
-              setLoading(false);
               notify("Wallet created successfully!", "success");
             }
-            setLoading(false);
             unsubscribe();
           });
           await invoke("add_create_wallet_wrapper", {
@@ -680,7 +713,6 @@ function Home() {
   };
 
   const handleOpenWallet = async () => {
-    setLoadingMessage("Opening wallet. Please wait.");
     try {
       const filePath = await open({
         filters: [
@@ -692,7 +724,6 @@ function Home() {
       });
 
       if (filePath) {
-        setLoading(true);
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -701,7 +732,6 @@ function Home() {
             notify("Wallet opened successfully", "success");
           }
 
-          setLoading(false);
           unsubscribe();
         });
         await invoke("add_open_wallet_wrapper", {
@@ -713,7 +743,6 @@ function Home() {
       }
     } catch (error) {
       console.error("Error opening wallet:", error);
-      setLoading(false);
     }
   };
 
@@ -727,6 +756,8 @@ function Home() {
   };
 
   const handleUpdateCurrentAccountAddresses = (
+    wallet_id: number,
+    account_id: number,
     wallet_id: number,
     account_id: number,
     index: string,
@@ -748,9 +779,7 @@ function Home() {
         delegations_balance: currentAccount?.delegations_balance,
         transaction_list: currentAccount?.transaction_list,
       } as AccountType;
-      if (updatedAccount) {
-        setCurrentAccount(updatedAccount);
-      }
+      setCurrentAccount(updatedAccount);
     }
   };
 
@@ -794,6 +823,7 @@ function Home() {
   };
 
   const addAccount = (accountId: number, accountInfo: AccountType) => {
+  const addAccount = (accountId: number, accountInfo: AccountType) => {
     setCurrentWallet(
       (prevWallet) =>
         ({
@@ -827,6 +857,18 @@ function Home() {
           name: accountName,
           wallet_id: currentWalletId,
         },
+      });
+      const unsubscribe = await listen("NewAccount", (event) => {
+        const [wallet_id, account_id, account_info] = event.payload as [
+          wallet_id: number,
+          account_id: number,
+          account_info: AccountType
+        ];
+        if (account_info && wallet_id === currentWalletId) {
+          addAccount(account_id, account_info);
+          notify("Account created successfully!", "success");
+        }
+        unsubscribe();
       });
     } catch (error) {
       notify(new String(error).toString(), "error");
@@ -960,237 +1002,237 @@ function Home() {
                   <img src={MintlayerIcon} alt="sidebar_icon" />
                 </div>
 
-                <>
-                  <button
-                    onClick={() => createNewWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Create New {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => recoverWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Recover {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => handleOpenWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Open {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => handleExit()}
-                    className="w-full text-[#ff0000] rounded transition border-none py-2 px-1 shadow-none text-left"
-                  >
-                    Exit
-                  </button>
-                  <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />
-                </>
-                {walletsInfo.length !== 0 && (
                   <>
-                    <div className="relative flex items-center justify-center space-x-2">
-                      <img src={WalletIcon} alt="wallet_ico" />
-                      <select
-                        value={
-                          currentWallet?.wallet_id
-                            ? currentWallet.wallet_id
-                            : ""
-                        }
-                        onChange={(e) => {
-                          setCurrentWallet(
-                            walletsInfo.find(
-                              (wallet) =>
-                                wallet.wallet_id == parseInt(e?.target.value)
-                            )
-                          );
-                          setCurrentWalletId(parseInt(e.target.value));
-                        }}
-                        className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
-                      >
-                        {walletsInfo.map((wallet) => (
-                          <option
-                            key={wallet.wallet_id}
-                            value={wallet.wallet_id}
-                          >
-                            {wallet.path?.substring(
-                              wallet.path?.lastIndexOf("\\") + 1
-                            )}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="relative pl-4 flex items-center justify-center space-x-2">
-                      <button
-                        className="bg-transparent border-noe shadow-none outline-none hover:border-none focused: border-none"
-                        onClick={() => setShowNewAccountModal(true)}
-                      >
-                        <img src={AccountIcon} alt="wallet_ico" />
-                      </button>
-                      <select
-                        onChange={(e) => {
-                          setCurrentAccountId(parseInt(e.target.value));
-                          setCurrentAccount(
-                            Object.values(
-                              currentWallet?.accounts
-                                ? currentWallet.accounts
-                                : {}
-                            )[parseInt(e.target.value)]
-                          );
-                        }}
-                        value={currentAccountId}
-                        className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
-                      >
-                        {Object.entries(
-                          (currentWallet
-                            ? currentWallet
-                            : walletsInfo[currentWalletId]
-                          )?.accounts
-                            ? (currentWallet
-                                ? currentWallet
-                                : walletsInfo[currentWalletId]
-                              ).accounts
-                            : {}
-                        ).map(([index, account]) => (
-                          <option key={index} value={index}>
-                            {account?.name ? account?.name : "Account " + index}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("transactions");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={TransactionIcon} className="pr-2" />
-                        Transactions
-                      </button>
-                    )}
                     <button
-                      onClick={() => {
-                        setCurrentTab("transactions");
-                        setActiveTab("addresses");
-                      }}
-                      className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                      onClick={() => createNewWallet()}
+                      className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
                     >
-                      <img src={AddressIcon} className="pr-2" />
-                      Addresses
+                      Create New {walletMode} Wallet
                     </button>
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("send");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={SendIcon} className="pr-2" />
-                        Send
-                      </button>
-                    )}
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("staking");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={StakingIcon} className="pr-2" />
-                        Staking
-                      </button>
-                    )}
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("delegation");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={DelegationIcon} className="pr-2" />
-                        Delegation
-                      </button>
-                    )}
                     <button
-                      onClick={() => {
-                        setCurrentTab("transactions");
-                        setActiveTab("console");
-                      }}
-                      className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                      onClick={() => recoverWallet()}
+                      className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
                     >
-                      <img src={ConsoleIcon} className="pr-2" />
-                      Console
+                      Recover {walletMode} Wallet
                     </button>
+                    <button
+                      onClick={() => handleOpenWallet()}
+                      className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
+                    >
+                      Open {walletMode} Wallet
+                    </button>
+                    <button
+                      onClick={() => handleExit()}
+                      className="w-full text-[#ff0000] rounded transition border-none py-2 px-1 shadow-none text-left"
+                    >
+                      Exit
+                    </button>
+                    <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />
                   </>
-                )}
-              </div>
-            </div>
-            <div className="col-span-9 ">
-              <div className="bg-[#F3F4F6] h-full">
-                <div className="flex p-8">
-                  <button
-                    onClick={() => setCurrentTab("summary")}
-                    className={`flex items-center justify-center w-full pl-2  transition-colors duration-300 rounded-tr-[0] rounded-br-[0] ${
-                      currentTab === "summary"
-                        ? "bg-gray-200 text-gray-800"
-                        : "bg-white-500 text-black"
-                    }`}
-                  >
-                    <RiInformation2Line />
-                    <span className="pl-2">Summary</span>
-                  </button>
-                  <button
-                    onClick={() => setCurrentTab("network")}
-                    className={`flex items-center justify-center w-full p-2 transition-colors duration-300 rounded-tl-[0] rounded-bl-[0] ${
-                      currentTab === "network"
-                        ? "bg-gray-200 text-gray-800"
-                        : "bg-white-500 text-black"
-                    }`}
-                  >
-                    <PiShareNetworkBold />
-                    <span className="pl-2">Networking</span>
-                  </button>
+                  {walletsInfo.length !== 0 && (
+                    <>
+                      <div className="relative flex items-center justify-center space-x-2">
+                        <img src={WalletIcon} alt="wallet_ico" />
+                        <select
+                          value={
+                            currentWallet?.wallet_id
+                              ? currentWallet.wallet_id
+                              : ""
+                          }
+                          onChange={(e) => {
+                            setCurrentWallet(
+                              walletsInfo.find(
+                                (wallet) =>
+                                  wallet.wallet_id == parseInt(e?.target.value)
+                              )
+                            );
+                            setCurrentWalletId(parseInt(e.target.value));
+                          }}
+                          className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
+                        >
+                          {walletsInfo.map((wallet) => (
+                            <option
+                              key={wallet.wallet_id}
+                              value={wallet.wallet_id}
+                            >
+                              {wallet.path?.substring(
+                                wallet.path?.lastIndexOf("\\") + 1
+                              )}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="relative pl-4 flex items-center justify-center space-x-2">
+                        <button
+                          className="bg-transparent border-noe shadow-none outine-none hover: outline-none hover:border-none focused: border-none"
+                          onClick={() => setShowNewAccountModal(true)}
+                        >
+                          <img src={AccountIcom} alt="wallet_ico" />
+                        </button>
+                        <select
+                          onChange={(e) => {
+                            setCurrentAccountId(parseInt(e.target.value));
+                            setCurrentAccount(
+                              Object.values(
+                                currentWallet?.accounts
+                                  ? currentWallet.accounts
+                                  : {}
+                              )[parseInt(e.target.value)]
+                            );
+                          }}
+                          value={currentAccountId}
+                          className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
+                        >
+                          {Object.entries(
+                            (currentWallet
+                              ? currentWallet
+                              : walletsInfo[currentWalletId]
+                            )?.accounts
+                              ? (currentWallet
+                                  ? currentWallet
+                                  : walletsInfo[currentWalletId]
+                                ).accounts
+                              : {}
+                          ).map(([index, account]) => (
+                            <option key={index} value={index}>
+                              {account?.name
+                                ? account?.name
+                                : "Account " + index}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {walletMode === "Hot" && (
+                        <button
+                          onClick={() => {
+                            setCurrentTab("transactions");
+                            setActiveTab("transactions");
+                          }}
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        >
+                          <img src={TransactionIcon} className="pr-2" />
+                          Transactions
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setCurrentTab("transactions");
+                          setActiveTab("addresses");
+                        }}
+                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                      >
+                        <img src={AddressIcon} className="pr-2" />
+                        Addresses
+                      </button>
+                      {walletMode === "Hot" && (
+                        <button
+                          onClick={() => {
+                            setCurrentTab("transactions");
+                            setActiveTab("send");
+                          }}
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        >
+                          <img src={SendIcon} className="pr-2" />
+                          Send
+                        </button>
+                      )}
+                      {walletMode === "Hot" && (
+                        <button
+                          onClick={() => {
+                            setCurrentTab("transactions");
+                            setActiveTab("staking");
+                          }}
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        >
+                          <img src={StakingIcon} className="pr-2" />
+                          Staking
+                        </button>
+                      )}
+                      {walletMode === "Hot" && (
+                        <button
+                          onClick={() => {
+                            setCurrentTab("transactions");
+                            setActiveTab("delegation");
+                          }}
+                          className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                        >
+                          <img src={DelegationIcon} className="pr-2" />
+                          Delegation
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setCurrentTab("transactions");
+                          setActiveTab("console");
+                        }}
+                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                      >
+                        <img src={ConsoleIcon} className="pr-2" />
+                        Console
+                      </button>
+                    </>
+                  )}
                 </div>
-                {currentTab === "summary" && (
-                  <SummaryTab network={netMode} chainInfo={chainInfo} />
-                )}
-                {currentTab === "network" && (
-                  <NetworkingTab peerInfo={p2pInfo} />
-                )}
-                {currentTab === "transactions" && (
-                  <WalletActions
-                    netMode={netMode}
-                    isLoading={loading}
-                    setIsLoading={setLoading}
-                    loadingMessage={loadingMessage}
-                    setLoadingMessage={setLoadingMessage}
-                    currentWallet={currentWallet}
-                    currentAccount={currentAccount}
-                    stakingBalances={stakingBalances}
-                    delegationBalances={delegationBalances}
-                    currentAccountId={currentAccountId}
-                    chainInfo={chainInfo}
-                    activeTab={activeTab}
-                    maturityPeriod={maturityPeriod}
-                    handleUpdateCurrentAccount={
-                      handleUpdateCurrentAccountAddresses
-                    }
-                    handleUpdateCurrentWalletEncryptionState={
-                      handleUpdateCurrentWalletEncryptionState
-                    }
-                    handleUpdateStakingState={handleUpdateStakingState}
-                    handleRemoveWallet={handleRemoveWallet}
-                  />
-                )}
+              </div>
+              <div className="col-span-9 ">
+                <div className="bg-[#F3F4F6] h-full">
+                  <div className="flex p-8">
+                    <button
+                      onClick={() => setCurrentTab("summary")}
+                      className={`flex items-center justify-center w-full pl-2  transition-colors duration-300 rounded-tr-[0] rounded-br-[0] ${
+                        currentTab === "summary"
+                          ? "bg-gray-200 text-gray-800"
+                          : "bg-white-500 text-black"
+                      }`}
+                    >
+                      <RiInformation2Line />
+                      <span className="pl-2">Summary</span>
+                    </button>
+                    <button
+                      onClick={() => setCurrentTab("network")}
+                      className={`flex items-center justify-center w-full p-2 transition-colors duration-300 rounded-tl-[0] rounded-bl-[0] ${
+                        currentTab === "network"
+                          ? "bg-gray-200 text-gray-800"
+                          : "bg-white-500 text-black"
+                      }`}
+                    >
+                      <PiShareNetworkBold />
+                      <span className="pl-2">Networking</span>
+                    </button>
+                  </div>
+                  {currentTab === "summary" && (
+                    <SummaryTab network={netMode} chainInfo={chainInfo} />
+                  )}
+                  {currentTab === "network" && (
+                    <NetworkingTab peerInfo={p2pInfo} />
+                  )}
+                  {currentTab === "transactions" && (
+                    <WalletActions
+                      netMode={netMode}
+                      isLoading={loading}
+                      setIsLoading={setLoading}
+                      currentWallet={currentWallet}
+                      currentAccount={currentAccount}
+                      stakingBalances={stakingBalances}
+                      delegationBalances={delegationBalances}
+                      currentAccountId={currentAccountId}
+                      chainInfo={chainInfo}
+                      activeTab={activeTab}
+                      handleUpdateCurrentAccount={
+                        handleUpdateCurrentAccountAddresses
+                      }
+                      handleUpdateCurrentWalletEncryptionState={
+                        handleUpdateCurrentWalletEncryptionState
+                      }
+                      handleUpdateStakingState={handleUpdateStakingState}
+                      handleRemoveWallet={handleRemoveWallet}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

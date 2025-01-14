@@ -18,7 +18,7 @@ const Delegation = (props: {
   setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   currentAccountId: number;
-  empty_consensus_reward_maturity_block_count: number;
+  maturityPeriod: number;
   delegationBalances: DelegationBalancesType[];
   currentWallet: WalletInfo | undefined;
 }) => {
@@ -608,8 +608,8 @@ const Delegation = (props: {
       <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />{" "}
       <h2 className="mt-8 mb-8 text-lg text-start">Create New Delegation</h2>
       <p className="text-start">
-        Maturity period: {props.empty_consensus_reward_maturity_block_count}{" "}
-        blocks (a block takes on average 120 seconds)
+        Maturity period: {props.maturityPeriod} blocks (a block takes on average
+        120 seconds)
       </p>
       <div className="container pt-8 text-start">
         <p className="pb-2">Pool address for new delegation</p>

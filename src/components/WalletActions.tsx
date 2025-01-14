@@ -29,6 +29,7 @@ const WalletActions = (props: {
   activeTab: string;
   currentAccountId: number;
   chainInfo: ChainInfoType | undefined;
+  maturityPeriod: number;
   handleUpdateCurrentAccount: (
     wallet_id: number,
     account_id: number,
@@ -327,6 +328,7 @@ const WalletActions = (props: {
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
               chainInfo={props.chainInfo}
+              maturityPeriod={props.maturityPeriod}
               currentAccount={currentAccount}
               currentWallet={props.currentWallet}
               stakingBalances={props.stakingBalances}
@@ -345,7 +347,7 @@ const WalletActions = (props: {
               currentAccountId={props.currentAccountId}
               delegationBalances={props.delegationBalances}
               currentWallet={props.currentWallet}
-              empty_consensus_reward_maturity_block_count={0}
+              maturityPeriod={props.maturityPeriod}
             />
           )}
           {props.activeTab === "console" && (

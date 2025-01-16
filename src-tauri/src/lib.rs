@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
+use common::chain::ChainConfig;
 use node_gui_backend::BackendSender;
 use tauri::Manager;
 
@@ -24,25 +25,25 @@ mod result;
 
 struct AppState {
     backend_sender: Option<BackendSender>,
+    chain_config: Option<Arc<ChainConfig>>,
     app_handle: tauri::AppHandle,
 }
 
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let r = app.manage(Mutex::new(AppState {
+            app.manage(Mutex::new(AppState {
                 backend_sender: None,
+                chain_config: None,
                 app_handle: app.handle().clone(),
             }));
-            assert!(r);
             Ok(())
         })
-        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             commands::initialize_node,
+            commands::get_stake_pool_maturity_distance,
             commands::add_create_wallet_wrapper,
             commands::add_open_wallet_wrapper,
             commands::send_amount_wrapper,
@@ -62,9 +63,5 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_app_handle, event| {
-            if let tauri::RunEvent::Exit = event {
-                // TODO: backend event task should be joined here to make sure it's properly finished
-            }
-        });
+        .run(|_app_handle, _event| {});
 }

@@ -1,1 +1,0 @@
-Mintlayer Node_GUI_X app

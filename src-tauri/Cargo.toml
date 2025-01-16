@@ -1,7 +1,11 @@
 [package]
 name = "node-gui-x"
-version = "0.1.0"
-description = "A Tauri App"
+description = "Bitcoin bridging blockchain node"
+homepage = "https://mintlayer.org"
+repository = "https://github.com/mintlayer/node-gui-x"
+readme = "README.md"
+license = "MIT"
+version = "1.0.0"
 authors = ["you"]
 edition = "2021"
 
@@ -15,21 +19,21 @@ name = "mintlayer_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.11", features = [] }
+tauri-build = { version = "2.0.3", features = [] }
 
 [dependencies]
 anyhow = "1.0"
-tauri = { version = "2.0.0-rc.14", features = [] }
-tauri-plugin-fs = "2"
-tauri-plugin-cli = "2.0.0-rc.1"
-tauri-plugin-clipboard-manager = "2.1.0-beta.7"
-tauri-plugin-dialog = "2"
-tauri-plugin-http = "2.0.0-rc.5"
-tauri-plugin-updater = "2.0.0-rc.3"
-tauri-plugin-os = "2.0.0-rc"
-tauri-plugin-single-instance = "2.0.0-rc"
-tauri-plugin-notification = "2.0.0-rc"
-tauri-plugin-shell = "2.0.0-rc"
+tauri = { version = "2.1.1", features = [] }
+tauri-plugin-fs = "2.2.0"
+tauri-plugin-cli = "2.2.0"
+tauri-plugin-clipboard-manager = "2.2.0"
+tauri-plugin-dialog = "2.2.0"
+tauri-plugin-http = "2.2.0"
+tauri-plugin-updater = "2.2.0"
+tauri-plugin-os = "2.2.0"
+tauri-plugin-single-instance = "2.2.0"
+tauri-plugin-notification = "2.2.0"
+tauri-plugin-shell = "2.2.0"
 tokio = { version = "1.27", default-features = false }
 thiserror = "1.0"
 parity-scale-codec = "3.1"
@@ -44,6 +48,7 @@ wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", packa
 wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 tauri-plugin-process = "2"
+gtk = { version = "0.9.5", package = "gtk4", features = ["v4_12"] }
 
 
 [features]

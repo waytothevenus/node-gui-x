@@ -11,8 +11,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { notify } from "../utils/util";
 import {
   AccountType,
+  ChainInfoType,
   DelegationBalancesType,
-  InitNodeType,
   StakingBalancesType,
   WalletInfo,
 } from "../types/Types";
@@ -28,7 +28,7 @@ const WalletActions = (props: {
   delegationBalances: DelegationBalancesType[];
   activeTab: string;
   currentAccountId: number;
-  chainInfo: InitNodeType | undefined;
+  chainInfo: ChainInfoType | undefined;
   handleUpdateCurrentAccount: (
     wallet_id: number,
     account_id: number,
@@ -326,7 +326,7 @@ const WalletActions = (props: {
               setIsLoading={props.setIsLoading}
               loadingMessage={props.loadingMessage}
               setLoadingMessage={props.setLoadingMessage}
-              chainInfo={props.chainInfo?.chain_info}
+              chainInfo={props.chainInfo}
               currentAccount={currentAccount}
               currentWallet={props.currentWallet}
               stakingBalances={props.stakingBalances}
@@ -345,11 +345,7 @@ const WalletActions = (props: {
               currentAccountId={props.currentAccountId}
               delegationBalances={props.delegationBalances}
               currentWallet={props.currentWallet}
-              empty_consensus_reward_maturity_block_count={
-                props.chainInfo?.empty_consensus_reward_maturity_block_count
-                  ? props.chainInfo?.empty_consensus_reward_maturity_block_count
-                  : 0
-              }
+              empty_consensus_reward_maturity_block_count={0}
             />
           )}
           {props.activeTab === "console" && (

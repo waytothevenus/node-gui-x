@@ -18,6 +18,7 @@
         "height": 719,
         "resizable": false,
         "maximizable": false,
+        "closable": true,
         "fullscreen": false,
         "theme": "Light"
       }

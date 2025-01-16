@@ -21,10 +21,8 @@ node_modules/
 
 dist/
 
-*.lock
+**/gen/schemas/
 
-#exclude env
-# exclude env
 #exclude env
 .env
 

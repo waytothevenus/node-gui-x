@@ -47,12 +47,6 @@ const Send = (props: {
     props.setLoadingMessage("Confirming transaction. Please wait.");
     props.setIsLoading(true);
     try {
-      await invoke("submit_transaction_wrapper", {
-        request: {
-          wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info,
-        },
-      });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
         if (result === props.walletId) {
@@ -62,6 +56,12 @@ const Send = (props: {
         }
         unsubscribe();
         props.setIsLoading(false);
+      });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
       });
     } catch (error) {
       notify(new String(error).toString(), "error");

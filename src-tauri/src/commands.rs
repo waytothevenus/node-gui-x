@@ -119,11 +119,15 @@ pub async fn listen_backend_events(
 
 fn emit_event_or_error<T>(app_handle: &AppHandle, event_name: &str, r: Result<T, BackendError>)
 where
-    T: serde::Serialize + Clone,
+    T: serde::Serialize + Clone + std::fmt::Debug,
 {
     match r {
         Ok(data) => {
-            app_handle.emit(event_name, data).expect("Failed to emit backend event");
+            app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
+            println!(
+                "Event emitted, event name: {}, data: {:?}",
+                event_name, data
+            );
         }
         Err(e) => {
             app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
@@ -164,6 +168,7 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
             emit_event_or_error(app_handle, "UpdateEncryption", msg);
         }
         BackendEvent::CloseWallet(msg) => {
+            println!("CloseWallet event emitted, {:?}", msg);
             emit_event_or_error(app_handle, "CloseWallet", Ok(msg));
         }
         BackendEvent::NewAccount(msg) => {

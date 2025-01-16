@@ -30,6 +30,7 @@ import {
   BalanceType,
   ChainInfoType,
   DelegationBalancesType,
+  InitNodeType,
   P2p,
   PeerConnected,
   PoolInfoType,
@@ -56,7 +57,7 @@ function Home() {
   const [currentWallet, setCurrentWallet] = useState<WalletInfo | undefined>(
     walletsInfo?.[0]
   );
-  const [chainInfo, setChainInfo] = useState<ChainInfoType | undefined>();
+  const [chainInfo, setChainInfo] = useState<InitNodeType | undefined>();
   const [p2pInfo, setP2pInfo] = useState<PeerConnected["PeerConnected"][]>([]);
   const [currentTab, setCurrentTab] = useState("summary");
   const [activeTab, setActiveTab] = useState("transactions");
@@ -101,7 +102,7 @@ function Home() {
     const init_node = async () => {
       try {
         if (netMode !== "" && walletMode !== "") {
-          const result: ChainInfoType = await invoke("initialize_node", {
+          const result: InitNodeType = await invoke("initialize_node", {
             network: netMode,
             mode: walletMode,
           });
@@ -269,7 +270,21 @@ function Home() {
     try {
       const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
+<<<<<<< HEAD
         setChainInfo(newChainInfo);
+=======
+        console.log("chain info is: ", newChainInfo);
+        setChainInfo((currentChainInfo) => {
+          if (currentChainInfo) {
+            return {
+              chain_info: newChainInfo,
+              empty_consensus_reward_maturity_block_count:
+                currentChainInfo?.empty_consensus_reward_maturity_block_count,
+            } as InitNodeType;
+          }
+        });
+        return unsubscribe;
+>>>>>>> 567f897 (fix(frontend): fix issue in maturity period in delegation page)
       });
       return unsubscribe;
     } catch (error) {
@@ -1082,7 +1097,10 @@ function Home() {
                     </button>
                   </div>
                   {currentTab === "summary" && (
-                    <SummaryTab network={netMode} chainInfo={chainInfo} />
+                    <SummaryTab
+                      network={netMode}
+                      chainInfo={chainInfo?.chain_info}
+                    />
                   )}
                   {currentTab === "network" && (
                     <NetworkingTab peerInfo={p2pInfo} />

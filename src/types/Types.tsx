@@ -113,17 +113,19 @@ export type ToggleStakingResultType = {
 };
 
 export type ChainInfoType = {
-  chain_info: {
-    best_block_height: number;
-    best_block_id: string;
-    best_block_timestamp: {
-      timestamp: number;
-    };
-    median_time: {
-      timestamp: number;
-    };
-    is_initial_block_download: boolean;
+  best_block_height: number;
+  best_block_id: string;
+  best_block_timestamp: {
+    timestamp: number;
   };
+  median_time: {
+    timestamp: number;
+  };
+  is_initial_block_download: boolean;
+};
+
+export type InitNodeType = {
+  chain_info: ChainInfoType;
   empty_consensus_reward_maturity_block_count: number;
 };
 
@@ -284,7 +286,7 @@ type Print = {
   Print: string;
 };
 
-type ClearScrean = string;
+type ClearScreen = string;
 type PrintHistory = string;
 type ClearHistory = string;
 type Exit = string;
@@ -292,7 +294,7 @@ type Exit = string;
 // Define the ConsoleCommand type as a union of all possible command types
 export type ConsoleCommand =
   | Print
-  | ClearScrean
+  | ClearScreen
   | PrintHistory
   | ClearHistory
   | Exit

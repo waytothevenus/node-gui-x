@@ -14,19 +14,25 @@
 # VSCode
 .vscode/
 
-#exclude python env
+# exclude python env
 env/
 
+# Node.js dependencies
 node_modules/
 
+# Vite build output
 dist/
 
+<<<<<<< HEAD
 *.lock
 
 #exclude env
+=======
+# exclude env
+>>>>>>> a0daebd (fix(frontend): modify gitignore file to remove dist folder in git)
 .env
 
-#package lock file
+# package lock file
 yarn.lock
 
 # Test Python cache

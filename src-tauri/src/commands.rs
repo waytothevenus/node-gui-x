@@ -124,11 +124,7 @@ where
     match r {
         Ok(data) => {
             app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
-            println!(
-                "Event emitted, event name: {}, data: {:?}",
-                event_name, data
-            );
-        }
+                  }
         Err(e) => {
             app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
         }
@@ -168,7 +164,6 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
             emit_event_or_error(app_handle, "UpdateEncryption", msg);
         }
         BackendEvent::CloseWallet(msg) => {
-            println!("CloseWallet event emitted, {:?}", msg);
             emit_event_or_error(app_handle, "CloseWallet", Ok(msg));
         }
         BackendEvent::NewAccount(msg) => {
@@ -179,14 +174,11 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
         }
         BackendEvent::ConsoleResponse(_, _, result) => match result {
             Ok(console_result) => {
-                println!("ConsoleResponse is {:?}", console_result);
                 app_handle
                     .emit("ConsoleResponse", console_result)
                     .expect("Failed to emit backend event");
             }
             Err(e) => {
-                println!("ConsoleResponse is {:?}", e.to_string());
-
                 app_handle
                     .emit("ConsoleResponse", e.to_string())
                     .expect("Failed to emit backend event");

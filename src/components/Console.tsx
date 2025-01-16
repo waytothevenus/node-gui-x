@@ -34,11 +34,9 @@ const Console = (props: {
 
   const handleSendCommand = async () => {
     try {
-      console.log("handleSendCommand is called");
       const unsubscribe = await listen("ConsoleResponse", (event) => {
         setCommandHistory((history) => [...history, command]);
         const consoleResult = event.payload as ConsoleCommand;
-        console.log("console response is: ", event.payload);
         if (typeof consoleResult === "string") {
           setText((text) => text + "\n" + command + "\n" + consoleResult);
         } else if ("ClearScreen" in consoleResult) {

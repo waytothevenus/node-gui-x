@@ -20,7 +20,13 @@ use std::{
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use common::{address::Address, chain::ChainConfig, time_getter::TimeGetter};
+use chainstate::ChainInfo;
+use common::{
+    address::Address,
+    chain::ChainConfig,
+    primitives::{BlockCount, BlockHeight},
+    time_getter::TimeGetter,
+};
 use node_gui_backend::{
     error::BackendError,
     messages::{
@@ -32,7 +38,7 @@ use node_gui_backend::{
 use node_gui_backend::{ImportOrCreate, InitNetwork, WalletMode};
 use wallet_types::wallet_type::WalletType;
 
-use crate::{result::InitializationResult, AppState};
+use crate::AppState;
 
 use super::request::{
     ConsoleRequest, DecommissionStakingPoolRequest, DelegationCreateRequest, NewAccountRequest,
@@ -51,7 +57,7 @@ pub async fn initialize_node(
     state: State<'_, Mutex<AppState>>,
     network: &str,
     mode: &str,
-) -> Result<InitializationResult, String> {
+) -> Result<ChainInfo, String> {
     let net_type = match network {
         "Mainnet" => InitNetwork::Mainnet,
         "Testnet" => InitNetwork::Testnet,
@@ -74,7 +80,9 @@ pub async fn initialize_node(
 
     let mut app_state = state.lock().expect("Failed to acquire the lock on the state");
     app_state.backend_sender = Some(backend_controls.backend_sender);
+    app_state.chain_config = Some(backend_controls.initialized_node.chain_config.clone());
 
+    // TODO: reconsider if the task should be joined
     tokio::spawn(listen_backend_events(
         app_state.app_handle.clone(),
         backend_controls.initialized_node.chain_config.clone(),
@@ -82,18 +90,10 @@ pub async fn initialize_node(
         backend_controls.low_priority_backend_receiver,
     ));
 
-    Ok(InitializationResult::new(
-        backend_controls.initialized_node.chain_info.clone(),
-        backend_controls
-            .initialized_node
-            .chain_config
-            .staking_pool_spend_maturity_block_count(
-                backend_controls.initialized_node.chain_info.best_block_height,
-            ),
-    ))
+    Ok(backend_controls.initialized_node.chain_info)
 }
 
-pub async fn listen_backend_events(
+async fn listen_backend_events(
     app_handle: AppHandle,
     chain_config: Arc<ChainConfig>,
     mut backend_receiver: UnboundedReceiver<BackendEvent>,
@@ -117,17 +117,26 @@ pub async fn listen_backend_events(
     }
 }
 
+#[tauri::command]
+pub async fn get_stake_pool_maturity_distance(
+    state: tauri::State<'_, Mutex<AppState>>,
+    best_block_height: BlockHeight,
+) -> Result<BlockCount, String> {
+    let state = state.lock().expect("Failed to acquire the lock on the state");
+
+    Ok(state
+        .chain_config
+        .as_ref()
+        .expect("must be initialized")
+        .staking_pool_spend_maturity_block_count(best_block_height))
+}
+
 fn emit_event_or_error<T>(app_handle: &AppHandle, event_name: &str, r: Result<T, BackendError>)
 where
     T: serde::Serialize + Clone + std::fmt::Debug,
 {
     match r {
         Ok(data) => {
-            println!(
-                "Event emitted, event name: {}, data:{:?}",
-                event_name,
-                data.clone()
-            );
             app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
         }
         Err(e) => {

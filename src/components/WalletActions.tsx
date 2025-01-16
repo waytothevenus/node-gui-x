@@ -11,8 +11,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { notify } from "../utils/util";
 import {
   AccountType,
-  ChainInfoType,
   DelegationBalancesType,
+  InitNodeType,
   StakingBalancesType,
   WalletInfo,
 } from "../types/Types";
@@ -28,7 +28,7 @@ const WalletActions = (props: {
   delegationBalances: DelegationBalancesType[];
   activeTab: string;
   currentAccountId: number;
-  chainInfo: ChainInfoType | undefined;
+  chainInfo: InitNodeType | undefined;
   handleUpdateCurrentAccount: (
     wallet_id: number,
     account_id: number,
@@ -398,7 +398,7 @@ const WalletActions = (props: {
           setIsLoading={props.setIsLoading}
           loadingMessage={props.loadingMessage}
           setLoadingMessage={props.setLoadingMessage}
-          chainInfo={props.chainInfo}
+          chainInfo={props.chainInfo?.chain_info}
           currentAccount={props.currentAccount}
           currentWallet={props.currentWallet}
           stakingBalances={props.stakingBalances}

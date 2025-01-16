@@ -13,7 +13,7 @@ const SummaryTab = (props: {
       <table className="w-[100%] order border-gray-200 shadow">
         <tbody className="rounded-lg">
           <tr key="network" className="border-b">
-            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
+            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Network
             </td>
             <td className="py-2 px-4 font-semibold text-gray-600">
@@ -21,15 +21,15 @@ const SummaryTab = (props: {
             </td>
           </tr>
           <tr key="bestblockid" className="border-b">
-            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
+            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 ">
               Best Block ID
             </td>
-            <td className="py-2 px-4 font-semibold text-gray-600 w-10">
+            <td className="py-2 px-4 font-semibold text-gray-600 w-[85%] overflow-hidden whitespace-nowrap text-ellipsis">
               {props.chainInfo?.best_block_id}
             </td>
           </tr>
           <tr key="bestblockheight" className="border-b">
-            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
+            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Best Block Height
             </td>
             <td className="py-2 px-4 font-semibold text-gray-600">
@@ -37,7 +37,7 @@ const SummaryTab = (props: {
             </td>
           </tr>
           <tr key="bestblocktimestamp" className="border-b">
-            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300 w-1/2">
+            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Best Block Timestamp (GMT)
             </td>
             <td className="py-2 px-4 font-semibold text-gray-600">

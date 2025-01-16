@@ -242,8 +242,8 @@ function Home() {
             prevP2pInfo.filter((peer) => peer.id !== peerId)
           );
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up p2p event listener", "error");
     }
@@ -258,8 +258,8 @@ function Home() {
           notify(errorMessage[1], "error");
         }
         setLoading(false);
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up  error listener", "error");
       setLoading(false);
@@ -270,10 +270,6 @@ function Home() {
     try {
       const unsubscribe = await listen("ChainInfo", (event) => {
         const newChainInfo = event.payload as ChainInfoType;
-<<<<<<< HEAD
-        setChainInfo(newChainInfo);
-=======
-        console.log("chain info is: ", newChainInfo);
         setChainInfo((currentChainInfo) => {
           if (currentChainInfo) {
             return {
@@ -283,10 +279,8 @@ function Home() {
             } as InitNodeType;
           }
         });
-        return unsubscribe;
->>>>>>> 567f897 (fix(frontend): fix issue in maturity period in delegation page)
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up chain state listener", "error");
     }
@@ -310,7 +304,6 @@ function Home() {
               if (wallet.wallet_id === newBalances.wallet_id) {
                 const accounts = { ...wallet.accounts };
                 const account = accounts[newBalances.account_id];
-
                 if (
                   account &&
                   !_.isEqual(account.balance, newBalances.balance)
@@ -328,13 +321,12 @@ function Home() {
                   accounts: accounts,
                 };
               }
-              return wallet; // Return the wallet unchanged if no match
+              return wallet;
             });
           });
         }
+        unsubscribe();
       });
-
-      return unsubscribe; // Return unsubscribe function to caller
     } catch (error) {
       notify("Error setting up balance listener", "error");
     }
@@ -365,8 +357,8 @@ function Home() {
             }
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       notify("Error setting up  staking balance listener", "error");
     }
@@ -394,8 +386,8 @@ function Home() {
             }
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       console.error("Error setting up transaction list listener:", error);
     }
@@ -428,8 +420,8 @@ function Home() {
             }
           });
         }
+        unsubscribe();
       });
-      return unsubscribe;
     } catch (error) {
       console.error("Error setting up delegation balance listener:", error);
     }
@@ -458,15 +450,6 @@ function Home() {
         setLoading(true);
 
         try {
-          await invoke("add_create_wallet_wrapper", {
-            request: {
-              file_path: path,
-              mnemonic: mnemonic,
-              import: true,
-              wallet_type: walletMode,
-            },
-          });
-
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
             if (walletInfo) {
@@ -476,6 +459,14 @@ function Home() {
             }
             setLoading(false);
             unsubscribe();
+          });
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: true,
+              wallet_type: walletMode,
+            },
           });
         } catch (invokeError) {
           notify("Error in creating wallet!", "error");
@@ -510,15 +501,6 @@ function Home() {
         setLoading(true);
 
         try {
-          await invoke("add_create_wallet_wrapper", {
-            request: {
-              file_path: path,
-              mnemonic: mnemonic,
-              import: false,
-              wallet_type: walletMode,
-            },
-          });
-
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -528,6 +510,14 @@ function Home() {
             }
             setLoading(false);
             unsubscribe();
+          });
+          await invoke("add_create_wallet_wrapper", {
+            request: {
+              file_path: path,
+              mnemonic: mnemonic,
+              import: false,
+              wallet_type: walletMode,
+            },
           });
         } catch (invokeError) {
           notify("Error in recovering wallet!", "error");
@@ -567,13 +557,6 @@ function Home() {
 
       if (filePath) {
         setLoading(true);
-        await invoke("add_open_wallet_wrapper", {
-          request: {
-            file_path: filePath,
-            wallet_type: walletMode,
-          },
-        });
-
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
 
@@ -584,6 +567,12 @@ function Home() {
 
           setLoading(false);
           unsubscribe();
+        });
+        await invoke("add_open_wallet_wrapper", {
+          request: {
+            file_path: filePath,
+            wallet_type: walletMode,
+          },
         });
       }
     } catch (error) {
@@ -684,12 +673,6 @@ function Home() {
     setLoading(true);
     setLoadingMessage("Creating new account. Please wait.");
     try {
-      await invoke("new_account_wrapper", {
-        request: {
-          name: accountName,
-          wallet_id: currentWalletId,
-        },
-      });
       const unsubscribe = await listen("NewAccount", (event) => {
         const [wallet_id, account_id, account_info] = event.payload as [
           wallet_id: number,
@@ -701,6 +684,12 @@ function Home() {
           notify("Account created successfully!", "success");
         }
         unsubscribe();
+      });
+      await invoke("new_account_wrapper", {
+        request: {
+          name: accountName,
+          wallet_id: currentWalletId,
+        },
       });
     } catch (error) {
       notify(new String(error).toString(), "error");

@@ -35,15 +35,6 @@ const Console = (props: {
   const handleSendCommand = async () => {
     try {
       console.log("handleSendCommand is called");
-      await invoke("handle_console_command_wrapper", {
-        request: {
-          wallet_id: props.currentWallet?.wallet_id
-            ? props.currentWallet?.wallet_id
-            : 0,
-          account_id: props.currentAccountId,
-          command: command,
-        },
-      });
       const unsubscribe = await listen("ConsoleResponse", (event) => {
         setCommandHistory((history) => [...history, command]);
         const consoleResult = event.payload as ConsoleCommand;
@@ -68,9 +59,17 @@ const Console = (props: {
           setText((text) => text + "\n" + JSON.stringify(consoleResult));
         }
         setCommand("");
+        unsubscribe();
       });
-
-      unsubscribe();
+      await invoke("handle_console_command_wrapper", {
+        request: {
+          wallet_id: props.currentWallet?.wallet_id
+            ? props.currentWallet?.wallet_id
+            : 0,
+          account_id: props.currentAccountId,
+          command: command,
+        },
+      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }

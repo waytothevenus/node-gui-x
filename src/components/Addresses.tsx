@@ -22,9 +22,6 @@ const Addresses = (props: {
   const handleAddAddress = async () => {
     try {
       props.setIsLoading(true);
-      await invoke("new_address_wrapper", {
-        request: { wallet_id: props.walletId, account_id: props.accountId },
-      });
       const unsubscribe = await listen("NewAddress", (event) => {
         const newAddress: {
           wallet_id: number;
@@ -47,6 +44,9 @@ const Addresses = (props: {
           notify("New address added", "success");
         }
         unsubscribe();
+      });
+      await invoke("new_address_wrapper", {
+        request: { wallet_id: props.walletId, account_id: props.accountId },
       });
       props.setIsLoading(false);
     } catch (err: any) {

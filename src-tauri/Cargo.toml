@@ -38,6 +38,7 @@ wallet = { git = "https://github.com/mintlayer/mintlayer-core", package = "walle
 wallet-controller = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-controller",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-types = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-types",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }
 wallet-rpc-lib = { git = "https://github.com/mintlayer/mintlayer-core", package = "wallet-rpc-lib",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
+tauri-plugin-process = "2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

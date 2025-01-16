@@ -31,6 +31,7 @@ struct AppState {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             app.manage(Mutex::new(AppState {
                 backend_sender: None,

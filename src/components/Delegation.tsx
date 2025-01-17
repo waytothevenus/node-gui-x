@@ -19,7 +19,7 @@ import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import {
   AccountType,
-  Data,
+  TransactionData,
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
@@ -37,7 +37,7 @@ const Delegation = (props: {
   delegationBalances: DelegationBalancesType[];
   currentWallet: WalletInfo | undefined;
 }) => {
-  const [transactionInfo, setTransactionInfo] = useState<Data>();
+  const [transactionInfo, setTransactionInfo] = useState<TransactionData>();
   const [poolAddress, setPoolAddress] = useState("");
   const [delegationAddress, setDelegationAddress] = useState("");
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -55,7 +55,7 @@ const Delegation = (props: {
     props.setIsLoading(true);
     try {
       const unsubscribe = await listen("DelegateStaking", (event) => {
-        const transactionInfo = event.payload as Data;
+        const transactionInfo = event.payload as TransactionData;
         if (transactionInfo) {
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
@@ -85,7 +85,7 @@ const Delegation = (props: {
     setShowWithdrawModal(false);
     try {
       const unsubscribe = await listen("SendDelegationToAddress", (event) => {
-        const transactionInfo = event.payload as Data;
+        const transactionInfo = event.payload as TransactionData;
         if (transactionInfo) {
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);
@@ -124,7 +124,7 @@ const Delegation = (props: {
     props.setIsLoading(true);
     try {
       const unsubscribe = await listen("CreateDelegation", (event) => {
-        const transactionInfo = event.payload as Data;
+        const transactionInfo = event.payload as TransactionData;
         if (transactionInfo) {
           setTransactionInfo(transactionInfo);
           setShowConfirmTransactionModal(true);

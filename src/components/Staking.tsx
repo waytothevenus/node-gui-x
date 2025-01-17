@@ -22,7 +22,7 @@ import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
-  Data,
+  TransactionData,
   ChainInfoType,
   StakingBalancesType,
 } from "../types/Types";
@@ -52,7 +52,7 @@ const Staking = (props: {
   const [showDecommissionModal, setShowDecommissionModal] = useState(false);
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
-  const [transactionInfo, setTransactionInfo] = useState<Data>();
+  const [transactionInfo, setTransactionInfo] = useState<TransactionData>();
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -107,9 +107,9 @@ const Staking = (props: {
       props.setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       props.setIsLoading(true);
       const unsubscribe = await listen("DecommissionPool", (event) => {
-        const transactionResult = event.payload as Data;
+        const transactionResult = event.payload as TransactionData;
         if (transactionResult) {
-          const transactionResult = event.payload as Data;
+          const transactionResult = event.payload as TransactionData;
           if (transactionResult) {
             setTransactionInfo(transactionResult);
             setShowConfirmTransactionModal(true);
@@ -150,7 +150,7 @@ const Staking = (props: {
       props.setIsLoading(true);
 
       const unsubscribe = await listen("StakeAmount", (event) => {
-        const transactionResult = event.payload as Data;
+        const transactionResult = event.payload as TransactionData;
         if (transactionResult) {
           setTransactionInfo(transactionResult);
           setShowConfirmTransactionModal(true);

@@ -1,3 +1,18 @@
+// Copyright (c) 2024 RBB S.r.l
+// opensource@mintlayer.org
+// SPDX-License-Identifier: MIT
+// Licensed under the MIT License;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://github.com/mintlayer/mintlayer-core/blob/master/LICENSE
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { toast } from "react-toastify";
 import * as blake from "blakejs";
 import { bech32m } from "bech32";
@@ -10,7 +25,6 @@ export const encodeToHash = (data: string) => {
 };
 
 export const encode = (prefix: string, data: ArrayLike<number>) => {
-  // Convert data into a 5-bit word representation
   const words = convertTo5BitWords(data);
   let address = bech32m.encode(prefix, words);
   return address;
@@ -21,7 +35,6 @@ export const encodeToBytesForAddress = (data: string) => {
   if (hexString && hexString[1]) {
     const content = hexString[1];
 
-    // Convert the hex string to a byte array
     const byteArray = new Uint8Array(
       content.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || []
     );
@@ -36,22 +49,20 @@ const convertTo5BitWords = (data: ArrayLike<number>): number[] => {
   let bitAccumulator = 0;
   let bitCount = 0;
 
-  // Convert ArrayLike to an array
-  const byteArray = Array.from(data); // or you can use [...data] if data is iterable
+  const byteArray = Array.from(data);
 
   for (let byte of byteArray) {
     bitAccumulator = (bitAccumulator << 8) | byte;
     bitCount += 8;
 
     while (bitCount >= 5) {
-      words.push(bitAccumulator & 0x1f); // Get the last 5 bits
-      bitAccumulator >>= 5; // Shift right by 5 bits
+      words.push(bitAccumulator & 0x1f);
+      bitAccumulator >>= 5;
       bitCount -= 5;
     }
   }
 
   if (bitCount > 0) {
-    // If there are leftover bits, push them as well
     words.push((bitAccumulator << (5 - bitCount)) & 0x1f);
   }
 

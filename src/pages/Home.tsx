@@ -43,7 +43,6 @@ import {
 } from "../types/Types";
 import WalletActions from "../components/WalletActions";
 import { LogicalPosition } from "@tauri-apps/api/dpi";
-import { LogicalPosition } from "@tauri-apps/api/dpi";
 
 function Home() {
   const location = useLocation();
@@ -59,6 +58,7 @@ function Home() {
         return JSON.parse(saved);
       } catch (e) {
         console.error("Error parsing currentWallet from localStorage", e);
+       
         return [];
       }
     }
@@ -125,10 +125,6 @@ function Home() {
   const [mnemonic, setMnemonic] = useState("");
   const [accountName, setAccountName] = useState("");
   const [stakingBalances, setStakingBalances] = useState<StakingBalancesType[]>(
-    () => {
-      const saved = localStorage.getItem("stakingBalances");
-      return saved ? JSON.parse(saved) : [];
-    }
     () => {
       const saved = localStorage.getItem("stakingBalances");
       return saved ? JSON.parse(saved) : [];
@@ -275,7 +271,6 @@ function Home() {
       setCurrentWallet(walletsInfo[currentWalletId]);
     }
     localStorage.setItem("walletsInfo", JSON.stringify(walletsInfo));
-    localStorage.setItem("walletsInfo", JSON.stringify(walletsInfo));
   }, [walletsInfo]);
 
   useEffect(() => {
@@ -294,9 +289,6 @@ function Home() {
 
       setWalletsInfo((prevWallets) => {
         const updatedWallets = [...prevWallets];
-        if (!_.isEqual(updatedWallets[currentWalletId], currentWallet)) {
-          updatedWallets[currentWalletId] = currentWallet;
-        }
         if (!_.isEqual(updatedWallets[currentWalletId], currentWallet)) {
           updatedWallets[currentWalletId] = currentWallet;
         }
@@ -319,7 +311,6 @@ function Home() {
         if (
           !_.isEqual(prevWallet?.accounts?.[currentAccountId], currentAccount)
         ) {
-          const updatedWallet = {
           const updatedWallet = {
             ...prevWallet,
             accounts: {
@@ -434,7 +425,6 @@ function Home() {
   const balanceEventListener = async () => {
     try {
       const unsubscribe = await listen("Balance", (event) => {
-      const unsubscribe = await listen("Balance", (event) => {
         const newBalances = event.payload as {
           wallet_id: number;
           account_id: number;
@@ -473,7 +463,6 @@ function Home() {
       });
       return unsubscribe;
     } catch (error) {
-      notify("Error setting up balance listener", "error");
       notify("Error setting up balance listener", "error");
     }
   };
@@ -643,7 +632,6 @@ function Home() {
     } catch (error) {
       console.error(error);
       setMnemonic("Error generating mnemonic. Please try again");
-      setMnemonic("Error generating mnemonic. Please try again");
     }
   };
 
@@ -652,7 +640,6 @@ function Home() {
     try {
       const path = await save({
         defaultPath: "key.dat",
-        filters: [{ name: "Key files", extensions: [] }],
         filters: [{ name: "Key files", extensions: [] }],
       });
 
@@ -674,16 +661,7 @@ function Home() {
               wallet_type: walletMode,
             },
           });
-          await invoke("add_create_wallet_wrapper", {
-            request: {
-              file_path: path,
-              mnemonic: mnemonic,
-              import: true,
-              wallet_type: walletMode,
-            },
-          });
         } catch (invokeError) {
-          notify("Error in creating wallet!", "error");
           notify("Error in creating wallet!", "error");
           console.error(
             "Error during invoke:",
@@ -710,7 +688,6 @@ function Home() {
       const path = await save({
         defaultPath: "key.dat",
         filters: [{ name: "Key files", extensions: [] }],
-        filters: [{ name: "Key files", extensions: [] }],
       });
 
       if (path) {
@@ -735,16 +712,7 @@ function Home() {
               wallet_type: walletMode,
             },
           });
-          await invoke("add_create_wallet_wrapper", {
-            request: {
-              file_path: path,
-              mnemonic: mnemonic,
-              import: false,
-              wallet_type: walletMode,
-            },
-          });
         } catch (invokeError) {
-          notify("Error in recovering wallet!", "error");
           notify("Error in recovering wallet!", "error");
           console.error(
             "Error during invoke:",
@@ -775,7 +743,6 @@ function Home() {
           {
             name: "Key file",
             extensions: [],
-            extensions: [],
           },
         ],
       });
@@ -797,12 +764,6 @@ function Home() {
             wallet_type: walletMode,
           },
         });
-        await invoke("add_open_wallet_wrapper", {
-          request: {
-            file_path: filePath,
-            wallet_type: walletMode,
-          },
-        });
       }
     } catch (error) {
       console.error("Error opening wallet:", error);
@@ -816,12 +777,9 @@ function Home() {
       console.error("Error shutting down node", error);
     }
     await appWindow.close();
-    await appWindow.close();
   };
 
   const handleUpdateCurrentAccountAddresses = (
-    wallet_id: number,
-    account_id: number,
     wallet_id: number,
     account_id: number,
     index: string,
@@ -888,7 +846,6 @@ function Home() {
     });
   };
 
-  const addAccount = (accountId: number, accountInfo: AccountType) => {
   const addAccount = (accountId: number, accountInfo: AccountType) => {
     setCurrentWallet(
       (prevWallet) =>
@@ -1047,263 +1004,247 @@ function Home() {
           )}
         </div>
       )}
-      <div className="container page mt-1 pt-1 w-full">
-        <div className="w-full pt-1">
-          <div className="grid grid-cols-12">
-            <div className="col-span-3">
-              <div className="flex flex-col  space-y-4 p-4  rounded w-full overflow-y-auto">
-                <div className="flex justify-center items-center w-[20vw] ">
-                  <img src={MintlayerIcon} alt="sidebar_icon" />
-                </div>
-        <div className="w-full pt-1">
-          <div className="grid grid-cols-12">
-            <div className="col-span-3">
-              <div className="flex flex-col  space-y-4 p-4  rounded w-full overflow-y-auto">
-                <div className="flex justify-center items-center w-[20vw] ">
-                  <img src={MintlayerIcon} alt="sidebar_icon" />
-                </div>
+      <div className="w-full pt-1">
+        <div className="grid grid-cols-12">
+          <div className="col-span-3">
+            <div className="flex flex-col  space-y-4 p-4  rounded w-full overflow-y-auto">
+              <div className="flex justify-center items-center w-[20vw] ">
+                <img src={MintlayerIcon} alt="sidebar_icon" />
+              </div>
 
+              <>
+                <button
+                  onClick={() => createNewWallet()}
+                  className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
+                >
+                  Create New {walletMode} Wallet
+                </button>
+                <button
+                  onClick={() => recoverWallet()}
+                  className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
+                >
+                  Recover {walletMode} Wallet
+                </button>
+                <button
+                  onClick={() => handleOpenWallet()}
+                  className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
+                >
+                  Open {walletMode} Wallet
+                </button>
+                <button
+                  onClick={() => handleExit()}
+                  className="w-full text-[#ff0000] rounded transition border-none py-2 px-1 shadow-none text-left"
+                >
+                  Exit
+                </button>
+                <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />
+              </>
+              {walletsInfo.length !== 0 && (
                 <>
-                  <button
-                    onClick={() => createNewWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Create New {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => recoverWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Recover {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => handleOpenWallet()}
-                    className="w-full text-[#000000] rounded  transition border-none shadow-none text-left py-2 px-1"
-                  >
-                    Open {walletMode} Wallet
-                  </button>
-                  <button
-                    onClick={() => handleExit()}
-                    className="w-full text-[#ff0000] rounded transition border-none py-2 px-1 shadow-none text-left"
-                  >
-                    Exit
-                  </button>
-                  <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />
-                </>
-                {walletsInfo.length !== 0 && (
-                  <>
-                    <div className="relative flex items-center justify-center space-x-2">
-                      <img src={WalletIcon} alt="wallet_ico" />
-                      <select
-                        value={
-                          currentWallet?.wallet_id
-                            ? currentWallet.wallet_id
-                            : ""
-                        }
-                        onChange={(e) => {
-                          setCurrentWallet(
-                            walletsInfo.find(
-                              (wallet) =>
-                                wallet.wallet_id == parseInt(e?.target.value)
-                            )
-                          );
-                          setCurrentWalletId(parseInt(e.target.value));
-                        }}
-                        className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
-                      >
-                        {walletsInfo.map((wallet) => (
-                          <option
-                            key={wallet.wallet_id}
-                            value={wallet.wallet_id}
-                          >
-                            {wallet.path?.substring(
-                              wallet.path?.lastIndexOf("\\") + 1
-                            )}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="relative pl-4 flex items-center justify-center space-x-2">
-                      <button
-                        className="bg-transparent border-noe shadow-none outline-none hover:border-none focused: border-none"
-                        onClick={() => setShowNewAccountModal(true)}
-                      >
-                        <img src={AccountIcon} alt="wallet_ico" />
-                      </button>
-                      <select
-                        onChange={(e) => {
-                          setCurrentAccountId(parseInt(e.target.value));
-                          setCurrentAccount(
-                            Object.values(
-                              currentWallet?.accounts
-                                ? currentWallet.accounts
-                                : {}
-                            )[parseInt(e.target.value)]
-                          );
-                        }}
-                        value={currentAccountId}
-                        className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
-                      >
-                        {Object.entries(
-                          (currentWallet
-                            ? currentWallet
-                            : walletsInfo[currentWalletId]
-                          )?.accounts
-                            ? (currentWallet
-                                ? currentWallet
-                                : walletsInfo[currentWalletId]
-                              ).accounts
-                            : {}
-                        ).map(([index, account]) => (
-                          <option key={index} value={index}>
-                            {account?.name ? account?.name : "Account " + index}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("transactions");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={TransactionIcon} className="pr-2" />
-                        Transactions
-                      </button>
-                    )}
+                  <div className="relative flex items-center justify-center space-x-2">
+                    <img src={WalletIcon} alt="wallet_ico" />
+                    <select
+                      value={
+                        currentWallet?.wallet_id ? currentWallet.wallet_id : ""
+                      }
+                      onChange={(e) => {
+                        setCurrentWallet(
+                          walletsInfo.find(
+                            (wallet) =>
+                              wallet.wallet_id == parseInt(e?.target.value)
+                          )
+                        );
+                        setCurrentWalletId(parseInt(e.target.value));
+                      }}
+                      className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
+                    >
+                      {walletsInfo.map((wallet) => (
+                        <option key={wallet.wallet_id} value={wallet.wallet_id}>
+                          {wallet.path?.substring(
+                            wallet.path?.lastIndexOf("\\") + 1
+                          )}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="relative pl-4 flex items-center justify-center space-x-2">
+                    <button
+                      className="bg-transparent border-noe shadow-none outline-none hover:border-none focused: border-none"
+                      onClick={() => setShowNewAccountModal(true)}
+                    >
+                      <img src={AccountIcon} alt="wallet_ico" />
+                    </button>
+                    <select
+                      onChange={(e) => {
+                        setCurrentAccountId(parseInt(e.target.value));
+                        setCurrentAccount(
+                          Object.values(
+                            currentWallet?.accounts
+                              ? currentWallet.accounts
+                              : {}
+                          )[parseInt(e.target.value)]
+                        );
+                      }}
+                      value={currentAccountId}
+                      className="block w-[16vw] bg-white px-2 border-gray-300 text-gray-700 py-2  rounded-lg shadow-sm focus:outline-none  "
+                    >
+                      {Object.entries(
+                        (currentWallet
+                          ? currentWallet
+                          : walletsInfo[currentWalletId]
+                        )?.accounts
+                          ? (currentWallet
+                              ? currentWallet
+                              : walletsInfo[currentWalletId]
+                            ).accounts
+                          : {}
+                      ).map(([index, account]) => (
+                        <option key={index} value={index}>
+                          {account?.name ? account?.name : "Account " + index}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {walletMode === "Hot" && (
                     <button
                       onClick={() => {
                         setCurrentTab("transactions");
-                        setActiveTab("addresses");
+                        setActiveTab("transactions");
                       }}
                       className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                     >
-                      <img src={AddressIcon} className="pr-2" />
-                      Addresses
+                      <img src={TransactionIcon} className="pr-2" />
+                      Transactions
                     </button>
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("send");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={SendIcon} className="pr-2" />
-                        Send
-                      </button>
-                    )}
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("staking");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={StakingIcon} className="pr-2" />
-                        Staking
-                      </button>
-                    )}
-                    {walletMode === "Hot" && (
-                      <button
-                        onClick={() => {
-                          setCurrentTab("transactions");
-                          setActiveTab("delegation");
-                        }}
-                        className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
-                      >
-                        <img src={DelegationIcon} className="pr-2" />
-                        Delegation
-                      </button>
-                    )}
+                  )}
+                  <button
+                    onClick={() => {
+                      setCurrentTab("transactions");
+                      setActiveTab("addresses");
+                    }}
+                    className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                  >
+                    <img src={AddressIcon} className="pr-2" />
+                    Addresses
+                  </button>
+                  {walletMode === "Hot" && (
                     <button
                       onClick={() => {
                         setCurrentTab("transactions");
-                        setActiveTab("console");
+                        setActiveTab("send");
                       }}
                       className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
                     >
-                      <img src={ConsoleIcon} className="pr-2" />
-                      Console
+                      <img src={SendIcon} className="pr-2" />
+                      Send
                     </button>
-                    {showProgressBar && chainInfo && (
-                      <div className="w-full bg-neutral-200 dark:bg-neutral-600">
-                        <div
-                          className={`bg-primary p-0.5 text-center text-xs font-medium leading-none text-primary-100 width: ${
-                            progress / chainInfo?.best_block_height
-                          }`}
-                        >
-                          {progress.toString() +
-                            " / " +
-                            chainInfo.best_block_height.toString()}
-                        </div>
+                  )}
+                  {walletMode === "Hot" && (
+                    <button
+                      onClick={() => {
+                        setCurrentTab("transactions");
+                        setActiveTab("staking");
+                      }}
+                      className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                    >
+                      <img src={StakingIcon} className="pr-2" />
+                      Staking
+                    </button>
+                  )}
+                  {walletMode === "Hot" && (
+                    <button
+                      onClick={() => {
+                        setCurrentTab("transactions");
+                        setActiveTab("delegation");
+                      }}
+                      className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                    >
+                      <img src={DelegationIcon} className="pr-2" />
+                      Delegation
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setCurrentTab("transactions");
+                      setActiveTab("console");
+                    }}
+                    className="mb-4 py-2 px-2 text-[#000000] rounded text-left items-center flex justify-left translation shadow-none border-none w-full"
+                  >
+                    <img src={ConsoleIcon} className="pr-2" />
+                    Console
+                  </button>
+                  {showProgressBar && chainInfo && (
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-600">
+                      <div
+                        className={`bg-primary p-0.5 text-center text-xs font-medium leading-none text-primary-100 width: ${
+                          progress / chainInfo?.best_block_height
+                        }`}
+                      >
+                        {progress.toString() +
+                          " / " +
+                          chainInfo.best_block_height.toString()}
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            <div className="col-span-9 ">
-              <div className="bg-[#F3F4F6] h-full">
-                <div className="flex p-8">
-                  <button
-                    onClick={() => setCurrentTab("summary")}
-                    className={`flex items-center justify-center w-full pl-2  transition-colors duration-300 rounded-tr-[0] rounded-br-[0] ${
-                      currentTab === "summary"
-                        ? "bg-gray-200 text-gray-800"
-                        : "bg-white-500 text-black"
-                    }`}
-                  >
-                    <RiInformation2Line />
-                    <span className="pl-2">Summary</span>
-                  </button>
-                  <button
-                    onClick={() => setCurrentTab("network")}
-                    className={`flex items-center justify-center w-full p-2 transition-colors duration-300 rounded-tl-[0] rounded-bl-[0] ${
-                      currentTab === "network"
-                        ? "bg-gray-200 text-gray-800"
-                        : "bg-white-500 text-black"
-                    }`}
-                  >
-                    <PiShareNetworkBold />
-                    <span className="pl-2">Networking</span>
-                  </button>
-                </div>
-                {currentTab === "summary" && (
-                  <SummaryTab network={netMode} chainInfo={chainInfo} />
-                )}
-                {currentTab === "network" && (
-                  <NetworkingTab peerInfo={p2pInfo} />
-                )}
-                {currentTab === "transactions" && (
-                  <WalletActions
-                    netMode={netMode}
-                    isLoading={loading}
-                    setIsLoading={setLoading}
-                    loadingMessage={loadingMessage}
-                    setLoadingMessage={setLoadingMessage}
-                    currentWallet={currentWallet}
-                    currentAccount={currentAccount}
-                    stakingBalances={stakingBalances}
-                    delegationBalances={delegationBalances}
-                    currentAccountId={currentAccountId}
-                    chainInfo={chainInfo}
-                    activeTab={activeTab}
-                    maturityPeriod={maturityPeriod}
-                    handleUpdateCurrentAccount={
-                      handleUpdateCurrentAccountAddresses
-                    }
-                    handleUpdateCurrentWalletEncryptionState={
-                      handleUpdateCurrentWalletEncryptionState
-                    }
-                    handleUpdateStakingState={handleUpdateStakingState}
-                    handleRemoveWallet={handleRemoveWallet}
-                  />
-                )}
+          </div>
+          <div className="col-span-9 ">
+            <div className="bg-[#F3F4F6] h-full">
+              <div className="flex p-8">
+                <button
+                  onClick={() => setCurrentTab("summary")}
+                  className={`flex items-center justify-center w-full pl-2  transition-colors duration-300 rounded-tr-[0] rounded-br-[0] ${
+                    currentTab === "summary"
+                      ? "bg-gray-200 text-gray-800"
+                      : "bg-white-500 text-black"
+                  }`}
+                >
+                  <RiInformation2Line />
+                  <span className="pl-2">Summary</span>
+                </button>
+                <button
+                  onClick={() => setCurrentTab("network")}
+                  className={`flex items-center justify-center w-full p-2 transition-colors duration-300 rounded-tl-[0] rounded-bl-[0] ${
+                    currentTab === "network"
+                      ? "bg-gray-200 text-gray-800"
+                      : "bg-white-500 text-black"
+                  }`}
+                >
+                  <PiShareNetworkBold />
+                  <span className="pl-2">Networking</span>
+                </button>
               </div>
+              {currentTab === "summary" && (
+                <SummaryTab network={netMode} chainInfo={chainInfo} />
+              )}
+              {currentTab === "network" && <NetworkingTab peerInfo={p2pInfo} />}
+              {currentTab === "transactions" && (
+                <WalletActions
+                  netMode={netMode}
+                  isLoading={loading}
+                  setIsLoading={setLoading}
+                  loadingMessage={loadingMessage}
+                  setLoadingMessage={setLoadingMessage}
+                  currentWallet={currentWallet}
+                  currentAccount={currentAccount}
+                  stakingBalances={stakingBalances}
+                  delegationBalances={delegationBalances}
+                  currentAccountId={currentAccountId}
+                  chainInfo={chainInfo}
+                  activeTab={activeTab}
+                  maturityPeriod={maturityPeriod}
+                  handleUpdateCurrentAccount={
+                    handleUpdateCurrentAccountAddresses
+                  }
+                  handleUpdateCurrentWalletEncryptionState={
+                    handleUpdateCurrentWalletEncryptionState
+                  }
+                  handleUpdateStakingState={handleUpdateStakingState}
+                  handleRemoveWallet={handleRemoveWallet}
+                />
+              )}
             </div>
           </div>
         </div>

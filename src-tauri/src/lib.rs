@@ -13,53 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use common::chain::ChainConfig;
-use node_gui_backend::BackendSender;
-use tauri::Manager;
-
 mod commands;
 mod request;
 mod result;
-<<<<<<< HEAD
+
+use node_gui_backend::BackendSender;
+
+use tauri::Manager;
 
 struct AppState {
     backend_sender: Option<BackendSender>,
     chain_config: Option<Arc<ChainConfig>>,
     app_handle: tauri::AppHandle,
-=======
-use common::time_getter::TimeGetter;
-use node_gui_backend::messages::{
-    BackendEvent, BackendRequest, CreateDelegationRequest, DecommissionPoolRequest,
-    DelegateStakingRequest, EncryptionAction, SendDelegateToAddressRequest, SendRequest,
-    StakeRequest, WalletId,
-};
-use node_gui_backend::{BackendSender, ImportOrCreate, InitNetwork, WalletMode};
-use request::{
-    ConsoleRequest, DecommissionStakingPoolRequest, DelegationCreateRequest, NewAccountRequest,
-    NewAddressRequest, OpenCreateWalletRequest, OpenWalletRequest, SendAmountRequest,
-    SendDelegateRequest, StakeAmountRequest, StakingDelegateRequest, SubmitTransactionRequest,
-    ToggleStakingRequest, UpdateEncryptionRequest,
-};
-use result::{
-    BalanceResult, DelegateStakingResult, DelegationsBalanceResult, StakingBalanceResult,
-    TransactionListResult, TransactionResult, WalletBestBlockResult,
-};
-use std::collections::BTreeMap;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Emitter, Manager, State};
-use tokio::sync::mpsc::UnboundedReceiver;
-use wallet_types::wallet_type::WalletType;
-=======
->>>>>>> 981c87b (fix(backend): apply patch result)
-
-struct AppState {
-    backend_sender: Option<BackendSender>,
-    chain_config: Option<Arc<ChainConfig>>,
-    app_handle: tauri::AppHandle,
->>>>>>> 981c87b (fix(backend): apply patch result)
 }
 
 pub fn run() {

@@ -1,6 +1,6 @@
 export type RpcAmountOutType = {
-  atoms: number;
-  decimal: number;
+  atoms: string;
+  decimal: string;
 };
 
 export type RpcAddressType = {
@@ -124,6 +124,8 @@ export type ChainInfoType = {
   is_initial_block_download: boolean;
 };
 
+
+
 export type PeerDisconnected = {
   P2p: {
     PeerDisConnected: number;
@@ -149,10 +151,10 @@ export type P2p = PeerConnected | PeerDisconnected;
 
 export type Transaction = {
   V1: {
-    version: number | null; // Assuming version can be a number or null
-    flags: number; // Assuming flags is a number
-    inputs: Input[]; // Array of Input objects
-    outputs: Output[]; // Array of Output objects
+    version: number | null; 
+    flags: number; 
+    inputs: Input[]; 
+    outputs: Output[];
   };
 };
 
@@ -169,9 +171,9 @@ export type Account = {
 export type Utxo = {
   Utxo: {
     id: {
-      Transaction: string; // Transaction ID as a string
+      Transaction: string; 
     };
-    index: number; // Index as a number
+    index: number; 
   };
 };
 
@@ -256,7 +258,7 @@ export type Signature = {
   };
 };
 
-export type Data = {
+export type TransactionData = {
   transaction_info: {
     wallet_id: number;
     tx: { tx: string };
@@ -281,15 +283,14 @@ type Print = {
   Print: string;
 };
 
-type ClearScrean = string;
+type ClearScreen = string;
 type PrintHistory = string;
 type ClearHistory = string;
 type Exit = string;
 
-// Define the ConsoleCommand type as a union of all possible command types
 export type ConsoleCommand =
   | Print
-  | ClearScrean
+  | ClearScreen
   | PrintHistory
   | ClearHistory
   | Exit

@@ -1,0 +1,21 @@
+[package]
+name = "storage"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+common = { path = "../common" }
+serialization = { path = "../serialization" }
+storage-core = { path = "core" }
+utils = { path = "../utils" }
+
+[dev-dependencies]
+storage-inmemory = { path = "inmemory" }
+test-utils = { path = "../test-utils" }
+
+rstest.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(loom)'] }

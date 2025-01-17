@@ -1,3 +1,18 @@
+// Copyright (c) 2024 RBB S.r.l
+// opensource@mintlayer.org
+// SPDX-License-Identifier: MIT
+// Licensed under the MIT License;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://github.com/mintlayer/node-gui-x/blob/master/LICENSE
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -7,7 +22,7 @@ import { encodeToHash, notify, DECIMAL } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
-  Data,
+  TransactionData,
   ChainInfoType,
   StakingBalancesType,
 } from "../types/Types";
@@ -15,7 +30,10 @@ import {
 const Staking = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   chainInfo: ChainInfoType | undefined;
+  maturityPeriod: number;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
   stakingBalances: StakingBalancesType[];
@@ -34,27 +52,18 @@ const Staking = (props: {
   const [showDecommissionModal, setShowDecommissionModal] = useState(false);
   const [poolAddress, setPoolAddress] = useState("");
   const [receiveAddress, setReceiveAddress] = useState("");
-  const [transactionInfo, setTransactionInfo] = useState<Data>();
-  const [loadingMessage, setLoadingMessage] = useState("");
+  const [transactionInfo, setTransactionInfo] = useState<TransactionData>();
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleToggleStaking = async () => {
     try {
-      setLoadingMessage(
+      props.setLoadingMessage(
         isStakingStarted
           ? "Stopping Staking. Please wait."
           : "Starting Staking, Please wait."
       );
       props.setIsLoading(true);
-      await invoke("toggle_stakig_wrapper", {
-        request: {
-          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0,
-          enabled: !isStakingStarted,
-        },
-      });
-
       const unsubscribe = await listen("ToggleStaking", (event) => {
         if (Array.isArray(event.payload)) {
           const [wallet_id, account_id, enabled] = event.payload;
@@ -70,6 +79,22 @@ const Staking = (props: {
         }
         unsubscribe();
       });
+      await invoke("toggle_staking_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
+      await invoke("toggle_staking_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          enabled: !isStakingStarted,
+        },
+      });
+
       props.setIsLoading(false);
     } catch (error) {
       const errorMessage = new String(error);
@@ -79,8 +104,19 @@ const Staking = (props: {
   };
   const handleDecommissionStaking = async () => {
     try {
-      setLoadingMessage("Decommissioning Staking Pool. Please wait.");
+      props.setLoadingMessage("Decommissioning Staking Pool. Please wait.");
       props.setIsLoading(true);
+      const unsubscribe = await listen("DecommissionPool", (event) => {
+        const transactionResult = event.payload as TransactionData;
+        if (transactionResult) {
+          const transactionResult = event.payload as TransactionData;
+          if (transactionResult) {
+            setTransactionInfo(transactionResult);
+            setShowConfirmTransactionModal(true);
+          }
+        }
+        unsubscribe();
+      });
       await invoke("decommission_pool_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -89,17 +125,13 @@ const Staking = (props: {
           output_address: receiveAddress,
         },
       });
-      const unsubscribe = await listen("DecommissionPool", (event) => {
-        const transactionResult = event.payload as Data;
-        if (transactionResult) {
-          const transactionResult = event.payload as Data;
-          if (transactionResult) {
-            setTransactionInfo(transactionResult);
-            setShowConfirmTransactionModal(true);
-          }
-          unsubscribe();
-        }
-        unsubscribe();
+      await invoke("decommission_pool_wrapper", {
+        request: {
+          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
+          account_id: props.currentAccountId ? props.currentAccountId : 0,
+          pool_id: currentPoolId,
+          output_address: receiveAddress,
+        },
       });
       props.setIsLoading(false);
     } catch (error) {
@@ -114,8 +146,17 @@ const Staking = (props: {
 
   const handleCreateStakingPool = async () => {
     try {
-      setLoadingMessage("Creating Staking Pool. Please wait");
+      props.setLoadingMessage("Creating Staking Pool. Please wait");
       props.setIsLoading(true);
+
+      const unsubscribe = await listen("StakeAmount", (event) => {
+        const transactionResult = event.payload as TransactionData;
+        if (transactionResult) {
+          setTransactionInfo(transactionResult);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("stake_amount_wrapper", {
         request: {
           wallet_id: props.currentWalletId ? props.currentWalletId : 0,
@@ -125,14 +166,6 @@ const Staking = (props: {
           cost_per_block: costPerBlock.toString(),
           decommission_address: decommissionAddress,
         },
-      });
-      const unsubscribe = await listen("StakeAmount", (event) => {
-        const transactionResult = event.payload as Data;
-        if (transactionResult) {
-          setTransactionInfo(transactionResult);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
       });
       props.setIsLoading(false);
     } catch (error) {
@@ -146,14 +179,8 @@ const Staking = (props: {
   };
   const handleConfirmTransaction = async () => {
     try {
-      setLoadingMessage("Confirming transaction. Please wait.");
+      props.setLoadingMessage("Confirming transaction. Please wait.");
       props.setIsLoading(true);
-      await invoke("submit_transaction_wrapper", {
-        request: {
-          wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info,
-        },
-      });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
         if (result === props.currentWallet?.wallet_id) {
@@ -162,6 +189,18 @@ const Staking = (props: {
           setShowSuccessModal(true);
         }
         unsubscribe();
+      });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
+      });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
       });
       props.setIsLoading(false);
     } catch (error) {
@@ -185,14 +224,6 @@ const Staking = (props: {
           -moz-appearance: textfield;
         }
       `}</style>
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">{loadingMessage}</div>
-          </div>
-        </div>
-      )}
       {showDecommissionModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -357,7 +388,7 @@ const Staking = (props: {
                         )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
                     ) / DECIMAL}
-                    {", "}OutpugTimeLock::ForBlockCount(
+                    {", "}OutputTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output
@@ -424,7 +455,7 @@ const Staking = (props: {
           }
           onClick={handleToggleStaking}
         >
-          {isStakingStarted ? "STOP STAKING" : "BEGIN STAKING"}
+          {isStakingStarted ? "STOP STAKING" : "START STAKING"}
         </button>
       </div>
       <p className="text-lg text-start py-8">Staking Pool Summary</p>
@@ -513,7 +544,8 @@ const Staking = (props: {
       </table>
       <p className="text-lg text-start py-8">Create Staking Pool</p>
       <p className="text-start">
-        Maturity period: 2000 blocks (a block takes on averagte 120 seconds)
+        Maturity period: {props.maturityPeriod} blocks (a block takes on average
+        120 seconds)
       </p>
       <div className="container pt-4">
         <p className="text-start">Pledge amount for the new staking pool</p>
@@ -537,7 +569,7 @@ const Staking = (props: {
       </div>
       <div className="container pt-4">
         <p className="text-start">
-          Margin ratio per thousad. The decimal must be in the range [0.0001,
+          Margin ratio per thousand. The decimal must be in the range [0.0001,
           1.000] or [0.1%, 100%]
         </p>
         <input

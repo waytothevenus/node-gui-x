@@ -125,7 +125,7 @@ button {
   white-space: nowrap;
 }
 .loader::after {
-  content: '';
+  content: "";
   width: 5px;
   height: 5px;
   background: currentColor;
@@ -147,5 +147,3 @@ button {
     box-shadow: 10px 0 white, 20px 0 white;
   }
 }
-
-

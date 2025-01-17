@@ -19,13 +19,8 @@ env/
 
 node_modules/
 
-dist/
-
 #exclude env
 .env
-
-#package lock file
-yarn.lock
 
 # Test Python cache
 test/**/__pycache__

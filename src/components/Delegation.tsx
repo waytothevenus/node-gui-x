@@ -1,10 +1,25 @@
+// Copyright (c) 2024 RBB S.r.l
+// opensource@mintlayer.org
+// SPDX-License-Identifier: MIT
+// Licensed under the MIT License;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://github.com/mintlayer/node-gui-x/blob/master/LICENSE
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import {
   AccountType,
-  Data,
+  TransactionData,
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
@@ -14,12 +29,15 @@ import { IoCloseSharp } from "react-icons/io5";
 const Delegation = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   currentAccount: AccountType | undefined;
   currentAccountId: number;
+  maturityPeriod: number;
   delegationBalances: DelegationBalancesType[];
   currentWallet: WalletInfo | undefined;
 }) => {
-  const [transactionInfo, setTransactionInfo] = useState<Data>();
+  const [transactionInfo, setTransactionInfo] = useState<TransactionData>();
   const [poolAddress, setPoolAddress] = useState("");
   const [delegationAddress, setDelegationAddress] = useState("");
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -28,15 +46,22 @@ const Delegation = (props: {
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [currentDelegationId, setCurrentDelegationId] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleDeposit = async () => {
     setShowDepositModal(false);
-    setLoadingMessage("Depositing to delegation. Please wait.");
+    props.setLoadingMessage("Depositing to delegation. Please wait.");
     props.setIsLoading(true);
     try {
+      const unsubscribe = await listen("DelegateStaking", (event) => {
+        const transactionInfo = event.payload as TransactionData;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("delegate_staking_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -47,14 +72,7 @@ const Delegation = (props: {
           delegation_amount: depositAmount.toString(),
         },
       });
-      const unsubscribe = await listen("DelegateStaking", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
-      });
+
       props.setIsLoading(false);
     } catch (error) {
       notify(new String(error).toString(), "error");
@@ -62,10 +80,18 @@ const Delegation = (props: {
     props.setIsLoading(false);
   };
   const handleWithdraw = async () => {
-    setLoadingMessage("Withdrawing from delegation. Please wait.");
+    props.setLoadingMessage("Withdrawing from delegation. Please wait.");
     props.setIsLoading(true);
     setShowWithdrawModal(false);
     try {
+      const unsubscribe = await listen("SendDelegationToAddress", (event) => {
+        const transactionInfo = event.payload as TransactionData;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+        }
+        unsubscribe();
+      });
       await invoke("send_delegation_to_address_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -77,14 +103,6 @@ const Delegation = (props: {
           delegation_id: currentDelegationId,
         },
       });
-      const unsubscribe = await listen("SendDelegationToAddress", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
-      });
     } catch (error) {
       notify(new String(error).toString(), "error");
     }
@@ -93,16 +111,27 @@ const Delegation = (props: {
 
   const handleSelectAllAmount = () => {
     setWithdrawAmount(
-      props.currentAccount?.staking_balance[poolAddress].balance.decimal
-        ? props.currentAccount?.staking_balance[poolAddress].balance.decimal
-        : 0
+      parseInt(
+        props.currentAccount?.staking_balance[poolAddress].balance.decimal
+          ? props.currentAccount?.staking_balance[poolAddress].balance.decimal
+          : "0"
+      )
     );
   };
 
   const handleCreateDelegation = async () => {
-    setLoadingMessage("Creating Delegation. Please wait");
+    props.setLoadingMessage("Creating Delegation. Please wait");
     props.setIsLoading(true);
     try {
+      const unsubscribe = await listen("CreateDelegation", (event) => {
+        const transactionInfo = event.payload as TransactionData;
+        if (transactionInfo) {
+          setTransactionInfo(transactionInfo);
+          setShowConfirmTransactionModal(true);
+          props.setIsLoading(false);
+        }
+        unsubscribe();
+      });
       await invoke("create_delegation_wrapper", {
         request: {
           wallet_id: props.currentWallet?.wallet_id
@@ -113,15 +142,6 @@ const Delegation = (props: {
           delegation_address: delegationAddress,
         },
       });
-      const unsubscribe = await listen("CreateDelegation", (event) => {
-        const transactionInfo = event.payload as Data;
-        if (transactionInfo) {
-          setTransactionInfo(transactionInfo);
-          setShowConfirmTransactionModal(true);
-          props.setIsLoading(false);
-        }
-        unsubscribe();
-      });
     } catch (error) {
       notify(new String(error).toString(), "error");
       props.setIsLoading(false);
@@ -129,15 +149,9 @@ const Delegation = (props: {
   };
 
   const handleConfirmTransaction = async () => {
-    setLoadingMessage("Confirming transaction. Please wait.");
+    props.setLoadingMessage("Confirming transaction. Please wait.");
     props.setIsLoading(true);
     try {
-      await invoke("submit_transaction_wrapper", {
-        request: {
-          wallet_id: transactionInfo?.transaction_info.wallet_id,
-          tx: transactionInfo?.transaction_info,
-        },
-      });
       const unsubscribe = await listen("Broadcast", (event) => {
         const result = event.payload as number;
         if (result === props.currentWallet?.wallet_id) {
@@ -147,6 +161,13 @@ const Delegation = (props: {
         unsubscribe();
         setShowConfirmTransactionModal(false);
       });
+      await invoke("submit_transaction_wrapper", {
+        request: {
+          wallet_id: transactionInfo?.transaction_info.wallet_id,
+          tx: transactionInfo?.transaction_info,
+        },
+      });
+
       props.setIsLoading(false);
     } catch (error) {
       props.setIsLoading(false);
@@ -156,14 +177,6 @@ const Delegation = (props: {
 
   return (
     <div className="container pt-0 p-4 shadow-1">
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">{loadingMessage}</div>
-          </div>
-        </div>
-      )}
       {showConfirmTransactionModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -330,7 +343,7 @@ const Delegation = (props: {
                     {`
                       ${
                         "nonce:" +
-                        "AccountNoce(" +
+                        "AccountNonce(" +
                         transactionInfo.serialized_tx.V1.inputs
                           .find((output) => "Account" in output)
                           ?.Account.nonce?.toString() +
@@ -566,10 +579,30 @@ const Delegation = (props: {
                     </button>
                   </div>
                 </td>
-                <td className="py-2 px-4 border-b border-gray-200">
-                  {pool_id.slice(0, 8)}...
-                  {pool_id.slice(-4)}
-                </td>
+                <div className="flex justify-between space-x-2">
+                  <p>
+                    {pool_id.slice(0, 8)}...
+                    {pool_id.slice(-4)}
+                  </p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(pool_id)}
+                    className="flex items-center justify-center p-0 bg-transparent border-none shadow-none focus:outline-none"
+                  >
+                    <AiOutlineCopy />
+                  </button>
+                </div>
+                <div className="flex justify-between space-x-2">
+                  <p>
+                    {pool_id.slice(0, 8)}...
+                    {pool_id.slice(-4)}
+                  </p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(pool_id)}
+                    className="flex items-center justify-center p-0 bg-transparent border-none shadow-none focus:outline-none"
+                  >
+                    <AiOutlineCopy />
+                  </button>
+                </div>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {parseInt(amount.atoms) / 100000000000}
                 </td>
@@ -591,7 +624,7 @@ const Delegation = (props: {
                     }}
                     className="px-2 py-1 rounded-lg bg-[#69EE96] text-[#000000] hover:text-[#69EE96] hover:bg-black "
                   >
-                    WITHRAW
+                    WITHDRAW
                   </button>
                 </td>
               </tr>
@@ -602,7 +635,8 @@ const Delegation = (props: {
       <hr className="my-12 h-[2px] bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-800" />{" "}
       <h2 className="mt-8 mb-8 text-lg text-start">Create New Delegation</h2>
       <p className="text-start">
-        Maturity period: 2000 blocks (a block takes on averate 120 seconds)
+        Maturity period: {props.maturityPeriod} blocks (a block takes on average
+        120 seconds)
       </p>
       <div className="container pt-8 text-start">
         <p className="pb-2">Pool address for new delegation</p>

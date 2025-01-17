@@ -1,3 +1,18 @@
+// Copyright (c) 2024 RBB S.r.l
+// opensource@mintlayer.org
+// SPDX-License-Identifier: MIT
+// Licensed under the MIT License;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://github.com/mintlayer/node-gui-x/blob/master/LICENSE
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { AiOutlineCopy } from "react-icons/ai";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
@@ -7,6 +22,8 @@ import { notify } from "../utils/util";
 const Addresses = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  loadingMessage: string;
+  setLoadingMessage: (loadingMessage: string) => void;
   addresses: Record<string, string>;
   accountId: number;
   walletId: number;
@@ -20,9 +37,6 @@ const Addresses = (props: {
   const handleAddAddress = async () => {
     try {
       props.setIsLoading(true);
-      await invoke("new_address_wrapper", {
-        request: { wallet_id: props.walletId, account_id: props.accountId },
-      });
       const unsubscribe = await listen("NewAddress", (event) => {
         const newAddress: {
           wallet_id: number;
@@ -46,6 +60,9 @@ const Addresses = (props: {
         }
         unsubscribe();
       });
+      await invoke("new_address_wrapper", {
+        request: { wallet_id: props.walletId, account_id: props.accountId },
+      });
       props.setIsLoading(false);
     } catch (err: any) {
       const regex = /Wallet error: (.+)/;
@@ -58,14 +75,6 @@ const Addresses = (props: {
   };
   return (
     <div className="pt-0">
-      {props.isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-opacity-50 z-10 p-6 max-w-lg mx-auto relative space-y-4">
-            <div className="loader px-10">Adding new address. Please wait.</div>
-          </div>
-        </div>
-      )}
       <table className="w-full border border-gray-200 rounded-lg overflow-hidden shadow">
         <thead className="bg-gray-100 ">
           <tr>
@@ -99,7 +108,7 @@ const Addresses = (props: {
       </table>
       <button
         onClick={handleAddAddress}
-        className=" bottom-8 mb-4 py-1 px-2 w-40 text-[#000000] rounded-lg bg-[#69EE96] text-center items-center flex justify-center translation shadow-none border-none "
+        className="mt-3 bottom-8 mb-4 py-1 px-2 w-40 text-[#000000] rounded-lg bg-[#69EE96] text-center items-center flex justify-center translation shadow-none border-none "
       >
         <img src={AddressIcon} alt="address_icon" className="pr-2" />
         New Address

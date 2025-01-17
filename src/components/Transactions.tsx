@@ -1,5 +1,21 @@
+// Copyright (c) 2024 RBB S.r.l
+// opensource@mintlayer.org
+// SPDX-License-Identifier: MIT
+// Licensed under the MIT License;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://github.com/mintlayer/node-gui-x/blob/master/LICENSE
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { AiOutlineCopy } from "react-icons/ai";
 import { TransactionType } from "../types/Types";
+import { DECIMAL } from "../utils/util";
 
 const Transactions = (props: { transactions: TransactionType | undefined }) => {
   return (
@@ -54,7 +70,9 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                   </div>
                 </td>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {transactionInfo?.timestamp?.timestamp}
+                  {new Date(
+                    transactionInfo?.timestamp?.timestamp * 1000
+                  ).toLocaleString()}
                 </td>
                 {(() => {
                   if ("Redeposit" in transactionInfo.tx_type) {
@@ -98,7 +116,8 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                     const { amount } = transactionInfo.tx_type.Received;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {amount.atoms}
+                        {parseInt(new String(amount.atoms).toString()) /
+                          DECIMAL}
                       </td>
                     );
                   }
@@ -107,7 +126,8 @@ const Transactions = (props: { transactions: TransactionType | undefined }) => {
                     const { amount } = transactionInfo.tx_type.Sent;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {amount.atoms}
+                        {parseInt(new String(amount.atoms).toString()) /
+                          DECIMAL}
                       </td>
                     );
                   }

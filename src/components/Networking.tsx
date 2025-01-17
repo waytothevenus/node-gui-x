@@ -4,7 +4,7 @@ const NetworkingTab = (props: {
   peerInfo: PeerConnected["PeerConnected"][];
 }) => {
   return (
-    <div className="pt-0 mt-8 m-8 rounded-lg bg-white p-8">
+    <div className="pt-0 mt-8 m-8 rounded-lg text-center bg-white p-8">
       <p className="py-10">
         The following is a list of peers connected to your node
       </p>

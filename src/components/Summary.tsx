@@ -5,7 +5,7 @@ const SummaryTab = (props: {
   chainInfo: ChainInfoType | undefined;
 }) => {
   return (
-    <div className="m-8 rounded-lg bg-white p-8">
+    <div className="m-8 rounded-lg bg-white p-8 text-center">
       <p className="py-10">
         The following is a syncing state of your node. In a healthy network, the
         block timestamp should be close to the current wall-clock time.
@@ -13,7 +13,6 @@ const SummaryTab = (props: {
       <table className="w-[100%] order border-gray-200 shadow">
         <tbody className="rounded-lg">
           <tr key="network" className="border-b">
-            <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
             <td className="py-2 px-4 font-semibold text-gray-700 border-r border-gray-300">
               Network
             </td>

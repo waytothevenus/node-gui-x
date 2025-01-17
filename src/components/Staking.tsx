@@ -19,7 +19,6 @@ const Staking = (props: {
   setLoadingMessage: (loadingMessage: string) => void;
   chainInfo: ChainInfoType | undefined;
   maturityPeriod: number;
-  maturityPeriod: number;
   currentAccount: AccountType | undefined;
   currentWallet: WalletInfo | undefined;
   stakingBalances: StakingBalancesType[];
@@ -134,14 +133,7 @@ const Staking = (props: {
     try {
       props.setLoadingMessage("Creating Staking Pool. Please wait");
       props.setIsLoading(true);
-      const unsubscribe = await listen("StakeAmount", (event) => {
-        const transactionResult = event.payload as Data;
-        if (transactionResult) {
-          setTransactionInfo(transactionResult);
-          setShowConfirmTransactionModal(true);
-        }
-        unsubscribe();
-      });
+
       const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as Data;
         if (transactionResult) {
@@ -537,7 +529,7 @@ const Staking = (props: {
       </table>
       <p className="text-lg text-start py-8">Create Staking Pool</p>
       <p className="text-start">
-        Maturity period: {props.maturityPeriod} blocks (a block takes on average 
+        Maturity period: {props.maturityPeriod} blocks (a block takes on average
         120 seconds)
       </p>
       <div className="container pt-4">

@@ -31,11 +31,6 @@ tauri = { version = "2.1.1", features = [] }
 tauri-plugin-dialog = "2.2.0"
 tauri-plugin-fs = "2.2.0"
 
-tokio = { version = "1.27", default-features = false }
-
-tauri = { version = "2.1.1", features = [] }
-tauri-plugin-dialog = "2.2.0"
-tauri-plugin-fs = "2.2.0"
 
 chainstate = {git = "https://github.com/mintlayer/mintlayer-core", package = "chainstate",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6"}
 common = { git = "https://github.com/mintlayer/mintlayer-core", package = "common",  rev="1c8c0b408df886b6d1ad3ed9114dcf421cde85d6" }

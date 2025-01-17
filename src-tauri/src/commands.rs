@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc::UnboundedReceiver;
+use tokio::sync::Mutex;
 
 use chainstate::ChainInfo;
 use common::{
@@ -78,7 +76,7 @@ pub async fn initialize_node(
             .await
             .map_err(|e| e.to_string())?;
 
-    let mut app_state = state.lock().expect("Failed to acquire the lock on the state");
+    let mut app_state = state.lock().await;
     app_state.backend_sender = Some(backend_controls.backend_sender);
     app_state.chain_config = Some(backend_controls.initialized_node.chain_config.clone());
 
@@ -122,7 +120,7 @@ pub async fn get_stake_pool_maturity_distance(
     state: tauri::State<'_, Mutex<AppState>>,
     best_block_height: BlockHeight,
 ) -> Result<BlockCount, String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     Ok(state
         .chain_config
@@ -290,7 +288,7 @@ pub async fn add_create_wallet_wrapper(
         false => ImportOrCreate::Create,
     };
 
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::RecoverWallet {
@@ -317,14 +315,16 @@ pub async fn add_open_wallet_wrapper(
         _ => return Err("Invalid wallet type".to_owned()),
     };
 
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    {
+        let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::OpenWallet {
-            file_path,
-            wallet_type,
-        },
-    );
+        state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
+            BackendRequest::OpenWallet {
+                file_path,
+                wallet_type,
+            },
+        );
+    }
 
     Ok(())
 }
@@ -334,7 +334,7 @@ pub async fn send_amount_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SendAmountRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let request = SendRequest {
         wallet_id: request.wallet_id,
@@ -357,7 +357,7 @@ pub async fn new_address_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: NewAddressRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::NewAddress(request.wallet_id, request.account_id),
@@ -371,7 +371,7 @@ pub async fn update_encryption_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: UpdateEncryptionRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let update_encryption_action = match request.action.to_lowercase().as_str() {
         "set_password" => {
@@ -408,7 +408,7 @@ pub async fn close_wallet_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     wallet_id: WalletId,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state
         .backend_sender
@@ -424,7 +424,7 @@ pub async fn stake_amount_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: StakeAmountRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let stake_request = StakeRequest {
         wallet_id: request.wallet_id,
@@ -449,7 +449,7 @@ pub async fn decommission_pool_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: DecommissionStakingPoolRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let decommission_request = DecommissionPoolRequest {
         wallet_id: request.wallet_id,
@@ -472,7 +472,7 @@ pub async fn create_delegation_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: DelegationCreateRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let delegation_request = CreateDelegationRequest {
         wallet_id: request.wallet_id,
@@ -495,7 +495,7 @@ pub async fn delegate_staking_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: StakingDelegateRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let delegation_request = DelegateStakingRequest {
         wallet_id: request.wallet_id,
@@ -518,7 +518,7 @@ pub async fn send_delegation_to_address_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SendDelegateRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     let send_delegation_request = SendDelegateToAddressRequest {
         wallet_id: request.wallet_id,
@@ -540,7 +540,7 @@ pub async fn new_account_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: NewAccountRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::NewAccount {
@@ -557,7 +557,7 @@ pub async fn toggle_staking_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: ToggleStakingRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::ToggleStaking(request.wallet_id, request.account_id, request.enabled),
@@ -570,7 +570,7 @@ pub async fn handle_console_command_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: ConsoleRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::ConsoleCommand {
             wallet_id: request.wallet_id,
@@ -586,7 +586,7 @@ pub async fn submit_transaction_wrapper(
     state: tauri::State<'_, Mutex<AppState>>,
     request: SubmitTransactionRequest,
 ) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
         BackendRequest::SubmitTx {
@@ -600,7 +600,7 @@ pub async fn submit_transaction_wrapper(
 
 #[tauri::command]
 pub async fn shutdown_wrapper(state: tauri::State<'_, Mutex<AppState>>) -> Result<(), String> {
-    let state = state.lock().expect("Failed to acquire the lock on the state");
+    let state = state.lock().await;
 
     state
         .backend_sender

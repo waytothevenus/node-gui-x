@@ -18,7 +18,7 @@ import { listen } from "@tauri-apps/api/event";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
 import { encodeToHash, notify } from "../utils/util";
-import { AccountType, Data } from "../types/Types";
+import { AccountType, TransactionData } from "../types/Types";
 const Send = (props: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
@@ -30,7 +30,9 @@ const Send = (props: {
 }) => {
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
-  const [transactionInfo, setTransactionInfo] = useState<Data | undefined>();
+  const [transactionInfo, setTransactionInfo] = useState<
+    TransactionData | undefined
+  >();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleSend = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -46,7 +48,7 @@ const Send = (props: {
         },
       });
       const unsubscribe = await listen("SendAmount", (event) => {
-        const transactionResult = event.payload as Data;
+        const transactionResult = event.payload as TransactionData;
         if (transactionResult) {
           setTransactionInfo(transactionResult);
           setShowConfirmModal(true);

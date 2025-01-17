@@ -258,7 +258,7 @@ export type Signature = {
   };
 };
 
-export type Data = {
+export type TransactionData = {
   transaction_info: {
     wallet_id: number;
     tx: { tx: string };

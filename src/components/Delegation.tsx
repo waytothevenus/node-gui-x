@@ -23,7 +23,7 @@ import {
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
-import { encodeToHash, notify, DECIMAL } from "../utils/util";
+import { encodeToHash, notify } from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
@@ -263,7 +263,12 @@ const Delegation = (props: {
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
-                    ) / DECIMAL}
+                    ) /
+                      parseInt(
+                        props.currentAccount?.balance.coins.decimal
+                          ? props.currentAccount?.balance.coins.decimal
+                          : "0"
+                      )}
                     )
                   </p>
                 </div>
@@ -326,7 +331,12 @@ const Delegation = (props: {
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
-                    ) / DECIMAL}
+                    ) /
+                      parseInt(
+                        props.currentAccount?.balance.coins.decimal
+                          ? props.currentAccount?.balance.coins.decimal
+                          : "0"
+                      )}
                     )
                   </p>
                 </div>

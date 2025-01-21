@@ -302,7 +302,10 @@ const WalletActions = (props: {
             </div>
           </div>
           {props.activeTab === "transactions" && (
-            <Transactions transactions={currentAccount?.transaction_list} />
+            <Transactions
+              decimal={props.currentAccount?.balance.coins.decimal}
+              transactions={currentAccount?.transaction_list}
+            />
           )}
           {props.activeTab === "addresses" && (
             <Addresses

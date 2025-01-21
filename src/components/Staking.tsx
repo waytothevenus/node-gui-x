@@ -18,7 +18,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import { encodeToHash, notify, DECIMAL } from "../utils/util";
+import { encodeToHash, notify } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
@@ -350,7 +350,12 @@ const Staking = (props: {
                           (output) => "CreateStakePool" in output
                         )?.CreateStakePool[1].cost_per_block.atoms
                       ).toString()
-                    ) / DECIMAL}
+                    ) /
+                      parseInt(
+                        props.currentAccount?.balance.coins.decimal
+                          ? props.currentAccount.balance.coins.decimal
+                          : "0"
+                      )}
                     ))
                   </p>
                   <p className="text-start">
@@ -367,7 +372,12 @@ const Staking = (props: {
                           (output) => "Transfer" in output
                         )?.Transfer[0].Coin.atoms
                       ).toString()
-                    ) / DECIMAL}
+                    ) /
+                      parseInt(
+                        props.currentAccount?.balance.coins.decimal
+                          ? props.currentAccount.balance.coins.decimal
+                          : "0"
+                      )}
                     )
                   </p>
                 </>
@@ -387,7 +397,12 @@ const Staking = (props: {
                           (output) => "LockThenTransfer" in output
                         )?.LockThenTransfer[0]?.Coin?.atoms
                       ).toString()
-                    ) / DECIMAL}
+                    ) /
+                      parseInt(
+                        props.currentAccount?.balance.coins.decimal
+                          ? props.currentAccount.balance.coins.decimal
+                          : "0"
+                      )}
                     {", "}OutputTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(

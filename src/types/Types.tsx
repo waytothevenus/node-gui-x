@@ -1,28 +1,24 @@
-export type RpcAmountOutType = {
+export type RpcAmountType = {
   atoms: string;
   decimal: string;
 };
 
-export type RpcAddressType = {
-  address: string;
-  _phantom: string;
+export type BalanceType = {
+  coins: RpcAmountType;
+  tokens: Record<string, RpcAmountType>;
 };
 
-export type BalanceType = {
-  coins: RpcAmountOutType;
-  tokens: Record<string, RpcAmountOutType>;
-};
 export type PoolInfoType = {
   pool_id: string;
-  pledge: RpcAmountOutType;
-  balance: RpcAmountOutType;
+  pledge: RpcAmountType;
+  balance: RpcAmountType;
   height: number;
   block_timestamp: { timestamp: number };
   vrf_public_key: string;
   decommission_key: string;
   staker: string;
   margin_ratio_per_thousand: number;
-  cost_per_block: RpcAmountOutType;
+  cost_per_block: RpcAmountType;
 };
 
 export type AccountType = {
@@ -124,8 +120,6 @@ export type ChainInfoType = {
   is_initial_block_download: boolean;
 };
 
-
-
 export type PeerDisconnected = {
   P2p: {
     PeerDisConnected: number;
@@ -151,9 +145,9 @@ export type P2p = PeerConnected | PeerDisconnected;
 
 export type Transaction = {
   V1: {
-    version: number | null; 
-    flags: number; 
-    inputs: Input[]; 
+    version: number | null;
+    flags: number;
+    inputs: Input[];
     outputs: Output[];
   };
 };
@@ -171,9 +165,9 @@ export type Account = {
 export type Utxo = {
   Utxo: {
     id: {
-      Transaction: string; 
+      Transaction: string;
     };
-    index: number; 
+    index: number;
   };
 };
 

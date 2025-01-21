@@ -660,12 +660,15 @@ function Home() {
 
       if (path) {
         try {
+          setLoadingMessage("Creating wallet. Please wait");
+          setLoading(true);
           const unsubscribe = await listen("ImportWallet", (event) => {
             const walletInfo = event.payload as WalletInfo;
             if (walletInfo) {
               setWalletsInfo([...walletsInfo, walletInfo]);
               notify("Wallet created successfully!", "success");
             }
+            setLoading(false)
             unsubscribe();
           });
           await invoke("add_create_wallet_wrapper", {
@@ -678,6 +681,7 @@ function Home() {
           });
         } catch (invokeError) {
           notify("Error in creating wallet!", "error");
+          setLoading(false)
           console.error(
             "Error during invoke:",
             invokeError instanceof Error ? invokeError.message : invokeError

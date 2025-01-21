@@ -17,8 +17,6 @@ import { toast } from "react-toastify";
 import * as blake from "blakejs";
 import { bech32m } from "bech32";
 
-export const DECIMAL = 100000000000;
-
 export const encodeToHash = (data: string) => {
   const hash = blake.blake2bHex(data, undefined, 32);
   return hash;

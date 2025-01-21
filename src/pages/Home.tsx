@@ -30,7 +30,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast, Id } from "react-toastify";
 
 import { IoCloseSharp } from "react-icons/io5";
-import TransactionIcon from "../assets/transaction_icon.png";
+import TransactionIcon from '../assets/transaction_icon.png'
 import AddressIcon from "../assets/address_icon.png";
 import SendIcon from "../assets/send_icon.png";
 import StakingIcon from "../assets/staking_icon.png";

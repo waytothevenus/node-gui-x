@@ -17,7 +17,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Menu } from "@tauri-apps/api/menu";
-import MintlayerIcon from '../assets/mintlayer_icon.png'
+import MintlayerIcon from '../assets/mintlayer_icon.png';
 import { LogicalPosition } from "@tauri-apps/api/dpi";
 import { ChainInfoType } from "../types/Types";
 import { notify } from "../utils/util";

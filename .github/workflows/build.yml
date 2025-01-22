@@ -24,11 +24,11 @@ jobs:
       - name: Install python toml package
         run: python3 -m pip install toml
       - name: Install rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $(python3 ./build-tools/rust-version-extractor/rust-version-extractor.py)
+        uses: dtolnay/rust-toolchain@stable
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Install Tauri dependencies
         run: yarn install -g @tauri-apps/cli
       - name: Install Frontend dependencies
@@ -67,7 +67,7 @@ jobs:
       - name: Install rust deps
         run: sudo apt-get install -yqq build-essential pkg-config libssl-dev
       - name: Install rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $(python3 ./build-tools/rust-version-extractor/rust-version-extractor.py)
+        uses: dtolnay/rust-toolchain@stable
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
@@ -103,8 +103,10 @@ jobs:
           submodules: recursive
       - name: Install python toml package
         run: python3 -m pip install toml --break-system-packages --user
-      - name: Install rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $(python3 ./build-tools/rust-version-extractor/rust-version-extractor.py)
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: "aarch64-apple-darwin, x86_64-apple-darwin"
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:

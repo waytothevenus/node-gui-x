@@ -36,15 +36,15 @@ jobs:
       - name: Build
         run: yarn tauri build
       - name: Run tests
-        run: cargo test --release --workspace
+        run: cd src-tauri && cargo test --release --workspace
       - name: Run doc tests
-        run: cargo test --release --doc
+        run: cd src-tauri && cargo test --release --doc
       - name: Run mixed_sighash_types test
-        run: cargo test --release mixed_sighash_types
+        run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
-        run: cargo test --release test_4opc_sequences -- --ignored
+        run: cd src-tauri && cargo test --release test_4opc_sequences -- --ignored
       - name: Run functional tests
-        run: cargo test --release -p mintlayer-test --test functional -- --ignored
+        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -79,15 +79,15 @@ jobs:
       - name: Build
         run: yarn tauri build
       - name: Run tests
-        run: cargo test --release --workspace
+        run: cd src-tauri && cargo test --release --workspace
       - name: Run doc tests
-        run: cargo test --release --doc
+        run: cd src-tauri && cargo test --release --doc
       - name: Run mixed_sighash_types test
-        run: cargo test --release mixed_sighash_types
+        run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
-        run: cargo test --release test_4opc_sequences
+        run: cd src-tauri && cargo test --release test_4opc_sequences
       - name: Run functional tests
-        run: cargo test --release -p mintlayer-test --test functional -- --ignored
+        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -118,15 +118,15 @@ jobs:
       - name: Build
         run: yarn tauri build
       - name: Run tests
-        run: cargo test --release --workspace
+        run: cd src-tauri && cargo test --release --workspace
       - name: Run doc tests
-        run: cargo test --release --doc
+        run: cd src-tauri && cargo test --release --doc
       - name: Run mixed_sighash_types test
-        run: cargo test --release mixed_sighash_types
+        run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
-        run: cargo test --release test_4opc_sequences
+        run: cd src-tauri && cargo test --release test_4opc_sequences
       - name: Run functional tests
-        run: cargo test --release -p mintlayer-test --test functional -- --ignored
+        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

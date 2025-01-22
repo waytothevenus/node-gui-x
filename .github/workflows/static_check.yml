@@ -36,7 +36,7 @@ jobs:
       - name: Make do_checks.sh executable
         run: chmod +x ./src-tauri/do_checks.sh
       - name: Run checks
-        run: ./src-tauri/do_checks.sh
+        run: cd src-tauri && ./do_checks.sh
 
   static_checks_windows:
     runs-on: windows-latest
@@ -64,7 +64,7 @@ jobs:
         run: chmod +x ./src-tauri/do_checks.sh
       - name: Run checks
         shell: bash
-        run: ./src-tauri/do_checks.sh
+        run: cd src-tauri && ./do_checks.sh
 
   static_checks_macos:
     runs-on: macos-latest
@@ -87,4 +87,4 @@ jobs:
       - name: Make do_checks.sh executable
         run: chmod +x ./src-tauri/do_checks.sh
       - name: Run checks
-        run: bash ./src-tauri/do_checks.sh
+        run: cd src-tauri && ./do_checks.sh

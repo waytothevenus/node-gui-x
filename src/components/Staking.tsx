@@ -18,7 +18,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import { encodeToHash, getCoinAmount, DECIMALS, notify } from "../utils/util";
+import { notify, formatTransactionSummary } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
@@ -145,6 +145,7 @@ const Staking = (props: {
 
       const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as TransactionData;
+        console.log("transaction result: ", transactionResult);
         if (transactionResult) {
           props.setIsLoading(false);
           setTransactionInfo(transactionResult);
@@ -277,112 +278,12 @@ const Staking = (props: {
               <IoCloseSharp />
             </button>
             <h2 className="text-lg font-bold mb-4">Confirm Transaction</h2>
-            <p className="text-start text-bold">Transaction summary</p>
-            <div>
-              <p className="text-start text-bold">TRANSACTION ID</p>
-              <p className="text-start">
-                {encodeToHash(
-                  JSON.stringify(
-                    transactionInfo?.serialized_tx.V1
-                      ? transactionInfo.serialized_tx.V1
-                      : {}
-                  )
-                )}
-              </p>
-            </div>
-            <div>
-              <p className="text-start text-bold">BEGIN OF INPUTS</p>
-              <p className="text-start">
-                -Transaction({"0x"}
-                {
-                  transactionInfo?.serialized_tx.V1.inputs.find(
-                    (output) => "Utxo" in output
-                  )?.Utxo.id.Transaction
-                }
-                )
-              </p>
-            </div>
-            <div>
-              <p className="text-start  text-bold">END OF INPUTS</p>
-            </div>
-            <div>
-              <p className="text-start">BEGIN OF OUTPUTS</p>
-              {transactionInfo?.serialized_tx.V1.outputs.find(
-                (output) => "CreateStakePool" in output
-              ) ? (
-                <>
-                  <p className="text-start">
-                    -CreateStakePool(Id(
-                    {new String(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateStakePool" in output
-                      )?.CreateStakePool[0]
-                    ).toString()}
-                    ), Pledge(
-                    {pledgeAmount}), Staker(
-                    {new String(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateStakePool" in output
-                      )?.CreateStakePool[1].staker
-                    ).toString()}
-                    ), VRFPubKey(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateStakePool" in output
-                      )?.CreateStakePool[1].vrf_public_key
-                    }
-                    ), Margin Ratio(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateStakePool" in output
-                      )?.CreateStakePool[1].margin_ratio_per_thousand
-                    }
-                    ), CostPerBlock(
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "CreateStakePool" in output
-                        )?.CreateStakePool[1].cost_per_block.atoms
-                      ).toString()
-                    ) / DECIMALS}
-                    ))
-                  </p>
-                  <p className="text-start">
-                    -Transfer(
-                    {new String(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "Transfer" in output
-                      )?.Transfer[1]
-                    ).toString()}
-                    , {getCoinAmount(transactionInfo, "Transfer") / DECIMALS})
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-start">
-                    -LockThenTransfer(
-                    {new String(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[1]
-                    ).toString()}
-                    ,{" "}
-                    {getCoinAmount(transactionInfo, "LockThenTransfer") /
-                      DECIMALS}
-                    {", "} OutputTimeLock::ForBlockCount(
-                    {new String(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[2].content
-                    ).toString()}{" "}
-                    blocks))
-                  </p>
-                </>
+            <pre className="leading-tight whitespace-prev-wrap">
+              {formatTransactionSummary(
+                transactionInfo?.transaction_summary || ""
               )}
-            </div>
-            <div>
-              <p className="text-start text-bold">END OF OUTPUTS</p>
-            </div>
+            </pre>
+
             <button
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
               onClick={() => {

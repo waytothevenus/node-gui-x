@@ -33,7 +33,7 @@ use wallet_rpc_lib::types::{Balances, PoolInfo};
 #[derive(Debug, Clone, Serialize)]
 pub struct TransactionResult {
     transaction_info: TransactionInfo,
-    serialized_tx: Value,
+    transaction_summary: String,
 }
 
 impl TransactionResult {
@@ -41,10 +41,10 @@ impl TransactionResult {
         chain_config: &ChainConfig,
         transaction_info: TransactionInfo,
     ) -> Result<Self, BackendError> {
-        let serialized_tx = transaction_info.tx.to_json(chain_config)?;
+        let transaction_summary = transaction_info.tx.text_summary(chain_config);
         Ok(Self {
             transaction_info,
-            serialized_tx,
+            transaction_summary,
         })
     }
 }

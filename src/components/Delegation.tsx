@@ -23,7 +23,11 @@ import {
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
-import { encodeToHash, getCoinAmount, DECIMALS, notify } from "../utils/util";
+import {
+  DECIMALS,
+  notify,
+  formatTransactionSummary,
+} from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
@@ -175,22 +179,6 @@ const Delegation = (props: {
     }
   };
 
-  const getAccountInput = (transactionInfo: TransactionData | undefined) => {
-    return transactionInfo?.serialized_tx.V1.inputs.find(
-      (output) => "Account" in output
-    )?.Account;
-  };
-
-  const getDelegationBalance = (account: any) => {
-    if (!account) return 0;
-    const [balance, atoms] = account.account.DelegationBalance;
-    return balance + parseInt(atoms.atoms) / DECIMALS;
-  };
-
-  const getNonce = (account: any) => {
-    return account?.nonce?.toString() || "";
-  };
-
   return (
     <div className="container pt-0 p-4 shadow-1">
       {showConfirmTransactionModal && (
@@ -215,158 +203,11 @@ const Delegation = (props: {
               <IoCloseSharp />
             </button>
             <h2 className="text-lg font-bold mb-4">Confirm Transaction</h2>
-            <p className="text-start text-bold">Transaction summary</p>
-            <div>
-              <p className="text-start text-bold">TRANSACTION ID</p>
-              <p className="text-start">
-                {encodeToHash(
-                  JSON.stringify(
-                    transactionInfo?.serialized_tx.V1
-                      ? transactionInfo.serialized_tx.V1
-                      : {}
-                  )
-                )}
-              </p>
-            </div>
-            {transactionInfo?.serialized_tx.V1.outputs.find(
-              (output) => "CreateDelegationId" in output
-            ) && (
-              <>
-                <div>
-                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
-                  <p className="text-start">
-                    -Transaction({"0x"}
-                    {
-                      transactionInfo.serialized_tx.V1.inputs.find(
-                        (output) => "Utxo" in output
-                      )?.Utxo.id.Transaction
-                    }
-                    )
-                  </p>
-                </div>
-                <div>
-                  <p className="text-start  text-bold">END OF INPUTS</p>
-                </div>
-                <div>
-                  <p className="text-start">BEGIN OF OUTPUTS</p>
-                  <p className="text-start">
-                    -CreateDelegationId(Owner(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateDelegationId" in output
-                      )?.CreateDelegationId[0]
-                    }
-                    ), StakingPool(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "CreateDelegationId" in output
-                      )?.CreateDelegationId[1]
-                    }
-                    ))
-                  </p>
-
-                  <p className="text-start">
-                    -Transfer(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "Transfer" in output
-                      )?.Transfer[1]
-                    }
-                    , {getCoinAmount(transactionInfo, "Transfer") / DECIMALS})
-                  </p>
-                </div>
-              </>
-            )}
-            {transactionInfo?.serialized_tx.V1.outputs.find(
-              (output) => "DelegateStaking" in output
-            ) && (
-              <>
-                <div>
-                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
-                  <p className="text-start">
-                    -Transaction(
-                    {
-                      transactionInfo.serialized_tx.V1.inputs.find(
-                        (output) => "Utxo" in output
-                      )?.Utxo.id.Transaction
-                    }
-                    )
-                  </p>
-                </div>
-                <div>
-                  <p className="text-start  text-bold">END OF INPUTS</p>
-                </div>
-                <div>
-                  <p className="text-start">BEGIN OF OUTPUTS</p>
-                  <p className="text-start">
-                    -DelegateStaking(Amount(
-                    {parseInt(
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "DelegateStaking" in output
-                      )?.DelegateStaking[0]?.atoms || "0"
-                    ) / DECIMALS}
-                    ), Delegation(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "DelegateStaking" in output
-                      )?.DelegateStaking[1]
-                    }
-                    ))
-                  </p>
-
-                  <p className="text-start">
-                    -Transfer(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "Transfer" in output
-                      )?.Transfer[1]
-                    }
-                    , {getCoinAmount(transactionInfo, "Transfer") / DECIMALS})
-                  </p>
-                </div>
-              </>
-            )}
-            {transactionInfo?.serialized_tx.V1.outputs.find(
-              (output) => "LockThenTransfer" in output
-            ) && (
-              <>
-                <div>
-                  <p className="text-start text-bold">BEGIN OF INPUTS</p>
-                  <p className="text-start">
-                    -AccountOutPoint
-                    {`nonce: AccountNonce(${getNonce(
-                      getAccountInput(transactionInfo)
-                    )}), account: DelegationBalance: (${getDelegationBalance(
-                      getAccountInput(transactionInfo)
-                    )})`}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-start  text-bold">END OF INPUTS</p>
-                </div>
-                <div>
-                  <p className="text-start">BEGIN OF OUTPUTS</p>
-                  <p className="text-start">
-                    -LockThenTransfer(
-                    {
-                      transactionInfo?.serialized_tx.V1.outputs.find(
-                        (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[1]
-                    }
-                    {getCoinAmount(transactionInfo, "LockThenTransfer") /
-                      DECIMALS}
-                    ), OutputTimeLock::ForBlockCount(
-                    {
-                      transactionInfo.serialized_tx.V1.outputs.find(
-                        (output) => "LockThenTransfer" in output
-                      )?.LockThenTransfer[2].content
-                    }
-                    blocks)
-                    {}
-                  </p>
-                </div>
-              </>
-            )}
+            <pre className="leading-tight whitespace-pre-wrap">
+              {formatTransactionSummary(
+                transactionInfo?.transaction_summary || ""
+              )}
+            </pre>
             <div>
               <p className="text-start text-bold">END OF OUTPUTS</p>
             </div>

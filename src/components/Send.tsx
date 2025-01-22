@@ -17,7 +17,7 @@ import { useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
-import { encodeToHash, notify } from "../utils/util";
+import { formatTransactionSummary, notify } from "../utils/util";
 import { AccountType, TransactionData } from "../types/Types";
 const Send = (props: {
   isLoading: boolean;
@@ -121,51 +121,11 @@ const Send = (props: {
               <IoCloseSharp />
             </button>
             <h2 className="text-xl font-bold mb-4">Confirm Transaction</h2>
-            <p className="text-start text-lg text-bold">Transaction summary</p>
-            <div>
-              <p className="text-start text-bold">BEGIN OF INPUTS</p>
-              <p className="text-start whitespace-nowrap">
-                -Transaction id ({""}
-                {encodeToHash(
-                  JSON.stringify(transactionInfo?.serialized_tx.V1)
-                )}
-                )
-              </p>
-              <p className="text-start whitespace-nowrap">
-                -Transaction ({"0x"}
-                {
-                  transactionInfo?.serialized_tx.V1.inputs.find(
-                    (output) => "Utxo" in output
-                  )?.Utxo.id.Transaction
-                }
-                {", "}
-                {
-                  transactionInfo?.serialized_tx.V1.inputs.find(
-                    (output) => "Utxo" in output
-                  )?.Utxo.index
-                }
-                )
-              </p>
-            </div>
-            <div>
-              <p className="text-start  text-bold">END OF INPUTS</p>
-            </div>
-            <div>
-              <p className="text-start">BEGIN OF OUTPUTS</p>
-              <p className="text-start whitespace-nowrap">
-                -Transfer({address}, {amount}),
-              </p>
-              <p className="text-start">
-                -Transfer({props.currentAccount?.addresses[0]},{" "}
-                {props.currentAccount?.balance.coins.atoms
-                  ? props.currentAccount.balance.coins.atoms
-                  : 0 - parseInt(amount)}
-                ),
-              </p>
-            </div>
-            <div>
-              <p className="text-start text-bold">END OF OUTPUTS</p>
-            </div>
+            <pre className="leading-tight whitespace-pre-wrap">
+              {formatTransactionSummary(
+                transactionInfo?.transaction_summary || ""
+              )}
+            </pre>
             <button
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
               onClick={() => {

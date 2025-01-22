@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: "20"
       - name: Install Tauri dependencies
-        run: yarn install -g @tauri-apps/cli
+        run: yarn add -g @tauri-apps/cli
       - name: Install Frontend dependencies
         run: yarn install
       - name: Build
@@ -73,7 +73,7 @@ jobs:
         with:
           node-version: "16"
       - name: Install Tauri dependencies
-        run: yarn install -g @tauri-apps/cli
+        run: yarn add -g @tauri-apps/cli
       - name: Install Frontend dependencies
         run: yarn install
       - name: Build
@@ -112,7 +112,7 @@ jobs:
         with:
           node-version: "16"
       - name: Install Tauri dependencies
-        run: yarn install -g @tauri-apps/cli
+        run: yarn add -g @tauri-apps/cli
       - name: Install Frontend dependencies
         run: yarn install
       - name: Build

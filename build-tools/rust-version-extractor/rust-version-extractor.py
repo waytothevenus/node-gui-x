@@ -11,7 +11,7 @@ import toml
 import itertools
 
 def get_rust_version():
-    cargo_toml_root = toml.load('../../src-tauri/Cargo.toml')
+    cargo_toml_root = toml.load('src-tauri/Cargo.toml')
 
     if "workspace" not in cargo_toml_root:
         raise KeyError("'workspace' not found in root. Is this the root Cargo.toml file?")

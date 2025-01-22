@@ -189,7 +189,7 @@ export type CreateStakePoolOutput = {
       };
       staker: string;
       vrf_public_key: string;
-      decomission_key: string;
+      decommission_key: string;
       margin_ratio_per_thousand: string;
       cost_per_block: {
         atoms: string;
@@ -204,22 +204,64 @@ export type CreateDelegationId = {
 
 export type TransferOutput = {
   Transfer: [
-    {
-      Coin: {
-        atoms: string;
-      };
-    },
+    (
+      | { type: "Coin"; value: Coin }
+      | { type: "TokenV0"; value: TokenV0 }
+      | { type: "TokenV1"; value: TokenV1 }
+    ),
     string
   ];
 };
 
+type Coin = {
+  atoms: string;
+};
+
+type TokenV0 = TokenTransfer | TokenInsurance | NftInsurance;
+type TokenV1 = {
+  TokenId: string;
+  amount: {
+    atoms: string;
+  };
+};
+
+type TokenTransfer = {
+  token_id: string;
+  amount: {
+    atoms: string;
+  };
+};
+
+type TokenInsurance = {
+  token_ticker: string;
+  amount_to_issue: {
+    atoms: string;
+  };
+  number_of_decimals: number;
+  metadata_uri: string;
+};
+
+type NftInsurance = {
+  metadata: {
+    creator: {
+      public_key: string;
+      name: string;
+      ticker: string;
+      icon_uri: string;
+      additional_metadata_uri: string;
+      media_uri: string;
+      media_hash: string;
+    };
+  };
+};
+
 export type LockThenTransferOutput = {
   LockThenTransfer: [
-    {
-      Coin: {
-        atoms: string;
-      };
-    },
+    (
+      | { type: "Coin"; value: Coin }
+      | { type: "TokenV0"; value: TokenV0 }
+      | { type: "TokenV1"; value: TokenV1 }
+    ),
     string,
     {
       content: number;

@@ -15,6 +15,7 @@
 
 import { toast } from "react-toastify";
 import * as blake from "blakejs";
+import { AccountType, TransactionData } from "../types/Types";
 
 export const encodeToHash = (data: string) => {
   const hash = blake.blake2bHex(data, undefined, 32);
@@ -36,4 +37,35 @@ export const notify = (message: string, type: string) => {
     default:
       toast.info(message);
   }
+};
+
+export const getCoinAmount = (
+  outputValue: TransactionData | undefined,
+  type: string
+): number => {
+  const findOutput = (key: string) => {
+    return outputValue?.serialized_tx.V1.outputs.find(
+      (output) => key in output
+    );
+  };
+
+  const getAtoms = (output: any, key: string) => {
+    return output?.[key][0].type === "Coin"
+      ? parseInt(output?.[key][0].value.atoms || "0")
+      : 0;
+  };
+
+  if (type === "LockThenTransfer") {
+    const output = findOutput("Transfer");
+    return getAtoms(output, "Transfer");
+  } else if (type === "LockThennTransfer") {
+    const output = findOutput("LockThenTransfer");
+    return getAtoms(output, "LockThenTransfer");
+  }
+
+  return 0;
+};
+
+export const getDecimals = (accountInfo: AccountType | undefined) => {
+  return parseInt(accountInfo ? accountInfo.balance.coins.decimal : "0");
 };

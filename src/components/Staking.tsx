@@ -18,7 +18,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import { encodeToHash, notify } from "../utils/util";
+import {
+  encodeToHash,
+  getCoinAmount,
+  getDecimals,
+  notify,
+} from "../utils/util";
 import {
   AccountType,
   WalletInfo,
@@ -56,6 +61,8 @@ const Staking = (props: {
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const decimals = getDecimals(props.currentAccount);
+
   const handleToggleStaking = async () => {
     try {
       props.setLoadingMessage(
@@ -111,6 +118,7 @@ const Staking = (props: {
         if (transactionResult) {
           const transactionResult = event.payload as TransactionData;
           if (transactionResult) {
+            props.setIsLoading(false);
             setTransactionInfo(transactionResult);
             setShowConfirmTransactionModal(true);
           }
@@ -125,16 +133,8 @@ const Staking = (props: {
           output_address: receiveAddress,
         },
       });
-      await invoke("decommission_pool_wrapper", {
-        request: {
-          wallet_id: props.currentWalletId ? props.currentWalletId : 0,
-          account_id: props.currentAccountId ? props.currentAccountId : 0,
-          pool_id: currentPoolId,
-          output_address: receiveAddress,
-        },
-      });
-      props.setIsLoading(false);
     } catch (error) {
+      props.setIsLoading(false);
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
       if (errorMessage) {
@@ -152,6 +152,7 @@ const Staking = (props: {
       const unsubscribe = await listen("StakeAmount", (event) => {
         const transactionResult = event.payload as TransactionData;
         if (transactionResult) {
+          props.setIsLoading(false);
           setTransactionInfo(transactionResult);
           setShowConfirmTransactionModal(true);
         }
@@ -167,15 +168,14 @@ const Staking = (props: {
           decommission_address: decommissionAddress,
         },
       });
-      props.setIsLoading(false);
     } catch (error) {
+      props.setIsLoading(false);
       const regex = /Wallet error: (.+)/;
       const errorMessage = new String(error).match(regex);
       if (errorMessage) {
         notify(errorMessage[1], "error");
       }
     }
-    props.setIsLoading(false);
   };
   const handleConfirmTransaction = async () => {
     try {
@@ -350,12 +350,7 @@ const Staking = (props: {
                           (output) => "CreateStakePool" in output
                         )?.CreateStakePool[1].cost_per_block.atoms
                       ).toString()
-                    ) /
-                      parseInt(
-                        props.currentAccount?.balance.coins.decimal
-                          ? props.currentAccount.balance.coins.decimal
-                          : "0"
-                      )}
+                    ) / decimals}
                     ))
                   </p>
                   <p className="text-start">
@@ -366,18 +361,8 @@ const Staking = (props: {
                       )?.Transfer[1]
                     ).toString()}
                     ,{" "}
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "Transfer" in output
-                        )?.Transfer[0].Coin.atoms
-                      ).toString()
-                    ) /
-                      parseInt(
-                        props.currentAccount?.balance.coins.decimal
-                          ? props.currentAccount.balance.coins.decimal
-                          : "0"
-                      )}
+                    {getCoinAmount(transactionInfo, "Transfer") /
+                      getDecimals(props.currentAccount)}
                     )
                   </p>
                 </>
@@ -391,19 +376,9 @@ const Staking = (props: {
                       )?.LockThenTransfer[1]
                     ).toString()}
                     ,{" "}
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "LockThenTransfer" in output
-                        )?.LockThenTransfer[0]?.Coin?.atoms
-                      ).toString()
-                    ) /
-                      parseInt(
-                        props.currentAccount?.balance.coins.decimal
-                          ? props.currentAccount.balance.coins.decimal
-                          : "0"
-                      )}
-                    {", "}OutputTimeLock::ForBlockCount(
+                    {getCoinAmount(transactionInfo, "LockThenTransfer") /
+                      getDecimals(props.currentAccount)}
+                    {", "} OutputTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(
                         (output) => "LockThenTransfer" in output

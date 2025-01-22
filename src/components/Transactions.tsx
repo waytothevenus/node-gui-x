@@ -118,8 +118,7 @@ const Transactions = (props: {
                     const { amount } = transactionInfo.tx_type.Received;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {parseInt(new String(amount.atoms).toString()) /
-                          parseInt(props.decimal ? props.decimal : "0")}
+                        {parseInt(new String(amount.atoms).toString())}
                       </td>
                     );
                   }
@@ -128,8 +127,7 @@ const Transactions = (props: {
                     const { amount } = transactionInfo.tx_type.Sent;
                     return (
                       <td className="py-2 px-4 border-b border-gray-200">
-                        {parseInt(new String(amount.atoms).toString()) /
-                          parseInt(props.decimal ? props.decimal : "0")}
+                        {parseInt(new String(amount.atoms).toString())}
                       </td>
                     );
                   }

@@ -30,7 +30,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast, Id } from "react-toastify";
 
 import { IoCloseSharp } from "react-icons/io5";
-import TransactionIcon from '../assets/transaction_icon.png'
+import TransactionIcon from "../assets/transaction_icon.png";
 import AddressIcon from "../assets/address_icon.png";
 import SendIcon from "../assets/send_icon.png";
 import StakingIcon from "../assets/staking_icon.png";
@@ -668,7 +668,7 @@ function Home() {
               setWalletsInfo([...walletsInfo, walletInfo]);
               notify("Wallet created successfully!", "success");
             }
-            setLoading(false)
+            setLoading(false);
             unsubscribe();
           });
           await invoke("add_create_wallet_wrapper", {
@@ -681,7 +681,7 @@ function Home() {
           });
         } catch (invokeError) {
           notify("Error in creating wallet!", "error");
-          setLoading(false)
+          setLoading(false);
           console.error(
             "Error during invoke:",
             invokeError instanceof Error ? invokeError.message : invokeError
@@ -769,6 +769,7 @@ function Home() {
       if (filePath) {
         const unsubscribe = await listen("OpenWallet", (event) => {
           const walletInfo: WalletInfo = event.payload as WalletInfo;
+          console.log("Wallet info: ", walletInfo);
 
           if (walletInfo) {
             setWalletsInfo((prevWallets) => [...prevWallets, walletInfo]);

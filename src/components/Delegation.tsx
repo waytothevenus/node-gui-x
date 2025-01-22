@@ -23,7 +23,12 @@ import {
   DelegationBalancesType,
   WalletInfo,
 } from "../types/Types";
-import { encodeToHash, notify } from "../utils/util";
+import {
+  encodeToHash,
+  getCoinAmount,
+  getDecimals,
+  notify,
+} from "../utils/util";
 import { IoCloseSharp } from "react-icons/io5";
 
 const Delegation = (props: {
@@ -49,6 +54,8 @@ const Delegation = (props: {
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const decimals = getDecimals(props.currentAccount);
+
   const handleDeposit = async () => {
     setShowDepositModal(false);
     props.setLoadingMessage("Depositing to delegation. Please wait.");
@@ -112,9 +119,8 @@ const Delegation = (props: {
   const handleSelectAllAmount = () => {
     setWithdrawAmount(
       parseInt(
-        props.currentAccount?.staking_balance[poolAddress].balance.decimal
-          ? props.currentAccount?.staking_balance[poolAddress].balance.decimal
-          : "0"
+        props.currentAccount?.staking_balance[poolAddress].balance.decimal ||
+          "0"
       )
     );
   };
@@ -173,6 +179,22 @@ const Delegation = (props: {
       props.setIsLoading(false);
       notify(new String(error).toString(), "error");
     }
+  };
+
+  const getAccountInput = (transactionInfo: TransactionData | undefined) => {
+    return transactionInfo?.serialized_tx.V1.inputs.find(
+      (output) => "Account" in output
+    )?.Account;
+  };
+
+  const getDelegationBalance = (account: any) => {
+    if (!account) return 0;
+    const [balance, atoms] = account.account.DelegationBalance;
+    return balance + parseInt(atoms.atoms) / decimals;
+  };
+
+  const getNonce = (account: any) => {
+    return account?.nonce?.toString() || "";
   };
 
   return (
@@ -256,20 +278,7 @@ const Delegation = (props: {
                         (output) => "Transfer" in output
                       )?.Transfer[1]
                     }
-                    ,{" "}
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "Transfer" in output
-                        )?.Transfer[0].Coin.atoms
-                      ).toString()
-                    ) /
-                      parseInt(
-                        props.currentAccount?.balance.coins.decimal
-                          ? props.currentAccount?.balance.coins.decimal
-                          : "0"
-                      )}
-                    )
+                    , {getCoinAmount(transactionInfo, "Transfer") / decimals})
                   </p>
                 </div>
               </>
@@ -298,16 +307,10 @@ const Delegation = (props: {
                   <p className="text-start">
                     -DelegateStaking(Amount(
                     {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "DelegateStaking" in output
-                        )?.DelegateStaking[0]?.atoms
-                          ? transactionInfo?.serialized_tx.V1.outputs.find(
-                              (output) => "DelegateStaking" in output
-                            )?.DelegateStaking[0]?.atoms
-                          : "0"
-                      ).toString()
-                    ) / 100000000000}
+                      transactionInfo?.serialized_tx.V1.outputs.find(
+                        (output) => "DelegateStaking" in output
+                      )?.DelegateStaking[0]?.atoms || "0"
+                    ) / decimals}
                     ), Delegation(
                     {
                       transactionInfo?.serialized_tx.V1.outputs.find(
@@ -324,20 +327,7 @@ const Delegation = (props: {
                         (output) => "Transfer" in output
                       )?.Transfer[1]
                     }
-                    ,{" "}
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "Transfer" in output
-                        )?.Transfer[0].Coin.atoms
-                      ).toString()
-                    ) /
-                      parseInt(
-                        props.currentAccount?.balance.coins.decimal
-                          ? props.currentAccount?.balance.coins.decimal
-                          : "0"
-                      )}
-                    )
+                    , {getCoinAmount(transactionInfo, "Transfer") / decimals})
                   </p>
                 </div>
               </>
@@ -350,28 +340,11 @@ const Delegation = (props: {
                   <p className="text-start text-bold">BEGIN OF INPUTS</p>
                   <p className="text-start">
                     -AccountOutPoint
-                    {`
-                      ${
-                        "nonce:" +
-                        "AccountNonce(" +
-                        transactionInfo.serialized_tx.V1.inputs
-                          .find((output) => "Account" in output)
-                          ?.Account.nonce?.toString() +
-                        ")," +
-                        " account: DelegationBalance(" +
-                        transactionInfo.serialized_tx.V1.inputs.find(
-                          (output) => "Account" in output
-                        )?.Account.account.DelegationBalance[0] +
-                        parseInt(
-                          new String(
-                            transactionInfo.serialized_tx.V1.inputs.find(
-                              (output) => "Account" in output
-                            )?.Account.account.DelegationBalance[1].atoms
-                          ).toString()
-                        ) /
-                          100000000000
-                      }
-                     `}
+                    {`nonce: AccountNonce(${getNonce(
+                      getAccountInput(transactionInfo)
+                    )}), account: DelegationBalance: (${getDelegationBalance(
+                      getAccountInput(transactionInfo)
+                    )})`}
                   </p>
                 </div>
                 <div>
@@ -386,13 +359,8 @@ const Delegation = (props: {
                         (output) => "LockThenTransfer" in output
                       )?.LockThenTransfer[1]
                     }
-                    {parseInt(
-                      new String(
-                        transactionInfo?.serialized_tx.V1.outputs.find(
-                          (output) => "LockThenTransfer" in output
-                        )?.LockThenTransfer[0].Coin.atoms
-                      ).toString()
-                    ) / 100000000000}
+                    {getCoinAmount(transactionInfo, "LockThenTransfer") /
+                      decimals}
                     ), OutputTimeLock::ForBlockCount(
                     {
                       transactionInfo.serialized_tx.V1.outputs.find(
@@ -614,7 +582,7 @@ const Delegation = (props: {
                   </button>
                 </div>
                 <td className="py-2 px-4 border-b border-gray-200">
-                  {parseInt(amount.atoms) / 100000000000}
+                  {parseInt(amount.atoms) / decimals}
                 </td>
 
                 <td className="py-2 px-4 border-b border-gray-200 flex justify-between space-x-2">

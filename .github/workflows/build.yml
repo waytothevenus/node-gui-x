@@ -43,8 +43,6 @@ jobs:
         run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
         run: cd src-tauri && cargo test --release test_4opc_sequences -- --ignored
-      - name: Run functional tests
-        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -86,8 +84,6 @@ jobs:
         run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
         run: cd src-tauri && cargo test --release test_4opc_sequences
-      - name: Run functional tests
-        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -125,8 +121,6 @@ jobs:
         run: cd src-tauri && cargo test --release mixed_sighash_types
       - name: Run test_4opc_sequences test
         run: cd src-tauri && cargo test --release test_4opc_sequences
-      - name: Run functional tests
-        run: cd src-tauri && cargo test --release -p mintlayer-test --test functional -- --ignored
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

@@ -208,9 +208,6 @@ const Delegation = (props: {
                 transactionInfo?.transaction_summary || ""
               )}
             </pre>
-            <div>
-              <p className="text-start text-bold">END OF OUTPUTS</p>
-            </div>
             <button
               className="bg-green-400 text-black w-full px-2 py-1 rounded-lg hover:bg-[#000000] hover:text-green-400 transition duration-200"
               onClick={() => {

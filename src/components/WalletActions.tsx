@@ -23,7 +23,7 @@ import Staking from "./Staking";
 import Transactions from "./Transactions";
 import { IoCloseSharp } from "react-icons/io5";
 import { invoke } from "@tauri-apps/api/core";
-import { notify } from "../utils/util";
+import { notify, DECIMALS } from "../utils/util";
 import {
   AccountType,
   ChainInfoType,
@@ -303,7 +303,7 @@ const WalletActions = (props: {
           </div>
           {props.activeTab === "transactions" && (
             <Transactions
-              decimal={props.currentAccount?.balance.coins.decimal}
+              decimal={DECIMALS}
               transactions={currentAccount?.transaction_list}
             />
           )}

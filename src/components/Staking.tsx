@@ -18,12 +18,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AiOutlineCopy } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
-import {
-  encodeToHash,
-  getCoinAmount,
-  getDecimals,
-  notify,
-} from "../utils/util";
+import { encodeToHash, getCoinAmount, DECIMALS, notify } from "../utils/util";
 import {
   AccountType,
   WalletInfo,
@@ -61,7 +56,6 @@ const Staking = (props: {
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] =
     useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const decimals = getDecimals(props.currentAccount);
 
   const handleToggleStaking = async () => {
     try {
@@ -350,7 +344,7 @@ const Staking = (props: {
                           (output) => "CreateStakePool" in output
                         )?.CreateStakePool[1].cost_per_block.atoms
                       ).toString()
-                    ) / decimals}
+                    ) / DECIMALS}
                     ))
                   </p>
                   <p className="text-start">
@@ -360,10 +354,7 @@ const Staking = (props: {
                         (output) => "Transfer" in output
                       )?.Transfer[1]
                     ).toString()}
-                    ,{" "}
-                    {getCoinAmount(transactionInfo, "Transfer") /
-                      getDecimals(props.currentAccount)}
-                    )
+                    , {getCoinAmount(transactionInfo, "Transfer") / DECIMALS})
                   </p>
                 </>
               ) : (
@@ -377,7 +368,7 @@ const Staking = (props: {
                     ).toString()}
                     ,{" "}
                     {getCoinAmount(transactionInfo, "LockThenTransfer") /
-                      getDecimals(props.currentAccount)}
+                      DECIMALS}
                     {", "} OutputTimeLock::ForBlockCount(
                     {new String(
                       transactionInfo?.serialized_tx.V1.outputs.find(

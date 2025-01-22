@@ -22,6 +22,8 @@ export const encodeToHash = (data: string) => {
   return hash;
 };
 
+export const DECIMALS = 100000000000;
+
 export const notify = (message: string, type: string) => {
   console.log("notification is displayed");
   switch (type) {
@@ -67,5 +69,8 @@ export const getCoinAmount = (
 };
 
 export const getDecimals = (accountInfo: AccountType | undefined) => {
-  return parseInt(accountInfo ? accountInfo.balance.coins.decimal : "0");
+  return (
+    parseInt(accountInfo ? accountInfo.balance.coins.atoms : "0") /
+    parseInt(accountInfo ? accountInfo.balance.coins.atoms : "0")
+  );
 };

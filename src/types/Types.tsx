@@ -178,7 +178,12 @@ export type Output =
   | DelegateStakingOutput
   | IssueFungibleTokenOutput
   | ProduceBlockFromStakeOutput
-  | CreateDelegationId;
+  | CreateDelegationId
+  | CreateOrder
+  | Htlc
+  | IssueNftOutput
+  | BurnOutput
+  | DataDeposit;
 
 export type CreateStakePoolOutput = {
   CreateStakePool: [
@@ -198,11 +203,42 @@ export type CreateStakePoolOutput = {
   ];
 };
 
-export type CreateDelegationId = {
+type BurnOutput =
+  | { type: "Coin"; value: Coin }
+  | { type: "TokenV0"; value: TokenV0 }
+  | { type: "TokenV1"; value: TokenV1 };
+
+type IssueNftOutput = {
+  tokenId: string;
+  nftInsurance: NftInsurance;
+  destination: string;
+};
+
+type CreateDelegationId = {
   CreateDelegationId: [string, string];
 };
 
-export type TransferOutput = {
+type DataDeposit = {
+  dataDeposit: number;
+};
+
+type Htlc = {
+  outputValue: BurnOutput;
+  hashedTimeLockContract: {
+    secret_hash: string;
+    sped_key: string;
+    refund_timelock: string;
+    refund_key: string;
+  };
+};
+
+type CreateOrder = {
+  conclude_key: string;
+  ask: BurnOutput;
+  give: BurnOutput;
+};
+
+type TransferOutput = {
   Transfer: [
     (
       | { type: "Coin"; value: Coin }

@@ -135,10 +135,14 @@ where
 {
     match r {
         Ok(data) => {
-            app_handle.emit(event_name, data.clone()).expect("Failed to emit backend event");
+            app_handle
+                .emit(event_name, data.clone())
+                .expect("Failed to emit backend event");
         }
         Err(e) => {
-            app_handle.emit("Error", e.to_string()).expect("Failed to emit backend event");
+            app_handle
+                .emit("Error", e.to_string())
+                .expect("Failed to emit backend event");
         }
     }
 }
@@ -225,13 +229,17 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
         }
         BackendEvent::DelegateStaking(msg) => {
             let result = msg.and_then(|transaction_info| {
-                transaction_info.0.tx.to_json(chain_config).map(|serialized_info| {
-                    DelegateStakingResult::new(
-                        transaction_info.0,
-                        serialized_info,
-                        transaction_info.1,
-                    )
-                })
+                transaction_info
+                    .0
+                    .tx
+                    .to_json(chain_config)
+                    .map(|serialized_info| {
+                        DelegateStakingResult::new(
+                            transaction_info.0,
+                            serialized_info,
+                            transaction_info.1,
+                        )
+                    })
             });
             emit_event_or_error(app_handle, "DelegateStaking", result);
         }
@@ -245,10 +253,12 @@ fn process_event(app_handle: &AppHandle, event: BackendEvent, chain_config: &Cha
             let delegations_balance = delegations_balance
                 .into_iter()
                 .map(|(delegation_id, (pool_id, balance))| {
-                    let delegation_address =
-                        Address::new(chain_config, delegation_id).expect("can't fail").to_string();
-                    let pool_address =
-                        Address::new(chain_config, pool_id).expect("can't fail").to_string();
+                    let delegation_address = Address::new(chain_config, delegation_id)
+                        .expect("can't fail")
+                        .to_string();
+                    let pool_address = Address::new(chain_config, pool_id)
+                        .expect("can't fail")
+                        .to_string();
                     (delegation_address, (pool_address, balance))
                 })
                 .collect();
@@ -290,14 +300,16 @@ pub async fn add_create_wallet_wrapper(
 
     let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::RecoverWallet {
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::RecoverWallet {
             file_path,
             wallet_type,
             mnemonic,
             import,
-        },
-    );
+        });
 
     Ok(())
 }
@@ -318,12 +330,14 @@ pub async fn add_open_wallet_wrapper(
     {
         let state = state.lock().await;
 
-        state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-            BackendRequest::OpenWallet {
+        state
+            .backend_sender
+            .as_ref()
+            .expect("Backend sender must be initialized")
+            .send(BackendRequest::OpenWallet {
                 file_path,
                 wallet_type,
-            },
-        );
+            });
     }
 
     Ok(())
@@ -359,9 +373,14 @@ pub async fn new_address_wrapper(
 ) -> Result<(), String> {
     let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::NewAddress(request.wallet_id, request.account_id),
-    );
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::NewAddress(
+            request.wallet_id,
+            request.account_id,
+        ));
 
     Ok(())
 }
@@ -393,12 +412,14 @@ pub async fn update_encryption_wrapper(
         _ => return Err("Invalid encryption action".to_owned()),
     };
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::UpdateEncryption {
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::UpdateEncryption {
             wallet_id: request.wallet_id,
             action: update_encryption_action,
-        },
-    );
+        });
 
     Ok(())
 }
@@ -528,9 +549,13 @@ pub async fn send_delegation_to_address_wrapper(
         delegation_id: request.delegation_id,
     };
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::SendDelegationToAddress(send_delegation_request),
-    );
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::SendDelegationToAddress(
+            send_delegation_request,
+        ));
 
     Ok(())
 }
@@ -542,12 +567,14 @@ pub async fn new_account_wrapper(
 ) -> Result<(), String> {
     let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::NewAccount {
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::NewAccount {
             wallet_id: request.wallet_id,
             name: request.name,
-        },
-    );
+        });
 
     Ok(())
 }
@@ -559,9 +586,15 @@ pub async fn toggle_staking_wrapper(
 ) -> Result<(), String> {
     let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::ToggleStaking(request.wallet_id, request.account_id, request.enabled),
-    );
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::ToggleStaking(
+            request.wallet_id,
+            request.account_id,
+            request.enabled,
+        ));
     Ok(())
 }
 
@@ -571,13 +604,15 @@ pub async fn handle_console_command_wrapper(
     request: ConsoleRequest,
 ) -> Result<(), String> {
     let state = state.lock().await;
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::ConsoleCommand {
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::ConsoleCommand {
             wallet_id: request.wallet_id,
             account_id: request.account_id,
             command: request.command,
-        },
-    );
+        });
     Ok(())
 }
 
@@ -588,12 +623,14 @@ pub async fn submit_transaction_wrapper(
 ) -> Result<(), String> {
     let state = state.lock().await;
 
-    state.backend_sender.as_ref().expect("Backend sender must be initialized").send(
-        BackendRequest::SubmitTx {
+    state
+        .backend_sender
+        .as_ref()
+        .expect("Backend sender must be initialized")
+        .send(BackendRequest::SubmitTx {
             wallet_id: request.wallet_id,
             tx: request.tx.tx,
-        },
-    );
+        });
 
     Ok(())
 }

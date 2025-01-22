@@ -15,57 +15,12 @@
 
 import { toast } from "react-toastify";
 import * as blake from "blakejs";
-import { bech32m } from "bech32";
 
 export const encodeToHash = (data: string) => {
   const hash = blake.blake2bHex(data, undefined, 32);
   return hash;
 };
 
-export const encode = (prefix: string, data: ArrayLike<number>) => {
-  const words = convertTo5BitWords(data);
-  let address = bech32m.encode(prefix, words);
-  return address;
-};
-
-export const encodeToBytesForAddress = (data: string) => {
-  const hexString = data.match(/{(.*?)}/);
-  if (hexString && hexString[1]) {
-    const content = hexString[1];
-
-    const byteArray = new Uint8Array(
-      content.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || []
-    );
-    return byteArray;
-  } else {
-    return new Uint8Array();
-  }
-};
-
-const convertTo5BitWords = (data: ArrayLike<number>): number[] => {
-  const words: number[] = [];
-  let bitAccumulator = 0;
-  let bitCount = 0;
-
-  const byteArray = Array.from(data);
-
-  for (let byte of byteArray) {
-    bitAccumulator = (bitAccumulator << 8) | byte;
-    bitCount += 8;
-
-    while (bitCount >= 5) {
-      words.push(bitAccumulator & 0x1f);
-      bitAccumulator >>= 5;
-      bitCount -= 5;
-    }
-  }
-
-  if (bitCount > 0) {
-    words.push((bitAccumulator << (5 - bitCount)) & 0x1f);
-  }
-
-  return words;
-};
 export const notify = (message: string, type: string) => {
   console.log("notification is displayed");
   switch (type) {
